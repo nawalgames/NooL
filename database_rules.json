@@ -1,0 +1,27 @@
+{
+  "rules": {
+    "games": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "social": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "codes": {
+      "$code": {
+        ".read": true,
+        ".write": "auth != null || (
+          data.exists() &&
+          data.child('status').val() != 'revoked' &&
+          newData.child('gameId').val() == data.child('gameId').val() &&
+          newData.child('days').val() == data.child('days').val() &&
+          (
+            data.child('status').val() != 'active' ||
+            newData.child('deviceId').val() == data.child('deviceId').val()
+          )
+        )"
+      }
+    }
+  }
+}

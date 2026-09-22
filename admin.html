@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NoL — لوحة التحكم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+
+<style>
+  :root{
+    --bg:#0d0f1a; --bg-soft:#141827; --panel:#191d2e; --line:rgba(255,255,255,0.08);
+    --text:#f1f0ec; --text-dim:#9a9db3; --accent:#ffb545; --accent-2:#6ee7c8; --danger:#ff8080;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); box-sizing:border-box;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Tajawal',sans-serif;min-height:100%;}
+  .wrap{max-width:760px;margin:0 auto;padding:26px 18px 60px;}
+  h1{font-size:22px;font-weight:900;margin:0 0 4px;}
+  .sub{color:var(--text-dim);font-size:13px;margin:0 0 26px;}
+
+  /* login */
+  .login-box{max-width:360px;margin:80px auto 0;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px;}
+  .login-box h1{text-align:center;}
+  .field{margin-top:14px;}
+  .field label{display:block;font-size:13px;color:var(--text-dim);margin-bottom:6px;}
+  input, select{
+    width:100%;background:var(--bg-soft);border:1.5px solid var(--line);border-radius:10px;
+    padding:11px 13px;color:var(--text);font-family:inherit;font-size:14px;
+  }
+  input:focus, select:focus{outline:none;border-color:var(--accent-2);}
+  button{font-family:inherit;cursor:pointer;}
+  .btn{
+    border:1.5px solid var(--line);background:transparent;color:var(--text);
+    border-radius:10px;padding:10px 16px;font-size:14px;font-weight:700;
+  }
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#1a1200;}
+  .btn.danger{border-color:var(--danger);color:var(--danger);}
+  .btn.small{padding:6px 12px;font-size:12.5px;font-weight:500;}
+  .btn:disabled{opacity:.5;cursor:default;}
+  .msg{font-size:13px;margin-top:10px;min-height:16px;}
+  .msg.error{color:var(--danger);}
+  .msg.ok{color:var(--accent-2);}
+
+  /* topbar */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:28px;}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 10px;text-align:center;}
+  .stat .n{font-size:22px;font-weight:900;}
+  .stat .l{font-size:11.5px;color:var(--text-dim);margin-top:2px;}
+
+  /* panels */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:20px;}
+  .panel h2{font-size:16px;margin:0 0 14px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .row > *{flex:1;min-width:120px;}
+  .check-row{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13.5px;color:var(--text-dim);}
+  .check-row input{width:auto;}
+
+  .duration-btns{display:flex;gap:8px;margin-top:14px;}
+  .duration-btns button{flex:1;padding:9px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg-soft);color:var(--text-dim);font-size:13px;}
+  .duration-btns button.active{border-color:var(--accent);color:var(--text);}
+
+  .generated-code{
+    margin-top:16px;background:var(--bg-soft);border:1.5px dashed var(--accent-2);border-radius:12px;
+    padding:14px;text-align:center;direction:ltr;font-size:20px;font-weight:900;letter-spacing:3px;display:none;
+  }
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{text-align:right;padding:9px 6px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  th{color:var(--text-dim);font-weight:500;font-size:12px;}
+  .badge{padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700;}
+  .badge.new{background:rgba(154,157,179,.15);color:var(--text-dim);}
+  .badge.active{background:rgba(110,231,200,.15);color:var(--accent-2);}
+  .badge.expired{background:rgba(255,128,128,.15);color:var(--danger);}
+  .badge.revoked{background:rgba(255,181,69,.15);color:var(--accent);}
+  .table-wrap{overflow-x:auto;}
+  .empty{color:var(--text-dim);font-size:13px;text-align:center;padding:20px 0;}
+
+  .hidden{display:none !important;}
+
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f6f5f1;--bg-soft:#ffffff;--panel:#ffffff;--line:rgba(0,0,0,0.1);--text:#16161a;--text-dim:#68697a;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== شاشة الدخول ===== -->
+<div class="login-box" id="loginBox">
+  <h1>لوحة تحكم No<span style="color:var(--accent)">L</span></h1>
+  <p class="sub" style="text-align:center;">للإدارة فقط</p>
+  <div class="field"><label>البريد الإلكتروني</label><input type="email" id="email" autocomplete="username"></div>
+  <div class="field"><label>كلمة المرور</label><input type="password" id="password" autocomplete="current-password"></div>
+  <button class="btn primary" id="loginBtn" style="width:100%;margin-top:16px;">دخول</button>
+  <p class="msg error" id="loginMsg"></p>
+</div>
+
+<!-- ===== لوحة التحكم ===== -->
+<div class="wrap hidden" id="dashboard">
+  <div class="topbar">
+    <div>
+      <h1>لوحة التحكم</h1>
+      <p class="sub" id="whoami"></p>
+    </div>
+    <button class="btn" id="logoutBtn">خروج</button>
+  </div>
+
+  <div class="stats" id="statsGrid"></div>
+
+  <div class="panel">
+    <h2>إضافة لعبة</h2>
+    <div class="row">
+      <div><label style="font-size:12px;color:var(--text-dim);">المعرّف (بالإنجليزي)</label><input id="gId" placeholder="spy"></div>
+      <div><label style="font-size:12px;color:var(--text-dim);">الاسم</label><input id="gName" placeholder="الجاسوس"></div>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <div><label style="font-size:12px;color:var(--text-dim);">وصف قصير</label><input id="gHint" placeholder="لعبة جماعية"></div>
+      <div><label style="font-size:12px;color:var(--text-dim);">الرابط</label><input id="gUrl" placeholder="https://..." style="direction:ltr;"></div>
+    </div>
+    <div class="check-row"><input type="checkbox" id="gRequiresCode"><label for="gRequiresCode">تتطلب كود اشتراك</label></div>
+    <button class="btn primary" id="addGameBtn" style="margin-top:14px;">إضافة اللعبة</button>
+    <p class="msg" id="gameMsg"></p>
+
+    <div class="table-wrap" style="margin-top:18px;">
+      <table id="gamesTable"><thead><tr><th>اللعبة</th><th>كود؟</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>توليد كود اشتراك</h2>
+    <div class="row">
+      <div style="flex:2;"><label style="font-size:12px;color:var(--text-dim);">اللعبة</label><select id="codeGameSelect"></select></div>
+    </div>
+    <div class="duration-btns">
+      <button type="button" data-days="7">أسبوع</button>
+      <button type="button" data-days="30" class="active">شهر</button>
+      <button type="button" data-days="365">سنة</button>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <div><label style="font-size:12px;color:var(--text-dim);">أو مدة مخصصة (أيام)</label><input type="number" id="customDays" placeholder="مثال: 14"></div>
+    </div>
+    <button class="btn primary" id="genCodeBtn" style="margin-top:14px;width:100%;">توليد كود</button>
+    <div class="generated-code" id="generatedCode"></div>
+    <p class="msg" id="codeGenMsg"></p>
+  </div>
+
+  <div class="panel">
+    <h2>تتبع الأكواد</h2>
+    <div class="table-wrap">
+      <table id="codesTable">
+        <thead><tr><th>الكود</th><th>اللعبة</th><th>الحالة</th><th>المدة</th><th>ينتهي</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="empty hidden" id="codesEmpty">لا توجد أكواد بعد</p>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   إعداد Firebase — نفس بيانات مشروعك في index.html
+============================================================ */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+
+/* ============================================================
+   تسجيل الدخول — أنشئ مستخدماً واحداً من Firebase Console:
+   Authentication → Sign-in method → فعّل Email/Password
+   Authentication → Users → Add user (بريدك وكلمة مرورك)
+============================================================ */
+const loginBox = document.getElementById('loginBox');
+const dashboard = document.getElementById('dashboard');
+const loginBtn = document.getElementById('loginBtn');
+const loginMsg = document.getElementById('loginMsg');
+
+loginBtn.addEventListener('click', () => {
+  const email = document.getElementById('email').value.trim();
+  const pass = document.getElementById('password').value;
+  loginMsg.textContent = '';
+  auth.signInWithEmailAndPassword(email, pass).catch(err => {
+    loginMsg.textContent = 'بيانات الدخول غير صحيحة';
+  });
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => auth.signOut());
+
+auth.onAuthStateChanged(user => {
+  if (user){
+    loginBox.classList.add('hidden');
+    dashboard.classList.remove('hidden');
+    document.getElementById('whoami').textContent = user.email;
+    startDashboard();
+  } else {
+    loginBox.classList.remove('hidden');
+    dashboard.classList.add('hidden');
+  }
+});
+
+/* ============================================================
+   الألعاب
+============================================================ */
+let gamesCache = {};
+
+function startDashboard(){
+  db.ref('games').on('value', snap => {
+    gamesCache = snap.val() || {};
+    renderGamesTable();
+    renderGameSelect();
+  });
+  db.ref('codes').on('value', snap => {
+    renderCodesTable(snap.val() || {});
+  });
+}
+
+function renderGamesTable(){
+  const tbody = document.querySelector('#gamesTable tbody');
+  tbody.innerHTML = '';
+  Object.entries(gamesCache).forEach(([id, g]) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${g.name} <span style="color:var(--text-dim);font-size:11px;">(${id})</span></td>
+                     <td>${g.requiresCode ? 'نعم' : 'لا'}</td>
+                     <td><button class="btn small danger" data-del="${id}">حذف</button></td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('[data-del]').forEach(b => {
+    b.addEventListener('click', () => {
+      if (confirm('حذف هذه اللعبة؟')) db.ref('games/' + b.dataset.del).remove();
+    });
+  });
+}
+
+document.getElementById('addGameBtn').addEventListener('click', () => {
+  const id = document.getElementById('gId').value.trim();
+  const name = document.getElementById('gName').value.trim();
+  const hint = document.getElementById('gHint').value.trim();
+  const url = document.getElementById('gUrl').value.trim();
+  const requiresCode = document.getElementById('gRequiresCode').checked;
+  const msg = document.getElementById('gameMsg');
+
+  if (!id || !name || !url){ msg.className = 'msg error'; msg.textContent = 'المعرّف والاسم والرابط مطلوبة'; return; }
+
+  db.ref('games/' + id).set({ name, hint, url, requiresCode }).then(() => {
+    msg.className = 'msg ok'; msg.textContent = 'تمت الإضافة';
+    ['gId','gName','gHint','gUrl'].forEach(f => document.getElementById(f).value = '');
+    document.getElementById('gRequiresCode').checked = false;
+  }).catch(e => { msg.className = 'msg error'; msg.textContent = 'خطأ: ' + e.message; });
+});
+
+/* ============================================================
+   توليد الأكواد
+============================================================ */
+function renderGameSelect(){
+  const sel = document.getElementById('codeGameSelect');
+  sel.innerHTML = '';
+  Object.entries(gamesCache).filter(([id,g]) => g.requiresCode).forEach(([id,g]) => {
+    const opt = document.createElement('option');
+    opt.value = id; opt.textContent = g.name;
+    sel.appendChild(opt);
+  });
+  if (!sel.options.length){
+    const opt = document.createElement('option');
+    opt.textContent = 'أضف لعبة تتطلب كوداً أولاً'; opt.disabled = true;
+    sel.appendChild(opt);
+  }
+}
+
+let selectedDays = 30;
+document.querySelectorAll('.duration-btns button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.duration-btns button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedDays = Number(btn.dataset.days);
+    document.getElementById('customDays').value = '';
+  });
+});
+document.getElementById('customDays').addEventListener('input', e => {
+  if (e.target.value){
+    document.querySelectorAll('.duration-btns button').forEach(b => b.classList.remove('active'));
+    selectedDays = Number(e.target.value);
+  }
+});
+
+function makeCode(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out = '';
+  for (let i = 0; i < 8; i++){
+    if (i === 4) out += '-';
+    out += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return out;
+}
+
+document.getElementById('genCodeBtn').addEventListener('click', () => {
+  const gameId = document.getElementById('codeGameSelect').value;
+  const msg = document.getElementById('codeGenMsg');
+  const box = document.getElementById('generatedCode');
+  if (!gameId){ msg.className='msg error'; msg.textContent='اختر لعبة أولاً'; return; }
+  const days = selectedDays > 0 ? selectedDays : 30;
+
+  const code = makeCode();
+  db.ref('codes/' + code).set({ gameId, days, status: 'new' }).then(() => {
+    box.style.display = 'block';
+    box.textContent = code;
+    msg.className = 'msg ok'; msg.textContent = 'أعط هذا الكود للعميل';
+  }).catch(e => { msg.className = 'msg error'; msg.textContent = 'خطأ: ' + e.message; });
+});
+
+/* ============================================================
+   تتبع الأكواد + الإحصائيات
+============================================================ */
+function renderCodesTable(codes){
+  const entries = Object.entries(codes);
+  const tbody = document.querySelector('#codesTable tbody');
+  const empty = document.getElementById('codesEmpty');
+  tbody.innerHTML = '';
+
+  let counts = { total: entries.length, active: 0, expired: 0, unused: 0, revoked: 0 };
+
+  entries
+    .sort((a,b) => (b[1].activatedAt||0) - (a[1].activatedAt||0))
+    .forEach(([code, c]) => {
+      const isExpired = c.status === 'active' && c.expiresAt && c.expiresAt < Date.now();
+      let statusLabel = 'جديد', statusClass = 'new';
+      if (c.status === 'revoked'){ statusLabel='ملغى'; statusClass='revoked'; counts.revoked++; }
+      else if (isExpired){ statusLabel='منتهي'; statusClass='expired'; counts.expired++; }
+      else if (c.status === 'active'){ statusLabel='نشط'; statusClass='active'; counts.active++; }
+      else { counts.unused++; }
+
+      const gameName = gamesCache[c.gameId] ? gamesCache[c.gameId].name : (c.gameId || '—');
+      const expiresText = c.expiresAt ? new Date(c.expiresAt).toLocaleDateString('ar') : '—';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="direction:ltr;text-align:left;">${code}</td>
+        <td>${gameName}</td>
+        <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+        <td>${c.days} يوم</td>
+        <td>${expiresText}</td>
+        <td>${c.status === 'revoked' ? '' : `<button class="btn small danger" data-revoke="${code}">إلغاء</button>`}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  tbody.querySelectorAll('[data-revoke]').forEach(b => {
+    b.addEventListener('click', () => {
+      if (confirm('إلغاء هذا الكود؟ لن يعمل بعد الآن.')) {
+        db.ref('codes/' + b.dataset.revoke + '/status').set('revoked');
+      }
+    });
+  });
+
+  empty.classList.toggle('hidden', entries.length > 0);
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat"><div class="n">${counts.total}</div><div class="l">الإجمالي</div></div>
+    <div class="stat"><div class="n">${counts.active}</div><div class="l">نشطة</div></div>
+    <div class="stat"><div class="n">${counts.unused}</div><div class="l">غير مُفعّلة</div></div>
+    <div class="stat"><div class="n">${counts.expired}</div><div class="l">منتهية</div></div>
+  `;
+}
+</script>
+</body>
+</html>

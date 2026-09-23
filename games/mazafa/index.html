@@ -1059,7 +1059,7 @@ async function initializeApplication(){
   }
 }
 
-// دالة التحقق من كود الاشتراك عبر Firebase (متوافقة مع عقدة codes)
+// دالة التحقق وتحديث الأكواد لتتوافق 100% مع لوحة التحكم (تفعيل وتتبع)
 async function verifyLicenseKey(){
   const inputKey = document.getElementById('licenseKeyInput').value.trim();
   if(!inputKey){
@@ -1080,7 +1080,7 @@ async function verifyLicenseKey(){
     setupHostUI();
     document.getElementById('setupScreen').style.display = 'flex';
   } else {
-    showAlert('كود غير صالح', 'عذراً، هذا الكود غير صحيح، أو انتهت صلاحيته الزمنية، أو تم استخدامه مسبقاً.');
+    showAlert('كود غير صالح', 'عذراً، هذا الكود غير صحيح، أو ملغى، أو انتهت صلاحيته الزمنية.');
   }
 }
 
@@ -1094,10 +1094,32 @@ async function validateKeyOnServer(key){
     const data = snapshot.val();
     const now = Date.now();
 
-    // التحقق هل الكود نشط وتاريخ انتهائه لم يأتِ بعد (expiresAt بالمللي ثانية)
-    if(data.active && data.expiresAt > now){
+    // إذا كان الكود ملغى مسبقاً
+    if(data.status === 'revoked') return false;
+
+    // إذا كان الكود جديداً ولم يُفعل من قبل
+    if(data.status === 'new' || !data.status){
+      const durationDays = Number(data.days) || 30;
+      const expiresAt = now + (durationDays * 24 * 60 * 60 * 1000);
+      
+      await window.NoLFirebase.update(keyRef, {
+        status: 'active',
+        activatedAt: now,
+        expiresAt: expiresAt
+      });
       return true;
     }
+
+    // إذا كان نشطاً لكن انتهى وقت صلاحيته
+    if(data.status === 'active' && data.expiresAt && data.expiresAt < now){
+      return false;
+    }
+
+    // إذا كان نشطاً وصالحاً
+    if(data.status === 'active'){
+      return true;
+    }
+
     return false;
   } catch(e){
     console.error(e);

@@ -33,7 +33,7 @@
 
   .wrap{max-width:480px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:10px;}
 
-  /* شاشة إعدادات المضيف البداية */
+  /* شاشة إعدادات المضيف */
   .setup-screen {
     position: fixed;
     inset: 0;
@@ -107,7 +107,6 @@
     width: 100%;
     margin-top: 5px;
   }
-  .share-btn:hover { background: rgba(53, 162, 159, 0.4); }
 
   /* الهيدر الفاخر */
   .header-brand {
@@ -120,11 +119,7 @@
     border: 1px solid var(--line);
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
   }
-  .brand-title-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+  .brand-title-group { display: flex; align-items: center; gap: 10px; }
   .brand-title {
     font-size: 22px;
     font-weight: 900;
@@ -160,10 +155,7 @@
   .top-btn:hover { color: #fff; border-color: var(--gold); }
 
   /* شريط الفرق الأفقي */
-  .teams-container {
-    display: flex;
-    gap: 6px;
-  }
+  .teams-container { display: flex; gap: 6px; }
   .team-card {
     background: var(--panel);
     border: 1.5px solid var(--line);
@@ -224,7 +216,6 @@
     box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
     transition: transform 0.1s;
   }
-
   .card-cell::after {
     content: '';
     position: absolute;
@@ -233,19 +224,12 @@
     border-radius: 6px;
     pointer-events: none;
   }
-
   .card-cell:hover { transform: scale(1.04); border-color: var(--gold); }
 
-  /* وضع المشاهدة: إلغاء تفاعل البطاقات بالكامل */
-  .spectator-mode .card-cell {
-    cursor: default !important;
-  }
-  .spectator-mode .card-cell:hover {
-    transform: none !important;
-    border-color: #3d4a7a !important;
-  }
+  .spectator-mode .card-cell { cursor: default !important; }
+  .spectator-mode .card-cell:hover { transform: none !important; border-color: #3d4a7a !important; }
 
-  /* خانة مخفية تماماً عند الاختفاء أو الحفظ */
+  /* البطاقات المفتوحة أو المحفوظة تختفي تماماً */
   .card-cell.hidden-slot {
     background: transparent !important;
     border: 2px dashed rgba(255, 255, 255, 0.03) !important;
@@ -255,16 +239,20 @@
   }
   .card-cell.hidden-slot::after { display: none; }
 
-  /* ألوان البطاقات */
+  /* أنماط محتوى الكرت عند فتحه */
+  .card-inner-val { font-size: 18px; font-weight: 900; }
+  .card-inner-sub { font-size: 10px; font-weight: 700; margin-top: -2px; opacity: 0.9; }
+
+  /* الألوان والخاصيات الداخلية */
   .bg-red { background: var(--red) !important; border-color: #ff6b6b !important; color: #fff !important; }
   .bg-green { background: var(--green) !important; border-color: #6ab04c !important; color: #fff !important; }
   .bg-blue { background: var(--blue) !important; border-color: #48dbfb !important; color: #fff !important; }
   .bg-yellow { background: var(--yellow) !important; border-color: #feca57 !important; color: #111 !important; }
   .bg-purple { background: var(--purple) !important; border-color: #c56cf0 !important; color: #fff !important; }
-  .bg-bomb { background: #b71c1c !important; border-color: #ff5252 !important; color: #fff !important; font-size: 20px; }
-  .bg-double { background: #ff8f00 !important; border-color: #ffe082 !important; color: #111 !important; font-size: 16px; font-weight: 900; }
+  .bg-bomb { background: #b71c1c !important; border-color: #ff5252 !important; color: #fff !important; font-size: 22px; }
+  .bg-double { background: #ff8f00 !important; border-color: #ffe082 !important; color: #111 !important; font-size: 16px; }
 
-  /* الأزرار السفلية للمضيف */
+  /* الأزرار السفلية */
   .footer-control { display: flex; gap: 8px; }
   .action-btn {
     flex: 1;
@@ -280,7 +268,6 @@
   .btn-save { background: #2e7d32; color: #fff; box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4); }
   .btn-fail { background: #c62828; color: #fff; box-shadow: 0 4px 15px rgba(198, 40, 40, 0.4); }
 
-  /* بانر خاص بالمشاهدين في الأسفل */
   .spectator-banner {
     background: rgba(53, 162, 159, 0.15);
     border: 1px solid #35a29f;
@@ -292,7 +279,6 @@
     font-size: 13px;
   }
 
-  /* النوافذ المنبثقة */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 50; padding: 20px; }
   .modal-overlay.active { display: flex; }
   .modal-box { background: var(--panel); border: 2px solid var(--gold); border-radius: 16px; padding: 20px; width: 100%; max-width: 340px; text-align: center; }
@@ -302,7 +288,7 @@
 </head>
 <body id="pageBody">
 
-<!-- شاشة إعدادات المضيف البداية -->
+<!-- شاشة إعدادات المضيف -->
 <div class="setup-screen" id="setupScreen">
   <div class="setup-box">
     <h2>إعدادات لعبة المجازفة</h2>
@@ -315,33 +301,33 @@
       </select>
     </div>
     <div class="setup-group">
-      <label>عدد القنابل العشوائية:</label>
+      <label>عدد القنابل:</label>
       <select id="setupBombsCount">
-        <option value="2">قنبلتان (2)</option>
-        <option value="3" selected>3 قنابل (3)</option>
-        <option value="4">4 قنابل (4)</option>
-        <option value="5">5 قنابل (5)</option>
+        <option value="2">2 قنابل</option>
+        <option value="3" selected>3 قنابل</option>
+        <option value="4">4 قنابل</option>
+        <option value="5">5 قنابل</option>
       </select>
     </div>
     <div class="setup-group">
-      <label>عدد خانات الدبل (x2):</label>
+      <label>عدد الدبل (x2):</label>
       <select id="setupDoublesCount">
-        <option value="2">خانتين (2)</option>
-        <option value="3" selected>3 خانات (3)</option>
-        <option value="4">4 خانات (4)</option>
+        <option value="2">2 دبل</option>
+        <option value="3" selected>3 دبل</option>
+        <option value="4">4 دبل</option>
+        <option value="5">5 دبل</option>
       </select>
     </div>
-    <button class="setup-btn" onclick="startCustomGame()">بدء اللعبة الان 🚀</button>
+    <button class="setup-btn" onclick="startCustomGame()">ابدأ اللعبة الان 🚀</button>
     
     <div class="share-link-box">
-      <label style="font-size:11px;color:var(--text-dim);margin-bottom:4px;display:block;">رابط المشاهدة الخاص بالأعضاء:</label>
       <button class="share-btn" onclick="copySpectatorLink()">📋 نسخ رابط المشاهدة للجمهور</button>
     </div>
   </div>
 </div>
 
 <div class="wrap">
-  <!-- الهيدر الفاخر -->
+  <!-- الهيدر -->
   <div class="header-brand">
     <div class="brand-title-group">
       <div class="brand-title">المجازفة</div>
@@ -361,22 +347,21 @@
     دور الفريق: <strong id="activeTeamName">الفريق الأول</strong>
   </div>
 
-  <!-- لوحة البطاقات (50 بطاقة) -->
+  <!-- شبكة البطاقات الخمسين -->
   <div class="game-frame" id="gameBoard"></div>
 
-  <!-- أزرار التحكم للمضيف -->
+  <!-- أزرار التحكم -->
   <div class="footer-control" id="hostControls">
-    <button class="action-btn btn-fail" onclick="failRound()">❌ تصفير الرصيد (خسارة)</button>
+    <button class="action-btn btn-fail" onclick="failRound()">❌ تصفير الرصيد المؤقت (خسارة)</button>
     <button class="action-btn btn-save" onclick="bankScore()">💾 حفظ الرصيد (<span id="tempScoreDisplay">0</span>)</button>
   </div>
 
-  <!-- رسالة المشاهدين -->
   <div class="spectator-banner" id="spectatorBanner" style="display:none;">
-    👀 وضع المشاهدة فقط — تتابع تقدم اللعبة والنتائج لحظة بلحظة
+    👀 وضع المشاهدة فقط — تابع اللعبة لحظة بلحظة
   </div>
 </div>
 
-<!-- نافذة رسائل التنبيه والنتائج -->
+<!-- نافذة التنبيهات -->
 <div class="modal-overlay" id="alertModal">
   <div class="modal-box">
     <h3 id="alertTitle">تنبيه</h3>
@@ -396,12 +381,12 @@ let configBombs = 3;
 let configDoubles = 3;
 let isSpectator = false;
 
-const availableColors = [
-  { name: 'red', cls: 'bg-red' },
-  { name: 'green', cls: 'bg-green' },
-  { name: 'blue', cls: 'bg-blue' },
-  { name: 'yellow', cls: 'bg-yellow' },
-  { name: 'purple', cls: 'bg-purple' }
+const colorList = [
+  { name: 'red', label: 'أحمر', cls: 'bg-red' },
+  { name: 'green', label: 'أخضر', cls: 'bg-green' },
+  { name: 'blue', label: 'أزرق', cls: 'bg-blue' },
+  { name: 'yellow', label: 'أصفر', cls: 'bg-yellow' },
+  { name: 'purple', label: 'بنفسجي', cls: 'bg-purple' }
 ];
 
 window.onload = function() {
@@ -418,7 +403,6 @@ window.onload = function() {
     loadGameData();
     setInterval(loadGameData, 1500);
   } else {
-    // بناء افتراضي مبدئي لكي لا تبقى الشاشة فارغة للمضيف قبل بدء الإعدادات
     startCustomGame();
     document.getElementById('setupScreen').style.display = 'flex';
   }
@@ -426,9 +410,8 @@ window.onload = function() {
 
 function copySpectatorLink() {
   const currentUrl = window.location.href.split('?')[0];
-  const spectatorUrl = currentUrl + '?mode=spectator';
-  navigator.clipboard.writeText(spectatorUrl).then(() => {
-    alert('✅ تم نسخ رابط المشاهدة بنجاح! يمكنك إرساله للاعبين الآن.');
+  navigator.clipboard.writeText(currentUrl + '?mode=spectator').then(() => {
+    alert('✅ تم نسخ رابط المشاهدة بنجاح!');
   });
 }
 
@@ -439,7 +422,10 @@ function startCustomGame() {
 
   teams = [];
   for(let i=1; i<=teamsCount; i++) {
-    teams.push({ name: `الفريق ${i === 1 ? 'الأول' : i === 2 ? 'الثاني' : i === 3 ? 'الثالث' : 'الرابع'}`, score: 0 });
+    teams.push({ 
+      name: `الفريق ${i === 1 ? 'الأول' : i === 2 ? 'الثاني' : i === 3 ? 'الثالث' : 'الرابع'}`, 
+      score: 0 
+    });
   }
 
   document.getElementById('setupScreen').style.display = 'none';
@@ -451,49 +437,76 @@ function openSetupAgain() {
 }
 
 function initGame() {
-  let pool = [];
   let indices = Array.from({length: totalCards}, (_, i) => i);
   indices.sort(() => Math.random() - 0.5);
 
-  let bombIndices = new Set(indices.slice(0, configBombs));
-  let doubleIndices = new Set(indices.slice(configBombs, configBombs + configDoubles));
+  let bombSet = new Set(indices.slice(0, configBombs));
+  let doubleSet = new Set(indices.slice(configBombs, configBombs + configDoubles));
+  
+  let remainingIndices = indices.slice(configBombs + configDoubles);
+
+  // إعداد مصفوفة الأرقام العادية (1 إلى 9 مكررة 5 مرات = 45 قيمة، سيتم اقتطاع أو ملء المتبقي بدقة)
+  let normalValuesPool = [];
+  for(let i=0; i<5; i++) {
+    for(let n=1; n<=9; n++) {
+      normalValuesPool.push(n);
+    }
+  }
+  normalValuesPool.sort(() => Math.random() - 0.5);
+
+  // إعداد مصفوفة الألوان المتاحة لتوزع بشكل متوازن عشوائي
+  let normalColorsPool = [];
+  let colorCounter = Math.ceil(remainingIndices.length / colorList.length) + 2;
+  for(let c=0; c<colorCounter; c++) {
+    colorList.forEach(col => normalColorsPool.push(col));
+  }
+  normalColorsPool.sort(() => Math.random() - 0.5);
+
+  let pool = [];
+  let normalIdx = 0;
 
   for(let i=0; i<totalCards; i++) {
     let cardId = i + 1;
     let type = 'normal';
-    let col = null;
-    let val = (i % 9) + 1;
+    let val = 0;
+    let colObj = null;
     let cls = '';
     let displayText = cardId.toString();
+    let displaySub = '';
 
-    if (bombIndices.has(i)) {
+    if (bombSet.has(i)) {
       type = 'bomb';
       cls = 'bg-bomb';
       displayText = '💣';
-      val = 0;
-    } else if (doubleIndices.has(i)) {
+      displaySub = 'قنبلة';
+    } else if (doubleSet.has(i)) {
       type = 'double';
       cls = 'bg-double';
       displayText = '✖2';
-      val = 0;
+      displaySub = 'دبل';
     } else {
-      let chosenCol = availableColors[Math.floor(Math.random() * availableColors.length)];
-      col = chosenCol.name;
-      cls = chosenCol.cls;
+      val = normalValuesPool[normalIdx % normalValuesPool.length];
+      colObj = normalColorsPool[normalIdx % normalColorsPool.length];
+      normalIdx++;
+      cls = colObj.cls;
+      displayText = val.toString();
+      displaySub = colObj.label;
     }
 
     pool.push({
       id: cardId,
       gridNum: cardId,
       type: type,
-      color: col,
-      cls: cls,
       value: val,
+      color: colObj ? colObj.name : null,
+      cls: cls,
       text: displayText,
+      subText: displaySub,
       isOpen: false,
       permanentlyGone: false
     });
   }
+
   boardCards = pool;
   tempScore = 0;
   currentRoundPicks = [];
@@ -506,21 +519,23 @@ function initGame() {
 
 function saveGameData() {
   if (isSpectator) return;
-  const gameState = { teams, activeTeamIndex, tempScore, boardCards };
-  localStorage.setItem('nol_game_state', JSON.stringify(gameState));
+  const gameState = { teams, activeTeamIndex, tempScore, boardCards, currentRoundPicks };
+  localStorage.setItem('nol_game_state_v2', JSON.stringify(gameState));
 }
 
 function loadGameData() {
   if (!isSpectator) return;
-  const saved = localStorage.getItem('nol_game_state');
+  const saved = localStorage.getItem('nol_game_state_v2');
   if (saved) {
     const data = JSON.parse(saved);
     teams = data.teams;
     activeTeamIndex = data.activeTeamIndex;
     tempScore = data.tempScore;
     boardCards = data.boardCards;
+    currentRoundPicks = data.currentRoundPicks || [];
     renderTeams();
     renderBoard();
+    updateTempDisplay();
   }
 }
 
@@ -545,6 +560,7 @@ function renderTeams() {
     container.appendChild(card);
   });
   if(document.getElementById('activeTeamName')) {
+    document.getElementById('activeTeamNameтена') = teams[activeTeamIndex]?.name || '';
     document.getElementById('activeTeamName').textContent = teams[activeTeamIndex]?.name || '';
   }
 }
@@ -561,7 +577,10 @@ function renderBoard() {
       cell.textContent = '';
     } else if (item.isOpen) {
       cell.className = `card-cell used ${item.cls}`;
-      cell.textContent = item.text;
+      cell.innerHTML = `
+        <div class="card-inner-val">${item.text}</div>
+        <div class="card-inner-sub">${item.subText || ''}</div>
+      `;
     } else {
       cell.className = 'card-cell';
       cell.textContent = item.gridNum;
@@ -569,7 +588,6 @@ function renderBoard() {
         cell.onclick = () => revealCard(item);
       }
     }
-
     board.appendChild(cell);
   });
 }
@@ -577,6 +595,7 @@ function renderBoard() {
 function revealCard(item) {
   if (isSpectator || item.isOpen || item.permanentlyGone) return;
 
+  // 1. التعامل مع القنبلة
   if (item.type === 'bomb') {
     item.isOpen = true;
     currentRoundPicks.push(item);
@@ -584,13 +603,14 @@ function revealCard(item) {
     renderBoard();
     
     setTimeout(() => {
-      showAlert('💥 بوووم! ظهرت قنبلة!', `للأسف يا ${teams[activeTeamIndex].name} اخترت قنبلة! خسارة الرصيد المؤقت واختفاء البطاقات المفتوحة.`);
+      showAlert('💥 بوووم! قنبلة!', `لأسف يا ${teams[activeTeamIndex].name} اخترت قنبلة! تم تصفير رصيد هذه الجولة فقط وانتقال الدور.`);
       currentRoundPicks.forEach(p => p.permanentlyGone = true);
       failRound(true);
     }, 200);
     return;
   }
 
+  // 2. التعامل مع الدبل (x2)
   if (item.type === 'double') {
     item.isOpen = true;
     currentRoundPicks.push(item);
@@ -601,22 +621,27 @@ function revealCard(item) {
     return;
   }
 
-  let isDuplicate = currentRoundPicks.some(p => p.type === 'normal' && (p.color === item.color || p.value === item.value));
+  // 3. التحقق من تشابه الألوان أو الأرقام داخل نفس الجولة الحالية فقط
+  let hasColorConflict = currentRoundPicks.some(p => p.type === 'normal' && p.color === item.color);
+  let hasNumberConflict = currentRoundPicks.some(p => p.type === 'normal' && p.value === item.value);
 
-  if (isDuplicate) {
+  if (hasColorConflict || hasNumberConflict) {
     item.isOpen = true;
     currentRoundPicks.push(item);
     saveGameData();
     renderBoard();
     
+    let reasonText = hasColorConflict && hasNumberConflict ? 'تشابه في اللون ورقم الكرت!' : (hasColorConflict ? 'تشابه في اللون مع بطاقة سابقة!' : 'تشابه في الرقم مع بطاقة سابقة!');
+    
     setTimeout(() => {
-      showAlert('❌ حدث تشابه!', `حصل تكرار في اللون أو الرقم! خسارة الرصيد المؤقت واختفاء البطاقات.`);
+      showAlert('❌ حدث تشابه وخسارة!', `${reasonText}\nتم تصفير النقاط التي كسبتها في هذه الجولة فقط وانتقال اللعبة للفريق التالي.`);
       currentRoundPicks.forEach(p => p.permanentlyGone = true);
       failRound(true);
     }, 200);
     return;
   }
 
+  // كرت عادي صحيح وغير متشابه
   item.isOpen = true;
   currentRoundPicks.push(item);
   tempScore += item.value;

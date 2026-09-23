@@ -9,66 +9,67 @@
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #0b0f19;
-    --panel: #131826;
-    --line: #222c45;
+    --bg-gradient: linear-gradient(135deg, #0c102b 0%, #1a1438 50%, #080a17 100%);
+    --panel: rgba(19, 23, 44, 0.85);
+    --line: #303b63;
     --gold: #f3ce6b;
     --text:#f1f0ec;
-    --text-dim:#8b92af;
-    --red:#e53935; --green:#2e7d32; --blue:#1e88e5; --yellow:#fbc02d; --purple:#8e24aa;
+    --text-dim:#9a9db3;
+    --red:#d32f2f; --green:#2e7d32; --blue:#1565c0; --yellow:#f9a825; --purple:#6a1b9a;
   }
   *{box-sizing:border-box;user-select:none;}
   html,body{height:100%;}
   body{
     margin:0;
-    background: var(--bg);
+    background: var(--bg-gradient);
+    background-attachment: fixed;
     color:var(--text);
     font-family:'Tajawal', sans-serif;
     display:flex;
     flex-direction:column;
     align-items:center;
-    padding: 12px;
+    padding: 10px;
   }
 
-  .wrap{max-width:440px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:12px;}
+  .wrap{max-width:440px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:10px;}
 
-  /* الهيدر النظيف الفاخر بدون أي إضافات مزعجة */
+  /* الهيدر الفاخر المطابق للصورة */
   .header-brand {
     display: flex;
     justify-content: space-between;
     align-items: center;
     background: var(--panel);
-    padding: 12px 16px;
+    padding: 10px 16px;
     border-radius: 14px;
     border: 1px solid var(--line);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
   }
   .brand-title-group {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
   }
   .brand-title {
     font-size: 22px;
     font-weight: 900;
-    color: #fff;
-    letter-spacing: 0.5px;
+    background: linear-gradient(to bottom, #fff, #b0c4de);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
   .nol-logo {
     font-size: 13px;
     font-weight: 900;
     letter-spacing: 1px;
-    color: var(--gold);
-    border: 1px solid rgba(243, 206, 107, 0.4);
-    padding: 2px 8px;
+    background: linear-gradient(135deg, #f3ce6b, #ff9f43);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    border: 1px solid rgba(243, 206, 107, 0.3);
+    padding: 2px 6px;
     border-radius: 6px;
-    background: rgba(243, 206, 107, 0.08);
+    background-color: rgba(243, 206, 107, 0.05);
   }
-  
-  .top-actions {
-    display: flex;
-    gap: 8px;
-  }
+
+  .top-actions { display: flex; gap: 6px; }
   .top-btn {
     background: rgba(255,255,255,0.05);
     border: 1px solid var(--line);
@@ -76,7 +77,7 @@
     padding: 6px 10px;
     border-radius: 8px;
     font-family: inherit;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     cursor: pointer;
   }
@@ -85,97 +86,111 @@
   /* شريط الفرق الأفقي */
   .teams-container {
     display: flex;
-    gap: 8px;
+    gap: 6px;
   }
   .team-card {
     background: var(--panel);
     border: 1.5px solid var(--line);
-    border-radius: 12px;
-    padding: 8px;
+    border-radius: 10px;
+    padding: 6px;
     text-align: center;
     flex: 1;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all .2s;
   }
   .team-card.active {
     border-color: #4cd137;
-    background: rgba(76, 209, 55, 0.08);
-    box-shadow: 0 0 12px rgba(76, 209, 55, 0.2);
+    background: rgba(76, 209, 55, 0.1);
+    box-shadow: 0 0 10px rgba(76, 209, 55, 0.3);
   }
-  .team-card .t-name { font-size: 11px; color: var(--text-dim); font-weight: 700; margin-bottom: 2px; }
-  .team-card .t-score { font-size: 18px; font-weight: 900; color: #fff; }
+  .team-card .t-name { font-size: 11px; color: var(--text-dim); font-weight: 700; }
+  .team-card .t-score { font-size: 16px; font-weight: 900; color: #fff; }
 
-  /* معلومات الدور الحالي بشكل أنيق */
+  /* بيان الدور */
   .turn-banner {
-    background: rgba(243, 206, 107, 0.05);
-    border: 1px dashed rgba(243, 206, 107, 0.3);
-    padding: 8px;
-    border-radius: 10px;
+    background: rgba(19, 23, 44, 0.6);
+    border: 1px dashed var(--line);
+    padding: 6px;
+    border-radius: 8px;
     text-align: center;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-dim);
   }
   .turn-banner strong { color: var(--gold); }
 
-  /* لوحة البطاقات الكلاسيكية والمرتبة */
+  /* شبكة البطاقات الكلاسيكية مع الإطار المنقط كما في الصورة */
   .game-frame {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-    background: var(--panel);
-    padding: 12px;
+    gap: 6px;
+    background: rgba(13, 15, 26, 0.7);
+    padding: 10px;
     border-radius: 16px;
-    border: 1px solid var(--line);
+    border: 2px solid var(--line);
   }
 
   .card-cell {
-    background: #182033;
-    border: 2px solid #2b3758;
+    background: #151a30;
+    border: 2px solid #3d4a7a;
     border-radius: 10px;
     aspect-ratio: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 900;
     color: #e2e8f0;
     cursor: pointer;
     position: relative;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
-    transition: all 0.15s ease;
-  }
-  
-  .card-cell:hover {
-    transform: translateY(-2px);
-    border-color: var(--gold);
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.6);
+    transition: transform 0.1s;
   }
 
-  /* ألوان البطاقات المفتوحة */
-  .card-cell.used { pointer-events: none; }
+  /* الإطار المنقط الداخلي مثل الصورة بالضبط */
+  .card-cell::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border: 1px dotted rgba(243, 206, 107, 0.4);
+    border-radius: 7px;
+    pointer-events: none;
+  }
+
+  .card-cell:hover { transform: scale(1.04); border-color: var(--gold); }
+
+  /* الخانة المخفية تماماً (عند الخسارة أو حفظ الرصيد تختفي لتصبح فارغة تماماً مثل الصورة) */
+  .card-cell.hidden-slot {
+    background: transparent !important;
+    border: 2px dashed rgba(255, 255, 255, 0.05) !important;
+    box-shadow: none !important;
+    pointer-events: none !important;
+    color: transparent !important;
+  }
+  .card-cell.hidden-slot::after { display: none; }
+
+  /* الألوان عند فتح البطاقات */
   .bg-red { background: var(--red) !important; border-color: #ff6b6b !important; color: #fff !important; }
   .bg-green { background: var(--green) !important; border-color: #6ab04c !important; color: #fff !important; }
   .bg-blue { background: var(--blue) !important; border-color: #48dbfb !important; color: #fff !important; }
   .bg-yellow { background: var(--yellow) !important; border-color: #feca57 !important; color: #111 !important; }
   .bg-purple { background: var(--purple) !important; border-color: #c56cf0 !important; color: #fff !important; }
 
-  /* أزرار التحكم السفلية */
-  .footer-control {
-    display: flex;
-    gap: 10px;
-  }
+  /* الأزرار السفلية */
+  .footer-control { display: flex; gap: 8px; }
   .action-btn {
     flex: 1;
-    padding: 14px;
+    padding: 12px;
     border-radius: 12px;
     font-family: inherit;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 13px;
     border: none;
     cursor: pointer;
     text-align: center;
   }
-  .btn-save { background: #2e7d32; color: #fff; box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3); }
-  .btn-fail { background: #c62828; color: #fff; box-shadow: 0 4px 15px rgba(198, 40, 40, 0.3); }
+  .btn-save { background: #2e7d32; color: #fff; box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4); }
+  .btn-fail { background: #c62828; color: #fff; box-shadow: 0 4px 15px rgba(198, 40, 40, 0.4); }
 
   /* النوافذ المنبثقة */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 50; padding: 20px; }
@@ -188,7 +203,7 @@
 <body>
 
 <div class="wrap">
-  <!-- الهيدر النظيف بدون فلاشي -->
+  <!-- الهيدر الفاخر -->
   <div class="header-brand">
     <div class="brand-title-group">
       <div class="brand-title">المجازفة</div>
@@ -200,25 +215,25 @@
     </div>
   </div>
 
-  <!-- شريط الفرق الأفقية -->
+  <!-- شريط الفرق -->
   <div class="teams-container" id="teamsBar"></div>
 
-  <!-- بيان الدور الحالي -->
+  <!-- بيان الدور -->
   <div class="turn-banner" id="turnBanner">
     دور الفريق: <strong id="activeTeamName">الفريق الأول</strong>
   </div>
 
-  <!-- شبكة البطاقات الكلاسيكية المرتبة -->
+  <!-- لوحة البطاقات -->
   <div class="game-frame" id="gameBoard"></div>
 
-  <!-- أزرار حفظ الرصيد وتصفير المؤقت -->
+  <!-- أزرار التحكم -->
   <div class="footer-control">
     <button class="action-btn btn-fail" onclick="failRound()">❌ تصفير الرصيد (خسارة)</button>
     <button class="action-btn btn-save" onclick="bankScore()">💾 حفظ الرصيد (<span id="tempScoreDisplay">0</span>)</button>
   </div>
 </div>
 
-<!-- نافذة تعديل الأسماء -->
+<!-- نافذة الأسماء -->
 <div class="modal-overlay" id="namesModal">
   <div class="modal-box">
     <h3>تحديث أسماء الفرق</h3>
@@ -236,8 +251,8 @@ let teams = [
 
 let activeTeamIndex = 0;
 let tempScore = 0;
-let currentRoundPicks = []; // لتتبع البطاقات المفتوحة في المحاولة الحالية فقط لإرجاعها لو حدث تكرار
-let totalCards = 30; // 30 بطاقة مرتبة ونظيفة
+let currentRoundPicks = []; 
+let totalCards = 30;
 let boardCards = [];
 
 const availableColors = [
@@ -252,7 +267,7 @@ function initGame() {
   let pool = [];
   for(let i=1; i<=totalCards; i++) {
     let col = availableColors[Math.floor(Math.random() * availableColors.length)];
-    let val = (i % 8) + 1; // قيم من 1 إلى 8
+    let val = (i % 8) + 1;
     pool.push({
       id: i,
       gridNum: i,
@@ -260,7 +275,7 @@ function initGame() {
       cls: col.cls,
       value: val,
       isOpen: false,
-      permanentlyUsed: false // إذا تم حفظها بنجاح تختفي أو تقفل نهائياً
+      permanentlyGone: false // تختفي بالكامل نهائياً
     });
   }
   boardCards = pool;
@@ -278,7 +293,6 @@ function renderTeams() {
     const card = document.createElement('div');
     card.className = `team-card ${index === activeTeamIndex ? 'active' : ''}`;
     card.onclick = () => { 
-      // عند تغيير الفريق يدوياً يتم تصفير محاولة الفريق السابق المحتملة
       if(currentRoundPicks.length > 0) failRound(false);
       activeTeamIndex = index; 
       renderTeams(); 
@@ -296,46 +310,46 @@ function renderBoard() {
   const board = document.getElementById('gameBoard');
   board.innerHTML = '';
   
-  boardCards.forEach((item, idx) => {
+  boardCards.forEach((item) => {
     const cell = document.createElement('div');
-    cell.className = 'card-cell';
     
-    if (item.permanentlyUsed) {
-      cell.classList.add('used');
-      cell.style.opacity = '0.15';
-      cell.style.pointerEvents = 'none';
+    if (item.permanentlyGone) {
+      // خانة مختفية بالكامل تماماً مثل الصورة
+      cell.className = 'card-cell hidden-slot';
       cell.textContent = '';
     } else if (item.isOpen) {
       cell.className = `card-cell used ${item.cls}`;
       cell.textContent = item.value;
     } else {
+      cell.className = 'card-cell';
       cell.textContent = item.gridNum;
+      cell.onclick = () => revealCard(item);
     }
 
-    cell.onclick = () => revealCard(item);
     board.appendChild(cell);
   });
 }
 
 function revealCard(item) {
-  if (item.isOpen || item.permanentlyUsed) return;
+  if (item.isOpen || item.permanentlyGone) return;
 
-  // التحقق من التكرار في نفس دور الفريق الحالي (سواء اللون أو الرقم)
+  // فحص التشابه (اللون أو الرقم) مع البطاقات التي اختارها الفريق في هذه الجولة
   let isDuplicate = currentRoundPicks.some(p => p.color === item.color || p.value === item.value);
 
   if (isDuplicate) {
-    // فتح البطاقة مؤقتاً لتوضيح سبب الخسارة ثم إخفاؤها وإرجاع كل شيء
     item.isOpen = true;
+    currentRoundPicks.push(item);
     renderBoard();
     
     setTimeout(() => {
-      alert('❌ حصل تكرار (في اللون أو الرقم)! خسر الفريق الرصيد المؤقت وعادت البطاقات مغلقة.');
+      alert('❌ حدث تشابه (في اللون أو الرقم)! خسارة الرصيد المؤقت واختفاء البطاقات التي تم اختيارها.');
+      // جعل البطاقات التي فتحها هذا الفريق تختفي بالكامل (تصبح خانات فارغة)
+      currentRoundPicks.forEach(p => p.permanentlyGone = true);
       failRound(true);
-    }, 200);
+    }, 250);
     return;
   }
 
-  // إذا لم يحدث تكرار، تفتح البطاقة ويُضاف الرصيد المؤقت
   item.isOpen = true;
   currentRoundPicks.push(item);
   tempScore += item.value;
@@ -352,16 +366,14 @@ function bankScore() {
   if (tempScore <= 0) return;
   teams[activeTeamIndex].score += tempScore;
   
-  // تثبيت البطاقات التي فتحها هذا الفريق نهائياً حتى لا تختار مرة أخرى
-  currentRoundPicks.forEach(p => p.permanentlyUsed = true);
+  // إذا حفظ الرصيد بنجاح، تختفي البطاقات التي اختارها نهائياً من اللوحة
+  currentRoundPicks.forEach(p => p.permanentlyGone = true);
   
   resetRoundState();
   nextTurn();
 }
 
 function failRound(switchTurn = true) {
-  // إعادة البطاقات التي فتحها الفريق في هذه المحاولة إلى حالتها الأصلية المغلقة (تختفي الأرقام والألوان)
-  currentRoundPicks.forEach(p => p.isOpen = false);
   resetRoundState();
   if (switchTurn) {
     nextTurn();
@@ -370,6 +382,9 @@ function failRound(switchTurn = true) {
 
 function resetRoundState() {
   tempScore = 0;
+  currentRoundPicks.forEach(p => {
+    if (!p.permanentlyGone) p.isOpen = false; // البطاقات التي لم تختفي تعود مغلقة
+  });
   currentRoundPicks = [];
   updateTempDisplay();
   renderBoard();
@@ -390,7 +405,7 @@ function openNamesModal() {
   const list = document.getElementById('teamsInputsList');
   list.innerHTML = '';
   teams.forEach((t, i) => {
-    list.innerHTML += `<div>الاسم ${i+1}: <input type="text" id="teamInput_${i}" value="${t.name}" style="width:100%;padding:8px;border-radius:8px;background:#0b0f19;color:#fff;border:1px solid var(--line);"></div>`;
+    list.innerHTML += `<div>الاسم ${i+1}: <input type="text" id="teamInput_${i}" value="${t.name}" style="width:100%;padding:8px;border-radius:8px;background:#0c102b;color:#fff;border:1px solid var(--line);"></div>`;
   });
   document.getElementById('namesModal').classList.add('active');
 }

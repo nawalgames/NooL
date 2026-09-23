@@ -10,7 +10,7 @@
 <style>
   :root{
     --bg-gradient: linear-gradient(135deg, #0c102b 0%, #1a1438 50%, #080a17 100%);
-    --panel: rgba(19, 23, 44, 0.85);
+    --panel: rgba(19, 23, 44, 0.9);
     --line: #303b63;
     --gold: #f3ce6b;
     --text:#f1f0ec;
@@ -31,9 +31,85 @@
     padding: 10px;
   }
 
-  .wrap{max-width:440px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:10px;}
+  .wrap{max-width:480px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:10px;}
 
-  /* الهيدر الفاخر المطابق للصورة */
+  /* شاشة إعدادات المضيف البداية */
+  .setup-screen {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 13, 28, 0.95);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .setup-box {
+    background: var(--panel);
+    border: 2px solid var(--gold);
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  }
+  .setup-box h2 { color: var(--gold); margin-top: 0; margin-bottom: 20px; font-weight: 900; }
+  .setup-group {
+    margin-bottom: 15px;
+    text-align: right;
+  }
+  .setup-group label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .setup-group select, .setup-group input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    background: #0c102b;
+    color: #fff;
+    border: 1px solid var(--line);
+    font-family: inherit;
+    font-size: 14px;
+  }
+  .setup-btn {
+    background: var(--gold);
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 900;
+    font-size: 15px;
+    cursor: pointer;
+    color: #111;
+    width: 100%;
+    margin-top: 10px;
+    box-shadow: 0 4px 15px rgba(243, 206, 107, 0.3);
+  }
+  .share-link-box {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed var(--line);
+    text-align: center;
+  }
+  .share-btn {
+    background: rgba(53, 162, 159, 0.2);
+    border: 1px solid #35a29f;
+    color: #4ee1dc;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 5px;
+  }
+  .share-btn:hover { background: rgba(53, 162, 159, 0.4); }
+
+  /* الهيدر الفاخر */
   .header-brand {
     display: flex;
     justify-content: space-between;
@@ -118,65 +194,77 @@
   }
   .turn-banner strong { color: var(--gold); }
 
-  /* شبكة البطاقات الكلاسيكية مع الإطار المنقط كما في الصورة */
+  /* شبكة البطاقات (50 بطاقة) */
   .game-frame {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
+    gap: 5px;
     background: rgba(13, 15, 26, 0.7);
     padding: 10px;
     border-radius: 16px;
     border: 2px solid var(--line);
+    max-height: 55vh;
+    overflow-y: auto;
   }
 
   .card-cell {
     background: #151a30;
     border: 2px solid #3d4a7a;
-    border-radius: 10px;
+    border-radius: 8px;
     aspect-ratio: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 900;
     color: #e2e8f0;
     cursor: pointer;
     position: relative;
-    box-shadow: inset 0 0 8px rgba(0,0,0,0.6);
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
     transition: transform 0.1s;
   }
 
-  /* الإطار المنقط الداخلي مثل الصورة بالضبط */
   .card-cell::after {
     content: '';
     position: absolute;
-    inset: 3px;
+    inset: 2px;
     border: 1px dotted rgba(243, 206, 107, 0.4);
-    border-radius: 7px;
+    border-radius: 6px;
     pointer-events: none;
   }
 
   .card-cell:hover { transform: scale(1.04); border-color: var(--gold); }
 
-  /* الخانة المخفية تماماً (عند الخسارة أو حفظ الرصيد تختفي لتصبح فارغة تماماً مثل الصورة) */
+  /* وضع المشاهدة: إلغاء تفاعل البطاقات بالكامل */
+  .spectator-mode .card-cell {
+    cursor: default !important;
+  }
+  .spectator-mode .card-cell:hover {
+    transform: none !important;
+    border-color: #3d4a7a !important;
+  }
+
+  /* خانة مخفية تماماً */
   .card-cell.hidden-slot {
     background: transparent !important;
-    border: 2px dashed rgba(255, 255, 255, 0.05) !important;
+    border: 2px dashed rgba(255, 255, 255, 0.03) !important;
     box-shadow: none !important;
     pointer-events: none !important;
     color: transparent !important;
   }
   .card-cell.hidden-slot::after { display: none; }
 
-  /* الألوان عند فتح البطاقات */
+  /* ألوان البطاقات */
   .bg-red { background: var(--red) !important; border-color: #ff6b6b !important; color: #fff !important; }
   .bg-green { background: var(--green) !important; border-color: #6ab04c !important; color: #fff !important; }
   .bg-blue { background: var(--blue) !important; border-color: #48dbfb !important; color: #fff !important; }
   .bg-yellow { background: var(--yellow) !important; border-color: #feca57 !important; color: #111 !important; }
   .bg-purple { background: var(--purple) !important; border-color: #c56cf0 !important; color: #fff !important; }
+  .bg-bomb { background: #b71c1c !important; border-color: #ff5252 !important; color: #fff !important; font-size: 20px; }
+  .bg-double { background: #ff8f00 !important; border-color: #ffe082 !important; color: #111 !important; font-size: 16px; font-weight: 900; }
 
-  /* الأزرار السفلية */
+  /* الأزرار السفلية للمضيف */
   .footer-control { display: flex; gap: 8px; }
   .action-btn {
     flex: 1;
@@ -192,6 +280,18 @@
   .btn-save { background: #2e7d32; color: #fff; box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4); }
   .btn-fail { background: #c62828; color: #fff; box-shadow: 0 4px 15px rgba(198, 40, 40, 0.4); }
 
+  /* بانر خاص بالمشاهدين في الأسفل */
+  .spectator-banner {
+    background: rgba(53, 162, 159, 0.15);
+    border: 1px solid #35a29f;
+    color: #4ee1dc;
+    text-align: center;
+    padding: 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
   /* النوافذ المنبثقة */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 50; padding: 20px; }
   .modal-overlay.active { display: flex; }
@@ -200,7 +300,45 @@
   .modal-box button { background: var(--gold); border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; color: #111; width: 100%; }
 </style>
 </head>
-<body>
+<body id="pageBody">
+
+<!-- شاشة إعدادات المضيف البداية -->
+<div class="setup-screen" id="setupScreen">
+  <div class="setup-box">
+    <h2>إعدادات لعبة المجازفة</h2>
+    <div class="setup-group">
+      <label>عدد الفرق:</label>
+      <select id="setupTeamsCount">
+        <option value="2">فريقين (2)</option>
+        <option value="3" selected>ثلاثة فرق (3)</option>
+        <option value="4">أربعة فرق (4)</option>
+      </select>
+    </div>
+    <div class="setup-group">
+      <label>عدد القنابل العشوائية:</label>
+      <select id="setupBombsCount">
+        <option value="2">قنبلتان (2)</option>
+        <option value="3" selected>3 قنابل (3)</option>
+        <option value="4">4 قنابل (4)</option>
+        <option value="5">5 قنابل (5)</option>
+      </select>
+    </div>
+    <div class="setup-group">
+      <label>عدد خانات الدبل (x2):</label>
+      <select id="setupDoublesCount">
+        <option value="2">خانتين (2)</option>
+        <option value="3" selected>3 خانات (3)</option>
+        <option value="4">4 خانات (4)</option>
+      </select>
+    </div>
+    <button class="setup-btn" onclick="startCustomGame()">بدء اللعبة الان 🚀</button>
+    
+    <div class="share-link-box">
+      <label style="font-size:11px;color:var(--text-dim);margin-bottom:4px;display:block;">رابط المشاهدة الخاص بالأعضاء:</label>
+      <button class="share-btn" onclick="copySpectatorLink()">📋 نسخ رابط المشاهدة للجمهور</button>
+    </div>
+  </div>
+</div>
 
 <div class="wrap">
   <!-- الهيدر الفاخر -->
@@ -209,8 +347,8 @@
       <div class="brand-title">المجازفة</div>
       <div class="nol-logo">NoL</div>
     </div>
-    <div class="top-actions">
-      <button class="top-btn" onclick="openNamesModal()">✏️ الأسماء</button>
+    <div class="top-actions" id="hostTopActions">
+      <button class="top-btn" onclick="openSetupAgain()">⚙️ الإعدادات</button>
       <button class="top-btn" onclick="resetGame()">🔄 إعادة</button>
     </div>
   </div>
@@ -223,37 +361,40 @@
     دور الفريق: <strong id="activeTeamName">الفريق الأول</strong>
   </div>
 
-  <!-- لوحة البطاقات -->
+  <!-- لوحة البطاقات (50 بطاقة) -->
   <div class="game-frame" id="gameBoard"></div>
 
-  <!-- أزرار التحكم -->
-  <div class="footer-control">
+  <!-- أزرار التحكم (تظهر فقط للمضيف وتختفي للمشاهدين) -->
+  <div class="footer-control" id="hostControls">
     <button class="action-btn btn-fail" onclick="failRound()">❌ تصفير الرصيد (خسارة)</button>
     <button class="action-btn btn-save" onclick="bankScore()">💾 حفظ الرصيد (<span id="tempScoreDisplay">0</span>)</button>
   </div>
+
+  <!-- رسالة المشاهدين -->
+  <div class="spectator-banner" id="spectatorBanner" style="display:none;">
+    👀 وضع المشاهدة فقط — تتابع تقدم اللعبة والنتائج لحظة بلحظة
+  </div>
 </div>
 
-<!-- نافذة الأسماء -->
-<div class="modal-overlay" id="namesModal">
+<!-- نافذة رسائل التنبيه والنتائج -->
+<div class="modal-overlay" id="alertModal">
   <div class="modal-box">
-    <h3>تحديث أسماء الفرق</h3>
-    <div id="teamsInputsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:15px;text-align:right;"></div>
-    <button onclick="saveTeamNames()">حفظ وتطبيق</button>
+    <h3 id="alertTitle">تنبيه</h3>
+    <p id="alertMessage" style="color:var(--text-dim);font-size:14px;margin-bottom:15px;"></p>
+    <button onclick="closeAlertModal()">حسناً</button>
   </div>
 </div>
 
 <script>
-let teams = [
-  { name: 'الفريق الأول', score: 0 },
-  { name: 'الفريق الثاني', score: 0 },
-  { name: 'الفريق الثالث', score: 0 }
-];
-
+let teams = [];
 let activeTeamIndex = 0;
 let tempScore = 0;
 let currentRoundPicks = []; 
-let totalCards = 30;
+let totalCards = 50; 
 let boardCards = [];
+let configBombs = 3;
+let configDoubles = 3;
+let isSpectator = false;
 
 const availableColors = [
   { name: 'red', cls: 'bg-red' },
@@ -263,27 +404,124 @@ const availableColors = [
   { name: 'purple', cls: 'bg-purple' }
 ];
 
+// التحقق من الرابط عند التحميل لمعرفة هل هو مشاهد أم مضيف
+window.onload = function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('mode') === 'spectator') {
+    isSpectator = true;
+    document.getElementById('setupScreen').style.display = 'none';
+    document.getElementById('pageBody').classList.add('spectator-mode');
+    document.getElementById('hostTopActions').style.display = 'none';
+    document.getElementById('hostControls').style.display = 'none';
+    document.getElementById('spectatorBanner').style.display = 'block';
+    document.getElementById('turnBanner').style.display = 'none';
+    
+    // جلب بيانات اللعبة المخزنة للتحديث الآني للمشاهدين
+    loadGameData();
+    // تحديث كل ثانيتين للمشاهدين
+    setInterval(loadGameData, 2000);
+  }
+};
+
+function copySpectatorLink() {
+  const currentUrl = window.location.href.split('?')[0];
+  const spectatorUrl = currentUrl + '?mode=spectator';
+  navigator.clipboard.writeText(spectatorUrl).then(() => {
+    alert('✅ تم نسخ رابط المشاهدة بنجاح! يمكنك إرساله للاعبين الآن.');
+  });
+}
+
+function startCustomGame() {
+  const teamsCount = parseInt(document.getElementById('setupTeamsCount').value);
+  configBombs = parseInt(document.getElementById('setupBombsCount').value);
+  configDoubles = parseInt(document.getElementById('setupDoublesCount').value);
+
+  teams = [];
+  for(let i=1; i<=teamsCount; i++) {
+    teams.push({ name: `الفريق ${i === 1 ? 'الأول' : i === 2 ? 'الثاني' : i === 3 ? 'الثالث' : 'الرابع'}`, score: 0 });
+  }
+
+  document.getElementById('setupScreen').style.display = 'none';
+  initGame();
+}
+
+function openSetupAgain() {
+  document.getElementById('setupScreen').style.display = 'flex';
+}
+
 function initGame() {
   let pool = [];
-  for(let i=1; i<=totalCards; i++) {
-    let col = availableColors[Math.floor(Math.random() * availableColors.length)];
-    let val = (i % 8) + 1;
+  let indices = Array.from({length: totalCards}, (_, i) => i);
+  indices.sort(() => Math.random() - 0.5);
+
+  let bombIndices = new Set(indices.slice(0, configBombs));
+  let doubleIndices = new Set(indices.slice(configBombs, configBombs + configDoubles));
+
+  for(let i=0; i<totalCards; i++) {
+    let cardId = i + 1;
+    let type = 'normal';
+    let col = null;
+    let val = (i % 9) + 1;
+    let cls = '';
+    let displayText = cardId.toString();
+
+    if (bombIndices.has(i)) {
+      type = 'bomb';
+      cls = 'bg-bomb';
+      displayText = '💣';
+      val = 0;
+    } else if (doubleIndices.has(i)) {
+      type = 'double';
+      cls = 'bg-double';
+      displayText = '✖2';
+      val = 0;
+    } else {
+      let chosenCol = availableColors[Math.floor(Math.random() * availableColors.length)];
+      col = chosenCol.name;
+      cls = chosenCol.cls;
+    }
+
     pool.push({
-      id: i,
-      gridNum: i,
-      color: col.name,
-      cls: col.cls,
+      id: cardId,
+      gridNum: cardId,
+      type: type,
+      color: col,
+      cls: cls,
       value: val,
+      text: displayText,
       isOpen: false,
-      permanentlyGone: false // تختفي بالكامل نهائياً
+      permanentlyGone: false
     });
   }
   boardCards = pool;
   tempScore = 0;
   currentRoundPicks = [];
+  activeTeamIndex = 0;
+  saveGameData();
   renderTeams();
   renderBoard();
   updateTempDisplay();
+}
+
+// حفظ الحالة محلياً ليراها المشاهدون في حال فتحوا الرابط على نفس الجهاز أو الشبكة
++function saveGameData() {
+  if (isSpectator) return;
+  const gameState = { teams, activeTeamIndex, tempScore, boardCards };
+  localStorage.setItem('nol_game_state', JSON.stringify(gameState));
+}
+
+function loadGameData() {
+  if (!isSpectator) return;
+  const saved = localStorage.getItem('nol_game_state');
+  if (saved) {
+    const data = JSON.parse(saved);
+    teams = data.teams;
+    activeTeamIndex = data.activeTeamIndex;
+    tempScore = data.tempScore;
+    boardCards = data.boardCards;
+    renderTeams();
+    renderBoard();
+  }
 }
 
 function renderTeams() {
@@ -292,18 +530,23 @@ function renderTeams() {
   teams.forEach((team, index) => {
     const card = document.createElement('div');
     card.className = `team-card ${index === activeTeamIndex ? 'active' : ''}`;
-    card.onclick = () => { 
-      if(currentRoundPicks.length > 0) failRound(false);
-      activeTeamIndex = index; 
-      renderTeams(); 
-    };
+    if (!isSpectator) {
+      card.onclick = () => { 
+        if(currentRoundPicks.length > 0) failRound(false);
+        activeTeamIndex = index; 
+        renderTeams(); 
+        saveGameData();
+      };
+    }
     card.innerHTML = `
       <div class="t-name">${team.name}</div>
       <div class="t-score">${team.score}</div>
     `;
     container.appendChild(card);
   });
-  document.getElementById('activeTeamName').textContent = teams[activeTeamIndex].name;
+  if(document.getElementById('activeTeamName')) {
+    document.getElementById('activeTeamName').textContent = teams[activeTeamIndex]?.name || '';
+  }
 }
 
 function renderBoard() {
@@ -314,16 +557,17 @@ function renderBoard() {
     const cell = document.createElement('div');
     
     if (item.permanentlyGone) {
-      // خانة مختفية بالكامل تماماً مثل الصورة
       cell.className = 'card-cell hidden-slot';
       cell.textContent = '';
     } else if (item.isOpen) {
       cell.className = `card-cell used ${item.cls}`;
-      cell.textContent = item.value;
+      cell.textContent = item.text;
     } else {
       cell.className = 'card-cell';
       cell.textContent = item.gridNum;
-      cell.onclick = () => revealCard(item);
+      if (!isSpectator) {
+        cell.onclick = () => revealCard(item);
+      }
     }
 
     board.appendChild(cell);
@@ -331,22 +575,45 @@ function renderBoard() {
 }
 
 function revealCard(item) {
-  if (item.isOpen || item.permanentlyGone) return;
+  if (isSpectator || item.isOpen || item.permanentlyGone) return;
 
-  // فحص التشابه (اللون أو الرقم) مع البطاقات التي اختارها الفريق في هذه الجولة
-  let isDuplicate = currentRoundPicks.some(p => p.color === item.color || p.value === item.value);
+  if (item.type === 'bomb') {
+    item.isOpen = true;
+    currentRoundPicks.push(item);
+    saveGameData();
+    renderBoard();
+    
+    setTimeout(() => {
+      showAlert('💥 بوووم! ظهرت قنبلة!', `للأسف يا ${teams[activeTeamIndex].name} اخترت قنبلة! خسارة الرصيد المؤقت واختفاء البطاقات المفتوحة.`);
+      currentRoundPicks.forEach(p => p.permanentlyGone = true);
+      failRound(true);
+    }, 200);
+    return;
+  }
+
+  if (item.type === 'double') {
+    item.isOpen = true;
+    currentRoundPicks.push(item);
+    tempScore = tempScore === 0 ? 5 : tempScore * 2; 
+    saveGameData();
+    renderBoard();
+    updateTempDisplay();
+    return;
+  }
+
+  let isDuplicate = currentRoundPicks.some(p => p.type === 'normal' && (p.color === item.color || p.value === item.value));
 
   if (isDuplicate) {
     item.isOpen = true;
     currentRoundPicks.push(item);
+    saveGameData();
     renderBoard();
     
     setTimeout(() => {
-      alert('❌ حدث تشابه (في اللون أو الرقم)! خسارة الرصيد المؤقت واختفاء البطاقات التي تم اختيارها.');
-      // جعل البطاقات التي فتحها هذا الفريق تختفي بالكامل (تصبح خانات فارغة)
+      showAlert('❌ حدث تشابه!', `حصل تكرار في اللون أو الرقم! خسارة الرصيد المؤقت واختفاء البطاقات.`);
       currentRoundPicks.forEach(p => p.permanentlyGone = true);
       failRound(true);
-    }, 250);
+    }, 200);
     return;
   }
 
@@ -354,19 +621,20 @@ function revealCard(item) {
   currentRoundPicks.push(item);
   tempScore += item.value;
   
+  saveGameData();
   renderBoard();
   updateTempDisplay();
 }
 
 function updateTempDisplay() {
-  document.getElementById('tempScoreDisplay').textContent = tempScore;
+  const display = document.getElementById('tempScoreDisplay');
+  if(display) display.textContent = tempScore;
 }
 
 function bankScore() {
-  if (tempScore <= 0) return;
+  if (isSpectator || tempScore <= 0) return;
   teams[activeTeamIndex].score += tempScore;
   
-  // إذا حفظ الرصيد بنجاح، تختفي البطاقات التي اختارها نهائياً من اللوحة
   currentRoundPicks.forEach(p => p.permanentlyGone = true);
   
   resetRoundState();
@@ -374,6 +642,7 @@ function bankScore() {
 }
 
 function failRound(switchTurn = true) {
+  if (isSpectator) return;
   resetRoundState();
   if (switchTurn) {
     nextTurn();
@@ -383,43 +652,36 @@ function failRound(switchTurn = true) {
 function resetRoundState() {
   tempScore = 0;
   currentRoundPicks.forEach(p => {
-    if (!p.permanentlyGone) p.isOpen = false; // البطاقات التي لم تختفي تعود مغلقة
+    if (!p.permanentlyGone) p.isOpen = false; 
   });
   currentRoundPicks = [];
   updateTempDisplay();
+  saveGameData();
   renderBoard();
 }
 
 function nextTurn() {
   activeTeamIndex = (activeTeamIndex + 1) % teams.length;
+  saveGameData();
   renderTeams();
 }
 
 function resetGame() {
+  if (isSpectator) return;
   activeTeamIndex = 0;
   teams.forEach(t => t.score = 0);
   initGame();
 }
 
-function openNamesModal() {
-  const list = document.getElementById('teamsInputsList');
-  list.innerHTML = '';
-  teams.forEach((t, i) => {
-    list.innerHTML += `<div>الاسم ${i+1}: <input type="text" id="teamInput_${i}" value="${t.name}" style="width:100%;padding:8px;border-radius:8px;background:#0c102b;color:#fff;border:1px solid var(--line);"></div>`;
-  });
-  document.getElementById('namesModal').classList.add('active');
+function showAlert(title, message) {
+  document.getElementById('alertTitle').textContent = title;
+  document.getElementById('alertMessage').textContent = message;
+  document.getElementById('alertModal').classList.add('active');
 }
 
-function saveTeamNames() {
-  teams.forEach((t, i) => {
-    const val = document.getElementById(`teamInput_${i}`).value;
-    if(val) t.name = val;
-  });
-  document.getElementById('namesModal').classList.remove('active');
-  renderTeams();
+function closeAlertModal() {
+  document.getElementById('alertModal').classList.remove('active');
 }
-
-initGame();
 </script>
 </body>
 </html>

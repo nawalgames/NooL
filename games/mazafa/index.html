@@ -1059,7 +1059,7 @@ async function initializeApplication(){
   }
 }
 
-// دالة التحقق من كود الاشتراك عبر Firebase
+// دالة التحقق من كود الاشتراك عبر Firebase (متوافقة مع عقدة codes)
 async function verifyLicenseKey(){
   const inputKey = document.getElementById('licenseKeyInput').value.trim();
   if(!inputKey){
@@ -1086,7 +1086,7 @@ async function verifyLicenseKey(){
 
 async function validateKeyOnServer(key){
   try{
-    const keyRef = window.NoLFirebase.ref(db, `licenses/${key}`);
+    const keyRef = window.NoLFirebase.ref(db, `codes/${key}`);
     const snapshot = await window.NoLFirebase.get(keyRef);
 
     if(!snapshot.exists()) return false;

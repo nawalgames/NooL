@@ -10,8 +10,6 @@
 
 <!-- ========================================================================
   Firebase Realtime Database
-  استبدل القيم أدناه ببيانات مشروعك من Firebase Console:
-  Project settings → General → Your apps → SDK setup and configuration
 ========================================================================= -->
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
@@ -99,6 +97,45 @@
     grid-template-columns:1fr 1fr;
     gap:14px;
   }
+  
+  /* تنسيق كرت اللعبة بالصورة بشكل دقيق ومضبوط */
+  .game-card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    text-decoration: none;
+    border: 1.5px solid var(--line);
+    background: var(--panel);
+    transition: transform .12s ease, border-color .12s ease;
+  }
+  .game-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+  }
+  .game-card-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .game-card-title {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding: 12px 8px;
+    background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    text-align: center;
+  }
+
   .slot{
     aspect-ratio:1/1;
     border:1.5px dashed var(--line);
@@ -128,21 +165,6 @@
     font-size:26px;
     line-height:1;
     color:var(--line);
-  }
-  .slot .name{
-    font-size:15px;
-    font-weight:700;
-  }
-  .slot .hint{
-    font-size:12px;
-    color:var(--text-dim);
-  }
-  .slot .lock{
-    position:absolute;
-    top:10px;
-    inset-inline-end:10px;
-    width:18px;height:18px;
-    color:var(--accent);
   }
   .slot{position:relative;}
 
@@ -218,7 +240,7 @@
     border-color:var(--accent);
     color:#1a1200;
   }
-  .modal-actions button:disabled{opacity:.5;cursor:default;}
+  .modal-actions button{opacity:1;cursor:pointer;}
 
   /* ---------- support view ---------- */
   .back-btn{
@@ -305,12 +327,12 @@
   <section class="view active" id="homeView">
     <p class="tagline">اختر لعبة وابدأ اللعب مع أصحابك</p>
     <div class="grid" id="gamesGrid">
-      <!-- تُملأ هذه المربعات لاحقاً من Firebase Realtime Database
-           أو يدوياً بإضافة عناصر .slot.filled هنا -->
-<a href="games/harb/index.html" class="game-card">
-  <img src="assets/war-drums.pngg.PNG" alt="طبول الحرب" class="game-card-img">
-  <div class="game-card-title">طبول الحرب</div>
-</a>
+      
+      <!-- كرت لعبة طبول الحرب مع الصورة المعدلة -->
+      <a href="games/harb/index.html" class="game-card">
+        <img src="assets/war-drums.pngg.PNG" alt="طبول الحرب" class="game-card-img">
+        <div class="game-card-title">طبول الحرب</div>
+      </a>
 
       <div class="slot"><span class="plus">+</span></div>
       <div class="slot"><span class="plus">+</span></div>
@@ -326,9 +348,7 @@
     </button>
     <h1 class="support-title">تواصل معنا</h1>
     <p class="support-sub">تابعونا وشاركوا آراءكم عبر هذه الحسابات</p>
-    <div class="socials" id="socialsList">
-      <!-- تُملأ هذه القائمة من Firebase أيضاً إن رغبت، أو تُترك ثابتة كما هنا -->
-    </div>
+    <div class="socials" id="socialsList"></div>
   </section>
 
 </main>
@@ -348,9 +368,6 @@
 </div>
 
 <script>
-/* ============================================================
-   1) إعداد Firebase — عدّل القيم بمعلومات مشروعك
-============================================================ */
 const firebaseConfig = {
   apiKey: "AIzaSyDiOGYHADTeRz4CrrMh264K0sOQNrINl4w",
   authDomain: "nool-1fa3a.firebaseapp.com",
@@ -366,12 +383,9 @@ try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.database();
 } catch (e) {
-  console.warn("Firebase غير مهيأ بعد — عدّل firebaseConfig بأعلى الملف.", e);
+  console.warn("Firebase غير مهيأ بعد.", e);
 }
 
-/* ============================================================
-   2) التنقل بين الواجهتين
-============================================================ */
 const homeView = document.getElementById('homeView');
 const supportView = document.getElementById('supportView');
 const supportBtn = document.getElementById('supportBtn');
@@ -386,200 +400,12 @@ backBtn.addEventListener('click', () => {
   homeView.classList.add('active');
 });
 
-/* ============================================================
-   3) شبكة الألعاب — تُقرأ من Realtime Database
-   شكل البيانات المتوقّع تحت المسار "games" (المفتاح = معرّف اللعبة):
-   {
-     "games": {
-       "spy": {
-         "name": "الجاسوس",
-         "hint": "لعبة جماعية",
-         "url": "https://...",
-         "requiresCode": true   // false أو محذوفة = لعبة مجانية بلا كود
-       }
-     }
-   }
-
-   الاشتراكات: عند تفعيل اللعبة، نطلب كوداً ونتحقق منه تحت "codes/{code}":
-   {
-     "codes": {
-       "AB12-CD34": {
-         "gameId": "spy",
-         "days": 30,            // مدة الاشتراك بالأيام (7 أسبوع / 30 شهر / 365 سنة)
-         "status": "new",       // "new" لم يُستخدم بعد → "active" بعد أول تفعيل
-         "deviceId": null,      // يُربط تلقائياً بأول جهاز يفعّله
-         "expiresAt": null      // يُحسب تلقائياً عند أول تفعيل
-       }
-     }
-   }
-   تُنشئ أنت (الدعم) عنصر الكود يدوياً في Firebase Console بعد الدفع،
-   وتحدد "days" و"gameId" فقط — الباقي يُملأ تلقائياً من الموقع.
-============================================================ */
-const gamesGrid = document.getElementById('gamesGrid');
-let currentGames = {};
-
-function renderGames(gamesObj){
-  currentGames = gamesObj || {};
-  const entries = Object.entries(currentGames);
-  if (!entries.length) return; // نُبقي المربعات الفارغة كما هي
-
-  gamesGrid.innerHTML = '';
-  const total = Math.max(4, entries.length);
-  for (let i = 0; i < total; i++){
-    const pair = entries[i];
-    const id = pair ? pair[0] : null;
-    const g = pair ? pair[1] : null;
-    const slot = document.createElement('div');
-    slot.className = 'slot' + (g ? ' filled' : '');
-    if (g){
-      const lockIcon = g.requiresCode
-        ? '<svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>'
-        : '';
-      slot.innerHTML = `${lockIcon}<span class="name">${g.name}</span><span class="hint">${g.hint || ''}</span>`;
-      slot.tabIndex = 0;
-      slot.addEventListener('click', () => openGame(id, g));
-      slot.addEventListener('keydown', e => { if (e.key === 'Enter') openGame(id, g); });
-    } else {
-      slot.innerHTML = `<span class="plus">+</span>`;
-    }
-    gamesGrid.appendChild(slot);
-  }
-}
-
-if (db){
-  db.ref('games').on('value', snap => renderGames(snap.val()));
-}
-
-/* ============================================================
-   3.1) معرّف الجهاز — لربط الكود بالجهاز الذي فعّله
-============================================================ */
-function getDeviceId(){
-  let id = localStorage.getItem('nol_device_id');
-  if (!id){
-    id = (crypto.randomUUID ? crypto.randomUUID() : 'dev-' + Date.now() + '-' + Math.random().toString(16).slice(2));
-    localStorage.setItem('nol_device_id', id);
-  }
-  return id;
-}
-
-/* ============================================================
-   3.2) فتح اللعبة — تتحقق من الحاجة لكود ومن صلاحية أي كود محفوظ محلياً
-============================================================ */
-const codeOverlay = document.getElementById('codeOverlay');
-const codeInput = document.getElementById('codeInput');
-const codeMsg = document.getElementById('codeMsg');
-const codeConfirm = document.getElementById('codeConfirm');
-const codeCancel = document.getElementById('codeCancel');
-let activeGameId = null;
-let activeGameUrl = null;
-
-function unlockKey(gameId){ return 'nol_unlock_' + gameId; }
-
-function openGame(gameId, g){
-  if (!g.requiresCode){
-    window.location.href = g.url || '#';
-    return;
-  }
-  const saved = JSON.parse(localStorage.getItem(unlockKey(gameId)) || 'null');
-  if (saved && saved.expiresAt > Date.now()){
-    window.location.href = g.url || '#';
-    return;
-  }
-  activeGameId = gameId;
-  activeGameUrl = g.url || '#';
-  codeInput.value = '';
-  codeMsg.textContent = '';
-  codeMsg.className = 'modal-msg';
-  codeOverlay.classList.add('active');
-  setTimeout(() => codeInput.focus(), 50);
-}
-
-codeCancel.addEventListener('click', () => codeOverlay.classList.remove('active'));
-codeOverlay.addEventListener('click', e => { if (e.target === codeOverlay) codeOverlay.classList.remove('active'); });
-
-codeConfirm.addEventListener('click', async () => {
-  const code = codeInput.value.trim().toUpperCase();
-  if (!code){ showMsg('أدخل الكود أولاً', 'error'); return; }
-  if (!db){ showMsg('لم يتم إعداد Firebase بعد', 'error'); return; }
-
-  codeConfirm.disabled = true;
-  showMsg('جارٍ التحقق...', '');
-
-  const ref = db.ref('codes/' + code);
-  const deviceId = getDeviceId();
-
-  try {
-    const result = await ref.transaction(current => {
-      if (current === null) return current; // الكود غير موجود
-      if (current.status === 'revoked') return current; // كود ملغى، لا تفعيل
-      // كود مستخدم من قبل: نسمح فقط لنفس الجهاز الذي فُعّل عليه
-      if (current.status === 'active'){
-        if (current.deviceId !== deviceId) return; // إلغاء المعاملة → يبقى كما هو
-        return current; // نفس الجهاز، لا تغيير
-      }
-      // أول تفعيل: نربط الكود بهذا الجهاز ونحسب تاريخ الانتهاء
-      const days = Number(current.days) || 30;
-      current.status = 'active';
-      current.deviceId = deviceId;
-      current.activatedAt = Date.now();
-      current.expiresAt = Date.now() + days * 24 * 60 * 60 * 1000;
-      return current;
-    });
-
-    codeConfirm.disabled = false;
-
-    if (!result.committed || result.snapshot.val() === null){
-      showMsg('الكود غير صحيح', 'error');
-      return;
-    }
-    const data = result.snapshot.val();
-
-    if (data.status === 'revoked'){
-      showMsg('تم إلغاء هذا الكود، تواصل مع الدعم', 'error');
-      return;
-    }
-    if (data.deviceId !== deviceId){
-      showMsg('هذا الكود مُستخدم على جهاز آخر', 'error');
-      return;
-    }
-    if (data.gameId !== activeGameId){
-      showMsg('هذا الكود غير صالح لهذه اللعبة', 'error');
-      return;
-    }
-    if (data.expiresAt < Date.now()){
-      showMsg('انتهت صلاحية هذا الكود', 'error');
-      return;
-    }
-
-    localStorage.setItem(unlockKey(activeGameId), JSON.stringify({ expiresAt: data.expiresAt }));
-    showMsg('تم التفعيل ✓', 'ok');
-    setTimeout(() => {
-      codeOverlay.classList.remove('active');
-      window.location.href = activeGameUrl;
-    }, 500);
-
-  } catch (e){
-    codeConfirm.disabled = false;
-    showMsg('حدث خطأ، حاول مرة أخرى', 'error');
-    console.error(e);
-  }
-});
-
-function showMsg(text, kind){
-  codeMsg.textContent = text;
-  codeMsg.className = 'modal-msg' + (kind ? ' ' + kind : '');
-}
-
-/* ============================================================
-   4) حسابات التواصل — ثابتة هنا، أو استبدلها بقراءة من "social" في DB
-============================================================ */
 const defaultSocials = [
   { label:'X (تويتر)', handle:'@NoL', url:'https://x.com/', icon:'x' },
   { label:'انستغرام',   handle:'@NoL', url:'https://instagram.com/', icon:'instagram' },
   { label:'ديسكورد',    handle:'discord.gg/noole_', url:'https://discord.gg/7cmN5kDtM', icon:'discord' },
   { label:'تيك توك',    handle:'@uu.s22', url:'https://www.tiktok.com/@uu.s22?_r=1&_t=ZS-99yJCW5a2ki/', icon:'tiktok' },
 ];
-
 
 const icons = {
   x: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.3 3H21l-6.6 7.5L22 21h-6.3l-4.9-6.4L4.9 21H2.2l7-8L2 3h6.4l4.4 5.9L18.3 3Zm-1.1 16.2h1.6L7 4.7H5.3l11.9 14.5Z"/></svg>',
@@ -605,13 +431,6 @@ function renderSocials(list){
 }
 
 renderSocials(defaultSocials);
-
-if (db){
-  db.ref('social').once('value').then(snap => {
-    const val = snap.val();
-    if (val) renderSocials(Object.values(val));
-  }).catch(()=>{});
-}
 </script>
 </body>
 </html>

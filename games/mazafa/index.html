@@ -194,7 +194,7 @@
   }
   .turn-banner strong { color: var(--gold); }
 
-  /* شبكة البطاقات (50 بطاقة) */
+  /* شبكة البطاقات (50 بطاقة - 5 أعمدة) */
   .game-frame {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -203,7 +203,7 @@
     padding: 10px;
     border-radius: 16px;
     border: 2px solid var(--line);
-    max-height: 55vh;
+    max-height: 52vh;
     overflow-y: auto;
   }
 
@@ -245,7 +245,7 @@
     border-color: #3d4a7a !important;
   }
 
-  /* خانة مخفية تماماً */
+  /* خانة مخفية تماماً عند الاختفاء أو الحفظ */
   .card-cell.hidden-slot {
     background: transparent !important;
     border: 2px dashed rgba(255, 255, 255, 0.03) !important;
@@ -364,7 +364,7 @@
   <!-- لوحة البطاقات (50 بطاقة) -->
   <div class="game-frame" id="gameBoard"></div>
 
-  <!-- أزرار التحكم (تظهر فقط للمضيف وتختفي للمشاهدين) -->
+  <!-- أزرار التحكم للمضيف -->
   <div class="footer-control" id="hostControls">
     <button class="action-btn btn-fail" onclick="failRound()">❌ تصفير الرصيد (خسارة)</button>
     <button class="action-btn btn-save" onclick="bankScore()">💾 حفظ الرصيد (<span id="tempScoreDisplay">0</span>)</button>
@@ -404,7 +404,6 @@ const availableColors = [
   { name: 'purple', cls: 'bg-purple' }
 ];
 
-// التحقق من الرابط عند التحميل لمعرفة هل هو مشاهد أم مضيف
 window.onload = function() {
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('mode') === 'spectator') {
@@ -416,10 +415,12 @@ window.onload = function() {
     document.getElementById('spectatorBanner').style.display = 'block';
     document.getElementById('turnBanner').style.display = 'none';
     
-    // جلب بيانات اللعبة المخزنة للتحديث الآني للمشاهدين
     loadGameData();
-    // تحديث كل ثانيتين للمشاهدين
-    setInterval(loadGameData, 2000);
+    setInterval(loadGameData, 1500);
+  } else {
+    // بناء افتراضي مبدئي لكي لا تبقى الشاشة فارغة للمضيف قبل بدء الإعدادات
+    startCustomGame();
+    document.getElementById('setupScreen').style.display = 'flex';
   }
 };
 
@@ -503,8 +504,7 @@ function initGame() {
   updateTempDisplay();
 }
 
-// حفظ الحالة محلياً ليراها المشاهدون في حال فتحوا الرابط على نفس الجهاز أو الشبكة
-+function saveGameData() {
+function saveGameData() {
   if (isSpectator) return;
   const gameState = { teams, activeTeamIndex, tempScore, boardCards };
   localStorage.setItem('nol_game_state', JSON.stringify(gameState));

@@ -42,17 +42,28 @@
     font-family:inherit;font-size:12.5px;padding:7px 14px;border-radius:100px;cursor:pointer;
   }
   .btn:hover{color:var(--text);border-color:var(--accent);}
+  .btn.exit:hover{border-color:var(--red);color:var(--red);}
 
   .board{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
   .category h2{font-size:12.5px;color:var(--text-dim);text-align:center;margin:0 0 6px;font-weight:700;}
   .cells{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  
   .cell{
-    aspect-ratio:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    aspect-ratio:1;border:1px solid var(--line);border-radius:10px;
     display:flex;align-items:center;justify-content:center;font-size:19px;cursor:pointer;
     transition:transform .1s;
   }
+  .cells .cell:nth-child(odd) {
+    background-color: rgba(40, 167, 69, 0.25);
+    border-color: rgba(40, 167, 69, 0.4);
+  }
+  .cells .cell:nth-child(even) {
+    background-color: rgba(220, 53, 69, 0.25);
+    border-color: rgba(220, 53, 69, 0.4);
+  }
+
   .cell:hover{transform:translateY(-2px);border-color:var(--accent);}
-  .cell.used{opacity:.15;pointer-events:none;filter:grayscale(1);}
+  .cell.used{opacity:.15;pointer-events:none;filter:grayscale(1);background:var(--panel) !important;}
 
   .overlay{
     display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);
@@ -79,13 +90,27 @@
     align-items:center;justify-content:center;padding:20px;z-index:60;text-align:center;
   }
   .winner.active{display:flex;}
-  .winner .box{background:var(--panel);border:1px solid var(--accent);border-radius:20px;padding:30px 24px;max-width:320px;}
+  .winner .box{background:var(--panel);border:1px solid var(--accent);border-radius:20px;padding:30px 24px;max-width:320px;width:100%;}
   .winner .box .trophy{font-size:52px;}
   .winner .box h2{font-size:22px;margin:8px 0 20px;}
   .winner .box button{
     width:100%;background:var(--accent);border:none;color:#1a1200;font-family:inherit;
     font-weight:800;font-size:15px;border-radius:12px;padding:12px;cursor:pointer;
   }
+
+  /* نافذة تأكيد الخروج */
+  .exit-modal{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);
+    align-items:center;justify-content:center;padding:20px;z-index:70;text-align:center;
+  }
+  .exit-modal.active{display:flex;}
+  .exit-box{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:26px 22px;max-width:320px;width:100%;}
+  .exit-box h3{font-size:18px;margin:0 0 16px;}
+  .exit-actions{display:flex;gap:10px;}
+  .exit-actions button{flex:1;padding:10px;border-radius:10px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;border:none;}
+  .btn-confirm-exit{background:var(--red);color:#fff;}
+  .btn-cancel-exit{background:transparent;border:1.5px solid var(--line)!important;color:var(--text-dim);}
+  .btn-cancel-exit:hover{color:var(--text);border-color:var(--accent)!important;}
 
   @media (prefers-color-scheme: light){
     :root:not([data-theme="dark"]){
@@ -115,6 +140,7 @@
   <div class="toolbar">
     <button class="btn" onclick="toggleAuto()" id="autoBtn">🔁 تبديل تلقائي: مُفعّل</button>
     <button class="btn" onclick="resetGame()">🔄 لعبة جديدة</button>
+    <button class="btn exit" onclick="confirmExit()">🚪 خروج</button>
   </div>
 
   <div class="board">
@@ -147,6 +173,17 @@
     <div class="trophy">🏆</div>
     <h2 id="winnerText"></h2>
     <button onclick="resetGame()">لعبة جديدة</button>
+  </div>
+</div>
+
+<!-- نافذة تأكيد الخروج -->
+<div class="exit-modal" id="exitModal">
+  <div class="exit-box">
+    <h3>هل أنت متأكد من رغبتك في خروج من اللعبة؟</h3>
+    <div class="exit-actions">
+      <button class="btn-confirm-exit" onclick="exitGame()">نعم، خروج</button>
+      <button class="btn-cancel-exit" onclick="closeExitModal()">إلغاء</button>
+    </div>
   </div>
 </div>
 
@@ -236,12 +273,10 @@ function pick(cell){
     revEffect.textContent = 'دفاع — لا تغيير في النقاط';
     revEffect.className = 'effect neutral';
   } else if (Math.random() < 0.65){
-    // لصالح الفريق المختار: يخصم من الخصم
     state.scores[opponent] = Math.max(0, state.scores[opponent] - val);
     revEffect.textContent = `-${val} من ${teamName(opponent)}`;
     revEffect.className = 'effect gain';
   } else {
-    // يرتد على نفس الفريق
     state.scores[picker] = Math.max(0, state.scores[picker] - val);
     revEffect.textContent = `ارتد! -${val} من ${teamName(picker)}`;
     revEffect.className = 'effect loss';
@@ -278,6 +313,29 @@ function resetGame(){
   document.querySelectorAll('.cell').forEach(c => c.classList.remove('used'));
   document.getElementById('winnerBox').classList.remove('active');
   renderTeams();
+}
+
+/* دوال زر الخروج */
+function confirmExit(){
+  document.getElementById('exitModal').classList.add('active');
+}
+
+function closeExitModal(){
+  document.getElementById('exitModal').classList.remove('active');
+}
+
+function exitGame(){
+  // محاولة إغلاق النافذة أو توجيه المستخدم لصفحة أخرى أو عرض رسالة وداع
+  window.close();
+  // إذا لم يتم إغلاق النافذة (بسبب قيود المتصفحات الحديثة)، سيتم إظهار شاشة رسالة وداع أو إعادة توجيه
+  document.body.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0d0f1a;color:#f1f0ec;font-family:'Tajawal',sans-serif;text-align:center;padding:20px;">
+      <div>
+        <h2 style="font-size:24px;margin-bottom:10px;">👋 شكراً لتركونا نلعب معاً!</h2>
+        <p style="color:#9a9db3;font-size:14px;">تم إنهاء اللعبة. يمكنك إغلاق هذه النافذة بأمان الآن.</p>
+      </div>
+    </div>
+  `;
 }
 
 renderTeams();

@@ -402,6 +402,7 @@ const colorList = [
 window.onload = function() {
   updateTeamInputsGenerator();
   const urlParams = new URLSearchParams(window.location.search);
+  
   if (urlParams.get('mode') === 'spectator') {
     isSpectator = true;
     document.getElementById('setupScreen').style.display = 'none';
@@ -411,11 +412,22 @@ window.onload = function() {
     document.getElementById('spectatorBanner').style.display = 'block';
     document.getElementById('turnBanner').style.display = 'none';
     
+    // محاولة جلب الحالة فوراً، وإن لم تكن موجودة يتم تهيئة شبكة افتراضية لمنع الشاشة الفارغة
     loadGameData();
+    if (!boardCards || boardCards.length === 0) {
+      initDefaultBoardForSpectator();
+    }
     setInterval(loadGameData, 1500);
   } else {
-    startCustomGame();
-    document.getElementById('setupScreen').style.display = 'flex';
+    // التحقق هل توجد بيانات سابقة محفوظة للمضيف
+    const saved = localStorage.getItem('nol_game_state_v3');
+    if (saved) {
+      loadGameData();
+      document.getElementById('setupScreen').style.display = 'none';
+    } else {
+      startCustomGame();
+      document.getElementById('setupScreen').style.display = 'flex';
+    }
   }
 };
 
@@ -542,6 +554,27 @@ function initGame() {
   updateTempDisplay();
 }
 
+function initDefaultBoardForSpectator() {
+  teams = [{ name: 'فريق الوحوش', score: 0 }, { name: 'النمور', score: 0 }, { name: 'النسور', score: 0 }];
+  boardCards = [];
+  for(let i=1; i<=totalCards; i++) {
+    boardCards.push({
+      id: i,
+      gridNum: i,
+      type: 'normal',
+      value: 1,
+      color: 'red',
+      cls: 'bg-red',
+      text: i.toString(),
+      subText: '',
+      isOpen: false,
+      permanentlyGone: false
+    });
+  }
+  renderTeams();
+  renderBoard();
+}
+
 function saveGameData() {
   if (isSpectator) return;
   const gameState = { teams, activeTeamIndex, tempScore, boardCards, currentRoundPicks };
@@ -549,23 +582,25 @@ function saveGameData() {
 }
 
 function loadGameData() {
-  if (!isSpectator) return;
   const saved = localStorage.getItem('nol_game_state_v3');
   if (saved) {
     const data = JSON.parse(saved);
-    teams = data.teams;
-    activeTeamIndex = data.activeTeamIndex;
-    tempScore = data.tempScore;
-    boardCards = data.boardCards;
+    teams = data.teams || teams;
+    activeTeamIndex = data.activeTeamIndex || 0;
+    tempScore = data.tempScore || 0;
+    boardCards = data.boardCards || [];
     currentRoundPicks = data.currentRoundPicks || [];
-    renderTeams();
-    renderBoard();
-    updateTempDisplay();
+    if(boardCards.length > 0) {
+      renderTeams();
+      renderBoard();
+      updateTempDisplay();
+    }
   }
 }
 
 function renderTeams() {
   const container = document.getElementById('teamsBar');
+  if (!container) return;
   container.innerHTML = '';
   teams.forEach((team, index) => {
     const card = document.createElement('div');
@@ -591,6 +626,7 @@ function renderTeams() {
 
 function renderBoard() {
   const board = document.getElementById('gameBoard');
+  if (!board) return;
   board.innerHTML = '';
   
   boardCards.forEach((item) => {
@@ -619,12 +655,10 @@ function renderBoard() {
 function revealCard(item) {
   if (isSpectator || item.isOpen || item.permanentlyGone) return;
 
-  // التعامل مع القنبلة (تصفير الرصيد الإجمالي بالكامل)
   if (item.type === 'bomb') {
     item.isOpen = true;
     currentRoundPicks.push(item);
     
-    // تصفير النقاط الكاملة المجمعة للفريق الحالي
     let affectedTeamName = teams[activeTeamIndex].name;
     teams[activeTeamIndex].score = 0;
     
@@ -701,7 +735,7 @@ function failRound(switchTurn = true) {
   }
 }
 
-function resetRoundState() {
+function resetRoundSessionState() {
   tempScore = 0;
   currentRoundPicks.forEach(p => {
     if (!p.permanentlyGone) p.isOpen = false; 
@@ -710,6 +744,10 @@ function resetRoundState() {
   updateTempDisplay();
   saveGameData();
   renderBoard();
+}
+
+function resetRoundState() {
+  resetRoundSessionState();
 }
 
 function nextTurn() {

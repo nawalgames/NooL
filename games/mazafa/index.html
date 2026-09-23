@@ -33,7 +33,6 @@
 
   .wrap{max-width:480px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:8px;}
 
-  /* شاشة إعدادات المضيف */
   .setup-screen {
     position: fixed;
     inset: 0;
@@ -117,7 +116,6 @@
     margin-top: 5px;
   }
 
-  /* الهيدر الفاخر */
   .header-brand {
     display: flex;
     justify-content: space-between;
@@ -163,7 +161,6 @@
   }
   .top-btn:hover { color: #fff; border-color: var(--gold); }
 
-  /* شريط الفرق الأفقي */
   .teams-container { display: flex; gap: 6px; }
   .team-card {
     background: var(--panel);
@@ -183,7 +180,6 @@
   .team-card .t-name { font-size: 10px; color: var(--text-dim); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .team-card .t-score { font-size: 15px; font-weight: 900; color: #fff; }
 
-  /* بيان الدور */
   .turn-banner {
     background: rgba(19, 23, 44, 0.8);
     border: 1px dashed var(--line);
@@ -195,7 +191,6 @@
   }
   .turn-banner strong { color: var(--gold); }
 
-  /* شبكة البطاقات (50 بطاقة - 5 أعمدة) */
   .game-frame {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -292,7 +287,6 @@
 </head>
 <body id="pageBody">
 
-<!-- شاشة إعدادات المضيف -->
 <div class="setup-screen" id="setupScreen">
   <div class="setup-box">
     <h2>إعدادات لعبة المجازفة</h2>
@@ -331,13 +325,12 @@
     <button class="setup-btn" onclick="startCustomGame()">ابدأ اللعبة الان 🚀</button>
     
     <div class="share-link-box">
-      <button class="share-btn" onclick="copySpectatorLink()">📋 نسخ رابط المشاهدة المتزامن</button>
+      <button class="share-btn" onclick="copySpectatorLink()">📋 نسخ رابط المشاهدة النظيف</button>
     </div>
   </div>
 </div>
 
 <div class="wrap">
-  <!-- الهيدر -->
   <div class="header-brand">
     <div class="brand-title-group">
       <div class="brand-title">المجازفة</div>
@@ -349,29 +342,24 @@
     </div>
   </div>
 
-  <!-- شريط الفرق -->
   <div class="teams-container" id="teamsBar"></div>
 
-  <!-- بيان الدور -->
   <div class="turn-banner" id="turnBanner">
     دور الفريق: <strong id="activeTeamName">الفريق الأول</strong>
   </div>
 
-  <!-- شبكة البطاقات الخمسين -->
   <div class="game-frame" id="gameBoard"></div>
 
-  <!-- أزرار التحكم -->
   <div class="footer-control" id="hostControls">
     <button class="action-btn btn-fail" onclick="failRound()">❌ تصفير الرصيد المؤقت (خسارة)</button>
     <button class="action-btn btn-save" onclick="bankScore()">💾 حفظ الرصيد (<span id="tempScoreDisplay">0</span>)</button>
   </div>
 
   <div class="spectator-banner" id="spectatorBanner" style="display:none;">
-    👀 وضع المشاهدة فقط — يتم تحديث اللعبة تلقائياً من المضيف
+    👀 وضع المشاهدة فقط — يتم تحديث اللعبة تلقائياً
   </div>
 </div>
 
-<!-- نافذة التنبيهات -->
 <div class="modal-overlay" id="alertModal">
   <div class="modal-box">
     <h3 id="alertTitle">تنبيه</h3>
@@ -403,37 +391,13 @@ window.onload = function() {
   updateTeamInputsGenerator();
   const urlParams = new URLSearchParams(window.location.search);
   
-  // فحص ما إذا كان الرابط يحتوي على حالة اللعبة مضمنة بداخله (لتفعيل المشاهدة الحقيقية الفورية)
-  const encodedState = urlParams.get('data');
-  if (encodedState) {
-    try {
-      const decodedData = JSON.parse(decodeURIComponent(escape(atob(encodedState))));
-      teams = decodedData.teams;
-      activeTeamIndex = decodedData.activeTeamIndex;
-      tempScore = decodedData.tempScore;
-      boardCards = decodedData.boardCards;
-      currentRoundPicks = decodedData.currentRoundPicks || [];
-      
-      isSpectator = true;
-      setupSpectatorUI();
-      renderTeams();
-      renderBoard();
-      updateTempDisplay();
-      
-      // التحديث التلقائي المستمر للمشاهد إذا قام المضيف بتحديث الرابط أو إرساله مجدداً
-      return;
-    } catch(e) {
-      console.log('Error decoding state');
-    }
-  }
-
   if (urlParams.get('mode') === 'spectator') {
     isSpectator = true;
     setupSpectatorUI();
     loadGameData();
     setInterval(loadGameData, 1000);
   } else {
-    const saved = localStorage.getItem('nol_game_state_v3');
+    const saved = localStorage.getItem('nol_game_state_v4');
     if (saved) {
       loadGameData();
       document.getElementById('setupScreen').style.display = 'none';
@@ -471,12 +435,14 @@ function updateTeamInputsGenerator() {
 
 function copySpectatorLink() {
   const currentUrl = window.location.href.split('?')[0];
-  const gameState = { teams, activeTeamIndex, tempScore, boardCards, currentRoundPicks };
-  const base64State = btoa(unescape(encodeURIComponent(JSON.stringify(gameState))));
-  const spectatorLink = `${currentUrl}?data=${base64State}`;
+  const spectatorLink = `${currentUrl}?mode=spectator`;
   
+  // حفظ الحالة الحالية للمضيف في ذاكرة مشتركة تتيح للمشاهد رؤيتها إذا كانوا على نفس المتصفح أو الشبكة، 
+  // والأهم: حفظها عبر localStorage لضمان استقرار العرض
+  saveGameData();
+
   navigator.clipboard.writeText(spectatorLink).then(() => {
-    alert('✅ تم نسخ رابط المشاهدة المتزامن بنجاح!\nالآن أرسله للجمهور ليظهر لديهم نفس الكروت والفرق مباشرة.');
+    alert('✅ تم نسخ رابط المشاهدة النظيف بنجاح!\n(ملاحظة: بما أن الاستضافة مجانية وثابتة بدون قاعدة بيانات سحابية، افتح رابط المشاهدة كعلامة تبويب جديدة بجانب لعبتك لتتابعها بسلاسة تامة).');
   });
 }
 
@@ -581,13 +547,12 @@ function initGame() {
 }
 
 function saveGameData() {
-  if (isSpectator) return;
   const gameState = { teams, activeTeamIndex, tempScore, boardCards, currentRoundPicks };
-  localStorage.setItem('nol_game_state_v3', JSON.stringify(gameState));
+  localStorage.setItem('nol_game_state_v4', JSON.stringify(gameState));
 }
 
 function loadGameData() {
-  const saved = localStorage.getItem('nol_game_state_v3');
+  const saved = localStorage.getItem('nol_game_state_v4');
   if (saved) {
     const data = JSON.parse(saved);
     teams = data.teams || teams;
@@ -725,10 +690,7 @@ function updateTempDisplay() {
 function bankScore() {
   if (isSpectator || tempScore <= 0) return;
   teams[activeTeamIndex].score += tempScore;
-  
-  currentRoundPicks.format = true;
   currentRoundPicks.forEach(p => p.permanentlyGone = true);
-  
   resetRoundState();
   nextTurn();
 }

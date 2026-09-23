@@ -42,39 +42,48 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 15px;
+    overflow-y: auto;
   }
   .setup-box {
     background: var(--panel);
     border: 2px solid var(--gold);
     border-radius: 20px;
-    padding: 24px;
+    padding: 20px;
     width: 100%;
     max-width: 380px;
     text-align: center;
     box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    max-height: 90vh;
+    overflow-y: auto;
   }
-  .setup-box h2 { color: var(--gold); margin-top: 0; margin-bottom: 20px; font-weight: 900; }
+  .setup-box h2 { color: var(--gold); margin-top: 0; margin-bottom: 15px; font-weight: 900; }
   .setup-group {
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     text-align: right;
   }
   .setup-group label {
     display: block;
     font-size: 13px;
     color: var(--text-dim);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     font-weight: 700;
   }
   .setup-group select, .setup-group input {
     width: 100%;
-    padding: 10px;
+    padding: 9px;
     border-radius: 10px;
     background: #0c102b;
     color: #fff;
     border: 1px solid var(--line);
     font-family: inherit;
     font-size: 14px;
+  }
+  .teams-names-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
   }
   .setup-btn {
     background: var(--gold);
@@ -86,12 +95,12 @@
     cursor: pointer;
     color: #111;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 5px;
     box-shadow: 0 4px 15px rgba(243, 206, 107, 0.3);
   }
   .share-link-box {
-    margin-top: 15px;
-    padding-top: 15px;
+    margin-top: 12px;
+    padding-top: 12px;
     border-top: 1px dashed var(--line);
     text-align: center;
   }
@@ -171,7 +180,7 @@
     background: rgba(76, 209, 55, 0.12);
     box-shadow: 0 0 10px rgba(76, 209, 55, 0.3);
   }
-  .team-card .t-name { font-size: 10px; color: var(--text-dim); font-weight: 700; }
+  .team-card .t-name { font-size: 10px; color: var(--text-dim); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .team-card .t-score { font-size: 15px; font-weight: 900; color: #fff; }
 
   /* بيان الدور */
@@ -186,7 +195,7 @@
   }
   .turn-banner strong { color: var(--gold); }
 
-  /* شبكة البطاقات (50 بطاقة - 5 أعمدة تضمن ظهور الكروت بوضوح) */
+  /* شبكة البطاقات (50 بطاقة - 5 أعمدة) */
   .game-frame {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -228,7 +237,6 @@
   .spectator-mode .card-cell { cursor: default !important; }
   .spectator-mode .card-cell:hover { transform: none !important; border-color: #3d4a7a !important; }
 
-  /* البطاقات المفتوحة أو المحفوظة تختفي تماماً */
   .card-cell.hidden-slot {
     background: transparent !important;
     border: 2px dashed rgba(255, 255, 255, 0.02) !important;
@@ -238,11 +246,9 @@
   }
   .card-cell.hidden-slot::after { display: none; }
 
-  /* أشكال محتوى الكرت عند فتحه */
   .card-inner-val { font-size: 16px; font-weight: 900; }
   .card-inner-sub { font-size: 9px; font-weight: 700; margin-top: -2px; opacity: 0.9; }
 
-  /* الألوان والخاصيات الداخلية */
   .bg-red { background: var(--red) !important; border-color: #ff6b6b !important; color: #fff !important; }
   .bg-green { background: var(--green) !important; border-color: #6ab04c !important; color: #fff !important; }
   .bg-blue { background: var(--blue) !important; border-color: #48dbfb !important; color: #fff !important; }
@@ -251,7 +257,6 @@
   .bg-bomb { background: #b71c1c !important; border-color: #ff5252 !important; color: #fff !important; font-size: 20px; }
   .bg-double { background: #ff8f00 !important; border-color: #ffe082 !important; color: #111 !important; font-size: 15px; }
 
-  /* الأزرار السفلية */
   .footer-control { display: flex; gap: 6px; }
   .action-btn {
     flex: 1;
@@ -293,12 +298,18 @@
     <h2>إعدادات لعبة المجازفة</h2>
     <div class="setup-group">
       <label>عدد الفرق:</label>
-      <select id="setupTeamsCount">
+      <select id="setupTeamsCount" onchange="updateTeamInputsGenerator()">
         <option value="2">فريقين (2)</option>
         <option value="3" selected>ثلاثة فرق (3)</option>
         <option value="4">أربعة فرق (4)</option>
       </select>
     </div>
+
+    <div class="setup-group">
+      <label>أسماء الفرق:</label>
+      <div class="teams-names-inputs" id="teamsNamesInputsContainer"></div>
+    </div>
+
     <div class="setup-group">
       <label>عدد القنابل:</label>
       <select id="setupBombsCount">
@@ -351,7 +362,7 @@
 
   <!-- أزرار التحكم -->
   <div class="footer-control" id="hostControls">
-    <button class="action-btn btn-fail" onclick="failRound()">❌ تصفير الرصيد (خسارة)</button>
+    <button class="action-btn btn-fail" onclick="failRound()">❌ تصفير الرصيد المؤقت (خسارة)</button>
     <button class="action-btn btn-save" onclick="bankScore()">💾 حفظ الرصيد (<span id="tempScoreDisplay">0</span>)</button>
   </div>
 
@@ -389,6 +400,7 @@ const colorList = [
 ];
 
 window.onload = function() {
+  updateTeamInputsGenerator();
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('mode') === 'spectator') {
     isSpectator = true;
@@ -407,6 +419,22 @@ window.onload = function() {
   }
 };
 
+function updateTeamInputsGenerator() {
+  const count = parseInt(document.getElementById('setupTeamsCount').value);
+  const container = document.getElementById('teamsNamesInputsContainer');
+  container.innerHTML = '';
+  
+  const defaultNames = ['فريق الوحوش', 'النمور', 'النسور', 'الصقور'];
+  for(let i=0; i<count; i++) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = `setupTeamName_${i}`;
+    input.value = teams[i]?.name || defaultNames[i];
+    input.placeholder = `اسم الفريق ${i+1}`;
+    container.appendChild(input);
+  }
+}
+
 function copySpectatorLink() {
   const currentUrl = window.location.href.split('?')[0];
   navigator.clipboard.writeText(currentUrl + '?mode=spectator').then(() => {
@@ -420,11 +448,10 @@ function startCustomGame() {
   configDoubles = parseInt(document.getElementById('setupDoublesCount').value);
 
   teams = [];
-  for(let i=1; i<=teamsCount; i++) {
-    teams.push({ 
-      name: `الفريق ${i === 1 ? 'الأول' : i === 2 ? 'الثاني' : i === 3 ? 'الثالث' : 'الرابع'}`, 
-      score: 0 
-    });
+  for(let i=0; i<teamsCount; i++) {
+    const customNameInput = document.getElementById(`setupTeamName_${i}`);
+    const name = customNameInput && customNameInput.value.trim() !== '' ? customNameInput.value.trim() : `الفريق ${i+1}`;
+    teams.push({ name: name, score: 0 });
   }
 
   document.getElementById('setupScreen').style.display = 'none';
@@ -432,6 +459,7 @@ function startCustomGame() {
 }
 
 function openSetupAgain() {
+  updateTeamInputsGenerator();
   document.getElementById('setupScreen').style.display = 'flex';
 }
 
@@ -517,12 +545,12 @@ function initGame() {
 function saveGameData() {
   if (isSpectator) return;
   const gameState = { teams, activeTeamIndex, tempScore, boardCards, currentRoundPicks };
-  localStorage.setItem('nol_game_state_v2', JSON.stringify(gameState));
+  localStorage.setItem('nol_game_state_v3', JSON.stringify(gameState));
 }
 
 function loadGameData() {
   if (!isSpectator) return;
-  const saved = localStorage.getItem('nol_game_state_v2');
+  const saved = localStorage.getItem('nol_game_state_v3');
   if (saved) {
     const data = JSON.parse(saved);
     teams = data.teams;
@@ -591,14 +619,21 @@ function renderBoard() {
 function revealCard(item) {
   if (isSpectator || item.isOpen || item.permanentlyGone) return;
 
+  // التعامل مع القنبلة (تصفير الرصيد الإجمالي بالكامل)
   if (item.type === 'bomb') {
     item.isOpen = true;
     currentRoundPicks.push(item);
+    
+    // تصفير النقاط الكاملة المجمعة للفريق الحالي
+    let affectedTeamName = teams[activeTeamIndex].name;
+    teams[activeTeamIndex].score = 0;
+    
     saveGameData();
     renderBoard();
+    renderTeams();
     
     setTimeout(() => {
-      showAlert('💥 بوووم! قنبلة!', `لأسف يا ${teams[activeTeamIndex].name} اخترت قنبلة! تم تصفير رصيد هذه الجولة فقط وانتقال الدور.`);
+      showAlert('💥 بوووم! قنبلة مدمرة!', `يا للاسف يا "${affectedTeamName}" اخترتم قنبلة!\nتم تصفير رصيدكم الإجمالي بالكامل وانتقال الدور.`);
       currentRoundPicks.forEach(p => p.permanentlyGone = true);
       failRound(true);
     }, 200);
@@ -627,7 +662,7 @@ function revealCard(item) {
     let reasonText = hasColorConflict && hasNumberConflict ? 'تشابه في اللون ورقم الكرت!' : (hasColorConflict ? 'تشابه في اللون مع بطاقة سابقة!' : 'تشابه في الرقم مع بطاقة سابقة!');
     
     setTimeout(() => {
-      showAlert('❌ حدث تشابه وخسارة!', `${reasonText}\nتم تصفير النقاط التي كسبتها في هذه الجولة فقط وانتقال اللعبة للفريق التالي.`);
+      showAlert('❌ حدث تشابه وخسارة!', `${reasonText}\nتم تصفير النقاط المؤقتة التي كسبتها في هذه الجولة فقط وانتقال اللعبة للفريق التالي.`);
       currentRoundPicks.forEach(p => p.permanentlyGone = true);
       failRound(true);
     }, 200);

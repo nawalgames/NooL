@@ -58,6 +58,86 @@ body{
 }
 
 /* =========================
+   SUBSCRIPTION SCREEN
+========================= */
+.sub-screen{
+  position:fixed;
+  inset:0;
+  background:rgba(8,10,23,.98);
+  z-index:1000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:15px;
+  overflow-y:auto;
+}
+
+.sub-box{
+  background:var(--panel);
+  border:2px solid var(--gold);
+  border-radius:20px;
+  padding:25px;
+  width:100%;
+  max-width:380px;
+  text-align:center;
+  box-shadow:0 10px 30px rgba(0,0,0,.7);
+}
+
+.sub-box h2{
+  color:var(--gold);
+  margin-top:0;
+  margin-bottom:10px;
+  font-weight:900;
+}
+
+.sub-box p{
+  color:var(--text-dim);
+  font-size:13px;
+  margin-bottom:20px;
+}
+
+.sub-input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  background:#0c102b;
+  color:#fff;
+  border:1px solid var(--line);
+  font-family:inherit;
+  font-size:16px;
+  text-align:center;
+  letter-spacing:2px;
+  margin-bottom:15px;
+}
+
+.sub-btn{
+  background:var(--gold);
+  border:none;
+  padding:12px;
+  border-radius:10px;
+  font-weight:900;
+  font-size:15px;
+  cursor:pointer;
+  color:#111;
+  width:100%;
+  box-shadow:0 4px 15px rgba(243,206,107,.3);
+}
+
+.support-contact{
+  margin-top:15px;
+  font-size:12px;
+  color:var(--text-dim);
+  border-top:1px dashed var(--line);
+  padding-top:12px;
+}
+
+.support-contact a{
+  color:var(--gold);
+  text-decoration:none;
+  font-weight:700;
+}
+
+/* =========================
    SETUP
 ========================= */
 
@@ -66,7 +146,7 @@ body{
   inset:0;
   background:rgba(10,13,28,.96);
   z-index:100;
-  display:flex;
+  display:none;
   align-items:center;
   justify-content:center;
   padding:15px;
@@ -508,7 +588,7 @@ body{
   background:rgba(0,0,0,.85);
   align-items:center;
   justify-content:center;
-  z-index:200;
+  z-index:2000;
   padding:20px;
 }
 
@@ -550,7 +630,7 @@ body{
 .loading{
   position:fixed;
   inset:0;
-  z-index:500;
+  z-index:1500;
   background:#080a17;
   display:flex;
   align-items:center;
@@ -579,6 +659,25 @@ body{
   <div class="loading-box">
     <h2>المجازفة — NoL</h2>
     <p id="loadingText">جاري الاتصال...</p>
+  </div>
+</div>
+
+<!-- =========================
+     SUBSCRIPTION SCREEN
+========================= -->
+<div class="sub-screen" id="subScreen" style="display:none;">
+  <div class="sub-box">
+    <h2>اشتراك لعبة المجازفة</h2>
+    <p>أدخل كود التفعيل الخاص بك للوصول إلى اللعبة وإنشاء الجلسات.</p>
+    
+    <input type="text" id="licenseKeyInput" class="sub-input" placeholder="أدخل الكود هنا..." autocomplete="off">
+    
+    <button class="sub-btn" onclick="verifyLicenseKey()">تحقق ودخل 🚀</button>
+    
+    <div class="support-contact">
+      ليس لديك كود اشتراك؟<br>
+      تواصل معنا للحصول على كود جديد عبر <a href="https://wa.me/" target="_blank">واتساب الدعم</a>
+    </div>
   </div>
 </div>
 
@@ -850,19 +949,6 @@ import {
 from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
 
-/*
-=========================================================
-ضع بيانات Firebase الخاصة بك هنا
-=========================================================
-
-Firebase Console
-→ Project settings
-→ Your apps
-→ Web app
-
-ثم انسخ firebaseConfig هنا.
-*/
-
 const firebaseConfig = {
   apiKey: "AIzaSyDiOGYHADTeRz4CrrMh264K0sOQNrINl4w",
   authDomain: "nool-1fa3a.firebaseapp.com",
@@ -876,13 +962,7 @@ const firebaseConfig = {
 
 
 const app = initializeApp(firebaseConfig);
-
 const db = getDatabase(app);
-
-
-/*
-نجعل Firebase متاحاً للكود الرئيسي
-*/
 
 window.NoLFirebase = {
   db,
@@ -909,1641 +989,595 @@ window.dispatchEvent(
 
 let db = null;
 let firebaseReady = false;
-
 let roomId = null;
-
 let teams = [];
-
 let activeTeamIndex = 0;
-
 let tempScore = 0;
-
 let currentRoundPicks = [];
-
 let totalCards = 50;
-
 let boardCards = [];
-
 let configBombs = 3;
-
 let configDoubles = 3;
-
 let isSpectator = false;
-
 let gameFinished = false;
-
 let unsubscribeGame = null;
 
-
 const colorList = [
-
-  {
-    name:'red',
-    label:'أحمر',
-    cls:'bg-red'
-  },
-
-  {
-    name:'green',
-    label:'أخضر',
-    cls:'bg-green'
-  },
-
-  {
-    name:'blue',
-    label:'أزرق',
-    cls:'bg-blue'
-  },
-
-  {
-    name:'yellow',
-    label:'أصفر',
-    cls:'bg-yellow'
-  },
-
-  {
-    name:'purple',
-    label:'بنفسجي',
-    cls:'bg-purple'
-  }
-
+  { name:'red', label:'أحمر', cls:'bg-red' },
+  { name:'green', label:'أخضر', cls:'bg-green' },
+  { name:'blue', label:'أزرق', cls:'bg-blue' },
+  { name:'yellow', label:'أصفر', cls:'bg-yellow' },
+  { name:'purple', label:'بنفسجي', cls:'bg-purple' }
 ];
 
+window.addEventListener('firebase-ready', () => {
+  db = window.NoLFirebase.db;
+  firebaseReady = true;
+  initializeApplication();
+});
 
-/* =====================================================
-   FIREBASE READY
-===================================================== */
-
-window.addEventListener(
-  'firebase-ready',
-  () => {
-
-    db = window.NoLFirebase.db;
-
-    firebaseReady = true;
-
-    initializeApplication();
-
-  }
-);
-
-
-/* =====================================================
-   START APPLICATION
-===================================================== */
 
 async function initializeApplication(){
-
-  const loading =
-    document.getElementById('loadingScreen');
-
-  const loadingText =
-    document.getElementById('loadingText');
+  const loading = document.getElementById('loadingScreen');
+  const loadingText = document.getElementById('loadingText');
 
   try{
-
     updateTeamInputsGenerator();
-
-    const urlParams =
-      new URLSearchParams(
-        window.location.search
-      );
-
-    const urlRoom =
-      urlParams.get('room');
-
-    /*
-    إذا يوجد room في الرابط
-    فهذا مشاهد.
-    */
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlRoom = urlParams.get('room');
 
     if(urlRoom){
-
-      roomId =
-        urlRoom.toUpperCase();
-
+      roomId = urlRoom.toUpperCase();
       isSpectator = true;
-
-      loadingText.textContent =
-        'جاري فتح جلسة المشاهدة...';
-
+      loadingText.textContent = 'جاري فتح جلسة المشاهدة...';
       await openSpectatorRoom(roomId);
-
-    }
-
-    else{
-
-      /*
-      لا يوجد room
-      = مضيف جديد
-      */
-
+    } else {
       isSpectator = false;
-
-      setupHostUI();
-
       loading.style.display = 'none';
 
-      document
-        .getElementById('setupScreen')
-        .style.display = 'flex';
-
+      // التحقق من وجود اشتراك مسبق مخزن محلياً
+      const savedKey = localStorage.getItem('nol_license_key');
+      if(savedKey){
+        loading.style.display = 'flex';
+        loadingText.textContent = 'جاري التحقق من صلاحية الاشتراك...';
+        const isValid = await validateKeyOnServer(savedKey);
+        loading.style.display = 'none';
+        if(isValid){
+          setupHostUI();
+          document.getElementById('setupScreen').style.display = 'flex';
+        } else {
+          localStorage.removeItem('nol_license_key');
+          document.getElementById('subScreen').style.display = 'flex';
+        }
+      } else {
+        document.getElementById('subScreen').style.display = 'flex';
+      }
     }
-
-  }
-
-  catch(error){
-
+  } catch(error){
     console.error(error);
-
-    loadingText.textContent =
-      'حدث خطأ في الاتصال بـ Firebase.';
-
+    loadingText.textContent = 'حدث خطأ في الاتصال بـ Firebase.';
   }
-
 }
 
+// دالة التحقق من كود الاشتراك عبر Firebase
+async function verifyLicenseKey(){
+  const inputKey = document.getElementById('licenseKeyInput').value.trim();
+  if(!inputKey){
+    showAlert('تنبيه', 'الرجاء إدخال كود الاشتراك.');
+    return;
+  }
 
-/* =====================================================
-   ROOM ID
-===================================================== */
+  const loading = document.getElementById('loadingScreen');
+  loading.style.display = 'flex';
+  document.getElementById('loadingText').textContent = 'جاري التحقق من الكود...';
+
+  const isValid = await validateKeyOnServer(inputKey);
+  loading.style.display = 'none';
+
+  if(isValid){
+    localStorage.setItem('nol_license_key', inputKey);
+    document.getElementById('subScreen').style.display = 'none';
+    setupHostUI();
+    document.getElementById('setupScreen').style.display = 'flex';
+  } else {
+    showAlert('كود غير صالح', 'عذراً، هذا الكود غير صحيح، أو انتهت صلاحيته الزمنية، أو تم استخدامه مسبقاً.');
+  }
+}
+
+async function validateKeyOnServer(key){
+  try{
+    const keyRef = window.NoLFirebase.ref(db, `licenses/${key}`);
+    const snapshot = await window.NoLFirebase.get(keyRef);
+
+    if(!snapshot.exists()) return false;
+
+    const data = snapshot.val();
+    const now = Date.now();
+
+    // التحقق هل الكود نشط وتاريخ انتهائه لم يأتِ بعد (expiresAt بالمللي ثانية)
+    if(data.active && data.expiresAt > now){
+      return true;
+    }
+    return false;
+  } catch(e){
+    console.error(e);
+    return false;
+  }
+}
 
 function generateRoomId(){
-
-  const chars =
-    'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let id = '';
-
-  for(let i=0;i<6;i++){
-
-    id += chars[
-      Math.floor(
-        Math.random() * chars.length
-      )
-    ];
-
+  for(let i=0; i<6; i++){
+    id += chars[Math.floor(Math.random() * chars.length)];
   }
-
   return id;
-
 }
-
-
-/* =====================================================
-   CREATE NEW ROOM
-===================================================== */
 
 async function createRoom(){
-
   let newId;
-
   let exists = true;
-
   while(exists){
-
-    newId =
-      generateRoomId();
-
-    const snapshot =
-      await window.NoLFirebase.get(
-        window.NoLFirebase.ref(
-          db,
-          `games/${newId}`
-        )
-      );
-
-    exists =
-      snapshot.exists();
-
+    newId = generateRoomId();
+    const snapshot = await window.NoLFirebase.get(window.NoLFirebase.ref(db, `games/${newId}`));
+    exists = snapshot.exists();
   }
-
   roomId = newId;
-
 }
-
-
-/* =====================================================
-   HOST UI
-===================================================== */
 
 function setupHostUI(){
-
-  document
-    .getElementById('hostTopActions')
-    .style.display = 'flex';
-
-  document
-    .getElementById('hostControls')
-    .style.display = 'flex';
-
-  document
-    .getElementById('spectatorBanner')
-    .style.display = 'none';
-
-  document
-    .getElementById('endGameButton')
-    .style.display = 'block';
-
+  document.getElementById('hostTopActions').style.display = 'flex';
+  document.getElementById('hostControls').style.display = 'flex';
+  document.getElementById('spectatorBanner').style.display = 'none';
+  document.getElementById('endGameButton').style.display = 'block';
 }
-
-
-/* =====================================================
-   SPECTATOR UI
-===================================================== */
 
 function setupSpectatorUI(){
-
-  document
-    .getElementById('setupScreen')
-    .style.display = 'none';
-
-  document
-    .getElementById('pageBody')
-    .classList.add('spectator-mode');
-
-  document
-    .getElementById('hostTopActions')
-    .style.display = 'none';
-
-  document
-    .getElementById('hostControls')
-    .style.display = 'none';
-
-  document
-    .getElementById('spectatorBanner')
-    .style.display = 'block';
-
-  document
-    .getElementById('turnBanner')
-    .style.display = 'block';
-
-  document
-    .getElementById('endGameButton')
-    .style.display = 'none';
-
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('subScreen').style.display = 'none';
+  document.getElementById('pageBody').classList.add('spectator-mode');
+  document.getElementById('hostTopActions').style.display = 'none';
+  document.getElementById('hostControls').style.display = 'none';
+  document.getElementById('spectatorBanner').style.display = 'block';
+  document.getElementById('turnBanner').style.display = 'block';
+  document.getElementById('endGameButton').style.display = 'none';
 }
-
-
-/* =====================================================
-   OPEN SPECTATOR ROOM
-===================================================== */
 
 async function openSpectatorRoom(id){
-
   setupSpectatorUI();
-
-  const roomRef =
-    window.NoLFirebase.ref(
-      db,
-      `games/${id}`
-    );
-
-  const snapshot =
-    await window.NoLFirebase.get(roomRef);
+  const roomRef = window.NoLFirebase.ref(db, `games/${id}`);
+  const snapshot = await window.NoLFirebase.get(roomRef);
 
   if(!snapshot.exists()){
-
-    showAlert(
-      '❌ الجلسة غير موجودة',
-      'هذا الرابط غير صالح أو أن الجلسة انتهت.'
-    );
-
-    document
-      .getElementById('loadingScreen')
-      .style.display = 'none';
-
+    showAlert('❌ الجلسة غير موجودة', 'هذا الرابط غير صالح أو أن الجلسة انتهت.');
+    document.getElementById('loadingScreen').style.display = 'none';
     return;
-
   }
 
-  const data =
-    snapshot.val();
-
+  const data = snapshot.val();
   if(data.status === 'finished'){
-
-    showAlert(
-      '🔒 انتهت الجلسة',
-      'هذه اللعبة انتهت ولم يعد رابط المشاهدة صالحاً.'
-    );
-
-    document
-      .getElementById('loadingScreen')
-      .style.display = 'none';
-
+    showAlert('🔒 انتهت الجلسة', 'هذه اللعبة انتهت ولم يعد رابط المشاهدة صالحاً.');
+    document.getElementById('loadingScreen').style.display = 'none';
     return;
-
   }
 
-  /*
-  عرض بيانات الغرفة
-  */
-
-  document
-    .getElementById('roomInfo')
-    .style.display = 'block';
-
-  document
-    .getElementById('roomCodeDisplay')
-    .textContent = id;
-
-
+  document.getElementById('roomInfo').style.display = 'block';
+  document.getElementById('roomCodeDisplay').textContent = id;
   applyGameState(data);
 
-  /*
-  الاستماع للتغييرات لحظياً
-  */
+  unsubscribeGame = window.NoLFirebase.onValue(roomRef, snapshot => {
+    if(!snapshot.exists()){
+      gameFinished = true;
+      showAlert('🔒 انتهت الجلسة', 'قام المضيف بإغلاق هذه الجلسة.');
+      return;
+    }
+    const data = snapshot.val();
+    if(data.status === 'finished'){
+      gameFinished = true;
+      showAlert('🔒 انتهت اللعبة', 'تم إغلاق رابط المشاهدة لهذه الجلسة.');
+      return;
+    }
+    applyGameState(data);
+  });
 
-  unsubscribeGame =
-    window.NoLFirebase.onValue(
-      roomRef,
-      snapshot => {
-
-        if(!snapshot.exists()){
-
-          gameFinished = true;
-
-          showAlert(
-            '🔒 انتهت الجلسة',
-            'قام المضيف بإغلاق هذه الجلسة.'
-          );
-
-          return;
-
-        }
-
-        const data =
-          snapshot.val();
-
-        if(data.status === 'finished'){
-
-          gameFinished = true;
-
-          showAlert(
-            '🔒 انتهت اللعبة',
-            'تم إغلاق رابط المشاهدة لهذه الجلسة.'
-          );
-
-          return;
-
-        }
-
-        applyGameState(data);
-
-      }
-    );
-
-
-  document
-    .getElementById('loadingScreen')
-    .style.display = 'none';
-
+  document.getElementById('loadingScreen').style.display = 'none';
 }
-
-
-/* =====================================================
-   APPLY FIREBASE STATE
-===================================================== */
 
 function applyGameState(data){
-
-  teams =
-    Array.isArray(data.teams)
-      ? data.teams
-      : Object.values(data.teams || {});
-
-  activeTeamIndex =
-    Number(data.activeTeamIndex || 0);
-
-  tempScore =
-    Number(data.tempScore || 0);
-
-  boardCards =
-    Array.isArray(data.boardCards)
-      ? data.boardCards
-      : Object.values(data.boardCards || {});
-
-  currentRoundPicks =
-    Array.isArray(data.currentRoundPicks)
-      ? data.currentRoundPicks
-      : Object.values(data.currentRoundPicks || {});
-
+  teams = Array.isArray(data.teams) ? data.teams : Object.values(data.teams || {});
+  activeTeamIndex = Number(data.activeTeamIndex || 0);
+  tempScore = Number(data.tempScore || 0);
+  boardCards = Array.isArray(data.boardCards) ? data.boardCards : Object.values(data.boardCards || {});
+  currentRoundPicks = Array.isArray(data.currentRoundPicks) ? data.currentRoundPicks : Object.values(data.currentRoundPicks || {});
   renderTeams();
-
   renderBoard();
-
   updateTempDisplay();
-
 }
-
-
-/* =====================================================
-   UPDATE TEAM INPUTS
-===================================================== */
 
 function updateTeamInputsGenerator(){
-
-  const select =
-    document.getElementById(
-      'setupTeamsCount'
-    );
-
+  const select = document.getElementById('setupTeamsCount');
   if(!select) return;
-
-  const count =
-    parseInt(select.value);
-
-  const container =
-    document.getElementById(
-      'teamsNamesInputsContainer'
-    );
-
+  const count = parseInt(select.value);
+  const container = document.getElementById('teamsNamesInputsContainer');
   container.innerHTML = '';
+  const defaultNames = ['فريق الوحوش', 'النمور', 'النسور', 'الصقور'];
 
-  const defaultNames = [
-    'فريق الوحوش',
-    'النمور',
-    'النسور',
-    'الصقور'
-  ];
-
-  for(let i=0;i<count;i++){
-
-    const input =
-      document.createElement('input');
-
+  for(let i=0; i<count; i++){
+    const input = document.createElement('input');
     input.type = 'text';
-
-    input.id =
-      `setupTeamName_${i}`;
-
-    input.value =
-      teams[i]?.name ||
-      defaultNames[i];
-
-    input.placeholder =
-      `اسم الفريق ${i+1}`;
-
+    input.id = `setupTeamName_${i}`;
+    input.value = teams[i]?.name || defaultNames[i];
+    input.placeholder = `اسم الفريق ${i+1}`;
     container.appendChild(input);
-
   }
-
 }
 
-
-/* =====================================================
-   START GAME
-===================================================== */
-
 async function startCustomGame(){
-
   if(isSpectator) return;
-
   if(!firebaseReady){
-
-    showAlert(
-      'انتظر',
-      'جاري الاتصال بقاعدة البيانات.'
-    );
-
+    showAlert('انتظر', 'جاري الاتصال بقاعدة البيانات.');
     return;
-
   }
 
-  const teamsCount =
-    parseInt(
-      document.getElementById(
-        'setupTeamsCount'
-      ).value
-    );
-
-  configBombs =
-    parseInt(
-      document.getElementById(
-        'setupBombsCount'
-      ).value
-    );
-
-  configDoubles =
-    parseInt(
-      document.getElementById(
-        'setupDoublesCount'
-      ).value
-    );
-
+  const teamsCount = parseInt(document.getElementById('setupTeamsCount').value);
+  configBombs = parseInt(document.getElementById('setupBombsCount').value);
+  configDoubles = parseInt(document.getElementById('setupDoublesCount').value);
 
   teams = [];
-
-  for(let i=0;i<teamsCount;i++){
-
-    const input =
-      document.getElementById(
-        `setupTeamName_${i}`
-      );
-
-    const name =
-      input &&
-      input.value.trim() !== ''
-        ? input.value.trim()
-        : `الفريق ${i+1}`;
-
-    teams.push({
-      name:name,
-      score:0
-    });
-
+  for(let i=0; i<teamsCount; i++){
+    const input = document.getElementById(`setupTeamName_${i}`);
+    const name = input && input.value.trim() !== '' ? input.value.trim() : `الفريق ${i+1}`;
+    teams.push({ name: name, score: 0 });
   }
-
-
-  /*
-  إنشاء غرفة جديدة
-  */
 
   await createRoom();
 
-  document
-    .getElementById('setupScreen')
-    .style.display = 'none';
-
-  document
-    .getElementById('roomInfo')
-    .style.display = 'block';
-
-  document
-    .getElementById('roomCodeDisplay')
-    .textContent = roomId;
-
-  document
-    .getElementById('endGameButton')
-    .style.display = 'block';
-
-
-  /*
-  إظهار منطقة الرابط
-  */
-
-  document
-    .getElementById('shareArea')
-    .style.display = 'block';
-
-  document
-    .getElementById('setupRoomCode')
-    .textContent = roomId;
-
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('roomInfo').style.display = 'block';
+  document.getElementById('roomCodeDisplay').textContent = roomId;
+  document.getElementById('endGameButton').style.display = 'block';
+  document.getElementById('shareArea').style.display = 'block';
+  document.getElementById('setupRoomCode').textContent = roomId;
 
   initGame();
-
 }
-
-
-/* =====================================================
-   INIT GAME
-===================================================== */
 
 function initGame(){
+  let indices = Array.from({length: totalCards}, (_,i)=>i);
+  indices.sort(()=>Math.random()-.5);
 
-  let indices =
-    Array.from(
-      {length:totalCards},
-      (_,i)=>i
-    );
-
-  indices.sort(
-    ()=>Math.random()-.5
-  );
-
-
-  const bombSet =
-    new Set(
-      indices.slice(
-        0,
-        configBombs
-      )
-    );
-
-
-  const doubleSet =
-    new Set(
-      indices.slice(
-        configBombs,
-        configBombs + configDoubles
-      )
-    );
-
-
-  let remainingIndices =
-    indices.slice(
-      configBombs + configDoubles
-    );
-
+  const bombSet = new Set(indices.slice(0, configBombs));
+  const doubleSet = new Set(indices.slice(configBombs, configBombs + configDoubles));
+  let remainingIndices = indices.slice(configBombs + configDoubles);
 
   let normalValuesPool = [];
-
-  for(let i=0;i<5;i++){
-
-    for(let n=1;n<=9;n++){
-
+  for(let i=0; i<5; i++){
+    for(let n=1; n<=9; n++){
       normalValuesPool.push(n);
-
     }
-
   }
-
-  normalValuesPool.sort(
-    ()=>Math.random()-.5
-  );
-
+  normalValuesPool.sort(()=>Math.random()-.5);
 
   let normalColorsPool = [];
-
-  let colorCounter =
-    Math.ceil(
-      remainingIndices.length /
-      colorList.length
-    ) + 2;
-
-
-  for(let c=0;c<colorCounter;c++){
-
-    colorList.forEach(
-      col =>
-        normalColorsPool.push(col)
-    );
-
+  let colorCounter = Math.ceil(remainingIndices.length / colorList.length) + 2;
+  for(let c=0; c<colorCounter; c++){
+    colorList.forEach(col => normalColorsPool.push(col));
   }
-
-
-  normalColorsPool.sort(
-    ()=>Math.random()-.5
-  );
-
+  normalColorsPool.sort(()=>Math.random()-.5);
 
   let pool = [];
-
   let normalIdx = 0;
 
-
-  for(let i=0;i<totalCards;i++){
-
+  for(let i=0; i<totalCards; i++){
     let cardId = i+1;
-
     let type = 'normal';
-
     let val = 0;
-
     let colObj = null;
-
     let cls = '';
-
-    let displayText =
-      cardId.toString();
-
+    let displayText = cardId.toString();
     let displaySub = '';
 
-
     if(bombSet.has(i)){
-
       type = 'bomb';
-
       cls = 'bg-bomb';
-
       displayText = '💣';
-
       displaySub = 'قنبلة';
-
-    }
-
-    else if(doubleSet.has(i)){
-
+    } else if(doubleSet.has(i)){
       type = 'double';
-
       cls = 'bg-double';
-
       displayText = '✖2';
-
       displaySub = 'دبل';
-
-    }
-
-    else{
-
-      val =
-        normalValuesPool[
-          normalIdx %
-          normalValuesPool.length
-        ];
-
-      colObj =
-        normalColorsPool[
-          normalIdx %
-          normalColorsPool.length
-        ];
-
+    } else {
+      val = normalValuesPool[normalIdx % normalValuesPool.length];
+      colObj = normalColorsPool[normalIdx % normalColorsPool.length];
       normalIdx++;
-
       cls = colObj.cls;
-
-      displayText =
-        val.toString();
-
-      displaySub =
-        colObj.label;
-
+      displayText = val.toString();
+      displaySub = colObj.label;
     }
-
 
     pool.push({
-
-      id:cardId,
-
-      gridNum:cardId,
-
-      type:type,
-
-      value:val,
-
-      color:
-        colObj
-          ? colObj.name
-          : null,
-
-      cls:cls,
-
-      text:displayText,
-
-      subText:displaySub,
-
-      isOpen:false,
-
-      permanentlyGone:false
-
+      id: cardId,
+      gridNum: cardId,
+      type: type,
+      value: val,
+      color: colObj ? colObj.name : null,
+      cls: cls,
+      text: displayText,
+      subText: displaySub,
+      isOpen: false,
+      permanentlyGone: false
     });
-
   }
-
 
   boardCards = pool;
-
   tempScore = 0;
-
   currentRoundPicks = [];
-
   activeTeamIndex = 0;
-
   saveGameData();
-
   renderTeams();
-
   renderBoard();
-
   updateTempDisplay();
-
 }
-
-
-/* =====================================================
-   SAVE GAME TO FIREBASE
-===================================================== */
 
 async function saveGameData(){
-
-  if(
-    isSpectator ||
-    !roomId ||
-    !firebaseReady ||
-    gameFinished
-  ){
-    return;
-  }
-
+  if(isSpectator || !roomId || !firebaseReady || gameFinished) return;
 
   const gameState = {
-
-    status:'active',
-
-    teams:teams,
-
-    activeTeamIndex:
-      activeTeamIndex,
-
-    tempScore:
-      tempScore,
-
-    boardCards:
-      boardCards,
-
-    currentRoundPicks:
-      currentRoundPicks,
-
-    configBombs:
-      configBombs,
-
-    configDoubles:
-      configDoubles,
-
-    updatedAt:
-      Date.now()
-
+    status: 'active',
+    teams: teams,
+    activeTeamIndex: activeTeamIndex,
+    tempScore: tempScore,
+    boardCards: boardCards,
+    currentRoundPicks: currentRoundPicks,
+    configBombs: configBombs,
+    configDoubles: configDoubles,
+    updatedAt: Date.now()
   };
 
-
   try{
-
-    await window.NoLFirebase.set(
-
-      window.NoLFirebase.ref(
-        db,
-        `games/${roomId}`
-      ),
-
-      gameState
-
-    );
-
+    await window.NoLFirebase.set(window.NoLFirebase.ref(db, `games/${roomId}`), gameState);
+  } catch(error){
+    console.error('Firebase save error:', error);
   }
-
-  catch(error){
-
-    console.error(
-      'Firebase save error:',
-      error
-    );
-
-    showAlert(
-      'خطأ',
-      'تعذر حفظ حالة اللعبة.'
-    );
-
-  }
-
 }
-
-
-/* =====================================================
-   COPY SPECTATOR LINK
-===================================================== */
 
 async function copySpectatorLink(){
-
   if(!roomId){
-
-    showAlert(
-      'تنبيه',
-      'ابدأ اللعبة أولاً.'
-    );
-
+    showAlert('تنبيه', 'ابدأ اللعبة أولاً.');
     return;
-
   }
-
-
   await saveGameData();
-
-
-  const spectatorLink =
-    `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-
-
+  const spectatorLink = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
   try{
-
-    await navigator.clipboard.writeText(
-      spectatorLink
-    );
-
-    showAlert(
-      '✅ تم نسخ الرابط',
-      'أرسل الرابط للمشاهدين.\n\nأي شخص يفتحه سيشاهد نفس جلسة اللعبة مباشرة.'
-    );
-
+    await navigator.clipboard.writeText(spectatorLink);
+    showAlert('✅ تم نسخ الرابط', 'أرسل الرابط للمشاهدين.\n\nأي شخص يفتحه سيشاهد نفس جلسة اللعبة مباشرة.');
+  } catch(error){
+    prompt('انسخ رابط المشاهدة:', spectatorLink);
   }
-
-  catch(error){
-
-    /*
-    حل بديل إذا كان المتصفح يمنع clipboard
-    */
-
-    prompt(
-      'انسخ رابط المشاهدة:',
-      spectatorLink
-    );
-
-  }
-
 }
-
-
-/* =====================================================
-   END GAME
-===================================================== */
 
 async function finishGame(){
-
-  if(isSpectator) return;
-
-  if(!roomId) return;
-
-
-  const confirmed =
-    confirm(
-      'هل تريد إنهاء هذه الجلسة؟\n\nبعد الإنهاء سيصبح رابط المشاهدة غير صالح.'
-    );
-
-
+  if(isSpectator || !roomId) return;
+  const confirmed = confirm('هل تريد إنهاء هذه الجلسة؟\n\nبعد الإنهاء سيصبح رابط المشاهدة غير صالح.');
   if(!confirmed) return;
-
 
   gameFinished = true;
-
-
   try{
+    await window.NoLFirebase.update(window.NoLFirebase.ref(db, `games/${roomId}`), {
+      status: 'finished',
+      finishedAt: Date.now()
+    });
 
-    /*
-    نضع الحالة finished أولاً
-    حتى يحصل المشاهدون على رسالة انتهاء.
-    */
-
-    await window.NoLFirebase.update(
-
-      window.NoLFirebase.ref(
-        db,
-        `games/${roomId}`
-      ),
-
-      {
-        status:'finished',
-        finishedAt:Date.now()
+    setTimeout(async ()=>{
+      try{
+        await window.NoLFirebase.remove(window.NoLFirebase.ref(db, `games/${roomId}`));
+      } catch(error){
+        console.error('Room delete error:', error);
       }
+    }, 3000);
 
-    );
-
-
-    /*
-    حذف الغرفة بعد فترة قصيرة.
-    */
-
-    setTimeout(
-      async ()=>{
-
-        try{
-
-          await window.NoLFirebase.remove(
-
-            window.NoLFirebase.ref(
-              db,
-              `games/${roomId}`
-            )
-
-          );
-
-        }
-
-        catch(error){
-
-          console.error(
-            'Room delete error:',
-            error
-          );
-
-        }
-
-      },
-      3000
-    );
-
-
-    showAlert(
-      '🔒 انتهت الجلسة',
-      'تم إنهاء اللعبة.\nرابط المشاهدة أصبح غير صالح.'
-    );
-
-
-  }
-
-  catch(error){
-
+    showAlert('🔒 انتهت الجلسة', 'تم إنهاء اللعبة.\nرابط المشاهدة أصبح غير صالح.');
+  } catch(error){
     console.error(error);
-
     gameFinished = false;
-
-    showAlert(
-      'خطأ',
-      'تعذر إنهاء الجلسة.'
-    );
-
+    showAlert('خطأ', 'تعذر إنهاء الجلسة.');
   }
-
 }
-
-
-/* =====================================================
-   SETUP AGAIN
-===================================================== */
 
 function openSetupAgain(){
-
   if(isSpectator) return;
-
   updateTeamInputsGenerator();
-
-  document
-    .getElementById('setupScreen')
-    .style.display = 'flex';
-
+  document.getElementById('setupScreen').style.display = 'flex';
 }
-
-
-/* =====================================================
-   RENDER TEAMS
-===================================================== */
 
 function renderTeams(){
-
-  const container =
-    document.getElementById(
-      'teamsBar'
-    );
-
+  const container = document.getElementById('teamsBar');
   if(!container) return;
-
   container.innerHTML = '';
 
+  teams.forEach((team, index)=>{
+    const card = document.createElement('div');
+    card.className = `team-card ${index === activeTeamIndex ? 'active' : ''}`;
 
-  teams.forEach(
-    (team,index)=>{
-
-      const card =
-        document.createElement('div');
-
-      card.className =
-        `team-card ${
-          index === activeTeamIndex
-            ? 'active'
-            : ''
-        }`;
-
-
-      if(!isSpectator){
-
-        card.onclick = ()=>{
-
-          if(
-            currentRoundPicks.length > 0
-          ){
-
-            failRound(false);
-
-          }
-
-          activeTeamIndex = index;
-
-          renderTeams();
-
-          saveGameData();
-
-        };
-
-      }
-
-
-      card.innerHTML = `
-
-        <div class="t-name">
-          ${escapeHtml(team.name)}
-        </div>
-
-        <div class="t-score">
-          ${team.score}
-        </div>
-
-      `;
-
-
-      container.appendChild(card);
-
+    if(!isSpectator){
+      card.onclick = ()=>{
+        if(currentRoundPicks.length > 0){
+          failRound(false);
+        }
+        activeTeamIndex = index;
+        renderTeams();
+        saveGameData();
+      };
     }
-  );
 
+    card.innerHTML = `
+      <div class="t-name">${escapeHtml(team.name)}</div>
+      <div class="t-score">${team.score}</div>
+    `;
+    container.appendChild(card);
+  });
 
-  const activeName =
-    document.getElementById(
-      'activeTeamName'
-    );
-
+  const activeName = document.getElementById('activeTeamName');
   if(activeName){
-
-    activeName.textContent =
-      teams[
-        activeTeamIndex
-      ]?.name || '';
-
+    activeName.textContent = teams[activeTeamIndex]?.name || '';
   }
-
 }
-
-
-/* =====================================================
-   RENDER BOARD
-===================================================== */
 
 function renderBoard(){
-
-  const board =
-    document.getElementById(
-      'gameBoard'
-    );
-
+  const board = document.getElementById('gameBoard');
   if(!board) return;
-
   board.innerHTML = '';
 
+  boardCards.forEach(item=>{
+    const cell = document.createElement('div');
 
-  boardCards.forEach(
-    item=>{
-
-      const cell =
-        document.createElement('div');
-
-
-      if(item.permanentlyGone){
-
-        cell.className =
-          'card-cell hidden-slot';
-
-        cell.textContent = '';
-
+    if(item.permanentlyGone){
+      cell.className = 'card-cell hidden-slot';
+      cell.textContent = '';
+    } else if(item.isOpen){
+      cell.className = `card-cell used ${item.cls}`;
+      cell.innerHTML = `
+        <div class="card-inner-val">${item.text}</div>
+        <div class="card-inner-sub">${item.subText || ''}</div>
+      `;
+    } else {
+      cell.className = 'card-cell';
+      cell.textContent = item.gridNum;
+      if(!isSpectator){
+        cell.onclick = ()=>revealCard(item);
       }
-
-      else if(item.isOpen){
-
-        cell.className =
-          `card-cell used ${item.cls}`;
-
-        cell.innerHTML = `
-
-          <div class="card-inner-val">
-            ${item.text}
-          </div>
-
-          <div class="card-inner-sub">
-            ${item.subText || ''}
-          </div>
-
-        `;
-
-      }
-
-      else{
-
-        cell.className =
-          'card-cell';
-
-        cell.textContent =
-          item.gridNum;
-
-
-        if(!isSpectator){
-
-          cell.onclick =
-            ()=>revealCard(item);
-
-        }
-
-      }
-
-
-      board.appendChild(cell);
-
     }
-  );
-
+    board.appendChild(cell);
+  });
 }
-
-
-/* =====================================================
-   REVEAL CARD
-===================================================== */
 
 function revealCard(item){
-
-  if(
-    isSpectator ||
-    gameFinished ||
-    item.isOpen ||
-    item.permanentlyGone
-  ){
-    return;
-  }
-
+  if(isSpectator || gameFinished || item.isOpen || item.permanentlyGone) return;
 
   if(item.type === 'bomb'){
-
     item.isOpen = true;
-
     currentRoundPicks.push(item);
-
-
-    const affectedTeamName =
-      teams[
-        activeTeamIndex
-      ].name;
-
-
-    teams[
-      activeTeamIndex
-    ].score = 0;
-
-
+    const affectedTeamName = teams[activeTeamIndex].name;
+    teams[activeTeamIndex].score = 0;
     saveGameData();
-
     renderBoard();
-
     renderTeams();
 
-
-    setTimeout(
-      ()=>{
-
-        showAlert(
-          '💥 بوووم! قنبلة مدمرة!',
-          `يا للأسف يا "${affectedTeamName}" اخترتم قنبلة!\nتم تصفير رصيدكم الإجمالي بالكامل وانتقال الدور.`
-        );
-
-
-        currentRoundPicks.forEach(
-          p =>
-            p.permanentlyGone = true
-        );
-
-
-        failRound(true);
-
-      },
-      200
-    );
-
+    setTimeout(()=>{
+      showAlert('💥 بوووم! قنبلة مدمرة!', `يا للأسف يا "${affectedTeamName}" اخترتم قنبلة!\nتم تصفير رصيدكم الإجمالي بالكامل وانتقال الدور.`);
+      currentRoundPicks.forEach(p => p.permanentlyGone = true);
+      failRound(true);
+    }, 200);
     return;
-
   }
-
 
   if(item.type === 'double'){
-
     item.isOpen = true;
-
     currentRoundPicks.push(item);
-
-    tempScore =
-      tempScore === 0
-        ? 5
-        : tempScore * 2;
-
-
+    tempScore = tempScore === 0 ? 5 : tempScore * 2;
     saveGameData();
-
     renderBoard();
-
     updateTempDisplay();
-
     return;
-
   }
 
+  const hasColorConflict = currentRoundPicks.some(p => p.type === 'normal' && p.color === item.color);
+  const hasNumberConflict = currentRoundPicks.some(p => p.type === 'normal' && p.value === item.value);
 
-  const hasColorConflict =
-    currentRoundPicks.some(
-      p =>
-        p.type === 'normal' &&
-        p.color === item.color
-    );
-
-
-  const hasNumberConflict =
-    currentRoundPicks.some(
-      p =>
-        p.type === 'normal' &&
-        p.value === item.value
-    );
-
-
-  if(
-    hasColorConflict ||
-    hasNumberConflict
-  ){
-
+  if(hasColorConflict || hasNumberConflict){
     item.isOpen = true;
-
     currentRoundPicks.push(item);
-
     saveGameData();
-
     renderBoard();
 
+    const reasonText = hasColorConflict && hasNumberConflict ? 'تشابه في اللون ورقم الكرت!' : hasColorConflict ? 'تشابه في اللون مع بطاقة سابقة!' : 'تشابه في الرقم مع بطاقة سابقة!';
 
-    const reasonText =
-      hasColorConflict &&
-      hasNumberConflict
-
-        ? 'تشابه في اللون ورقم الكرت!'
-
-        : hasColorConflict
-
-          ? 'تشابه في اللون مع بطاقة سابقة!'
-
-          : 'تشابه في الرقم مع بطاقة سابقة!';
-
-
-    setTimeout(
-      ()=>{
-
-        showAlert(
-          '❌ حدث تشابه وخسارة!',
-          `${reasonText}\nتم تصفير النقاط المؤقتة التي كسبتها في هذه الجولة فقط وانتقال اللعبة للفريق التالي.`
-        );
-
-
-        currentRoundPicks.forEach(
-          p =>
-            p.permanentlyGone = true
-        );
-
-
-        failRound(true);
-
-      },
-      200
-    );
-
+    setTimeout(()=>{
+      showAlert('❌ حدث تشابه وخسارة!', `${reasonText}\nتم تصفير النقاط المؤقتة التي كسبتها في هذه الجولة فقط وانتقال اللعبة للفريق التالي.`);
+      currentRoundPicks.forEach(p => p.permanentlyGone = true);
+      failRound(true);
+    }, 200);
     return;
-
   }
-
 
   item.isOpen = true;
-
   currentRoundPicks.push(item);
-
   tempScore += item.value;
-
-
   saveGameData();
-
   renderBoard();
-
   updateTempDisplay();
-
 }
-
-
-/* =====================================================
-   TEMP SCORE
-===================================================== */
 
 function updateTempDisplay(){
-
-  const display =
-    document.getElementById(
-      'tempScoreDisplay'
-    );
-
+  const display = document.getElementById('tempScoreDisplay');
   if(display){
-
-    display.textContent =
-      tempScore;
-
+    display.textContent = tempScore;
   }
-
 }
-
-
-/* =====================================================
-   BANK SCORE
-===================================================== */
 
 function bankScore(){
-
-  if(
-    isSpectator ||
-    tempScore <= 0 ||
-    gameFinished
-  ){
-    return;
-  }
-
-
-  teams[
-    activeTeamIndex
-  ].score += tempScore;
-
-
-  currentRoundPicks.forEach(
-    p =>
-      p.permanentlyGone = true
-  );
-
-
+  if(isSpectator || tempScore <= 0 || gameFinished) return;
+  teams[activeTeamIndex].score += tempScore;
+  currentRoundPicks.forEach(p => p.permanentlyGone = true);
   resetRoundState();
-
   nextTurn();
-
 }
 
-
-/* =====================================================
-   FAIL ROUND
-===================================================== */
-
-function failRound(
-  switchTurn = true
-){
-
-  if(
-    isSpectator ||
-    gameFinished
-  ){
-    return;
-  }
-
-
+function failRound(switchTurn = true){
+  if(isSpectator || gameFinished) return;
   resetRoundState();
-
-
   if(switchTurn){
-
     nextTurn();
-
   }
-
 }
-
-
-/* =====================================================
-   RESET ROUND
-===================================================== */
 
 function resetRoundState(){
-
   tempScore = 0;
-
-
-  currentRoundPicks.forEach(
-    p=>{
-
-      if(!p.permanentlyGone){
-
-        p.isOpen = false;
-
-      }
-
+  currentRoundPicks.forEach(p=>{
+    if(!p.permanentlyGone){
+      p.isOpen = false;
     }
-  );
-
-
+  });
   currentRoundPicks = [];
-
-
   updateTempDisplay();
-
   saveGameData();
-
   renderBoard();
-
 }
-
-
-/* =====================================================
-   NEXT TURN
-===================================================== */
 
 function nextTurn(){
-
   if(!teams.length) return;
-
-  activeTeamIndex =
-    (
-      activeTeamIndex + 1
-    ) % teams.length;
-
-
+  activeTeamIndex = (activeTeamIndex + 1) % teams.length;
   saveGameData();
-
   renderTeams();
-
 }
-
-
-/* =====================================================
-   RESET GAME
-===================================================== */
 
 function resetGame(){
-
-  if(
-    isSpectator ||
-    gameFinished
-  ){
-    return;
-  }
-
-
-  const confirmed =
-    confirm(
-      'هل تريد إعادة اللعبة بالكامل؟\nسيتم إنشاء لوحة جديدة.'
-    );
-
-
+  if(isSpectator || gameFinished) return;
+  const confirmed = confirm('هل تريد إعادة اللعبة بالكامل؟\nسيتم إنشاء لوحة جديدة.');
   if(!confirmed) return;
-
-
   activeTeamIndex = 0;
-
-  teams.forEach(
-    t =>
-      t.score = 0
-  );
-
-
+  teams.forEach(t => t.score = 0);
   initGame();
-
 }
 
-
-/* =====================================================
-   ALERT
-===================================================== */
-
-function showAlert(
-  title,
-  message
-){
-
-  document
-    .getElementById(
-      'alertTitle'
-    )
-    .textContent = title;
-
-
-  document
-    .getElementById(
-      'alertMessage'
-    )
-    .textContent = message;
-
-
-  document
-    .getElementById(
-      'alertModal'
-    )
-    .classList.add('active');
-
+function showAlert(title, message){
+  document.getElementById('alertTitle').textContent = title;
+  document.getElementById('alertMessage').textContent = message;
+  document.getElementById('alertModal').classList.add('active');
 }
-
 
 function closeAlertModal(){
-
-  document
-    .getElementById(
-      'alertModal'
-    )
-    .classList.remove('active');
-
+  document.getElementById('alertModal').classList.remove('active');
 }
 
-
-/* =====================================================
-   HTML ESCAPE
-===================================================== */
-
 function escapeHtml(value){
-
   return String(value)
-
-    .replace(
-      /&/g,
-      '&amp;'
-    )
-
-    .replace(
-      /</g,
-      '&lt;'
-    )
-
-    .replace(
-      />/g,
-      '&gt;'
-    )
-
-    .replace(
-      /"/g,
-      '&quot;'
-    )
-
-    .replace(
-      /'/g,
-      '&#039;'
-    );
-
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 </script>

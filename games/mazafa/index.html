@@ -3,295 +3,598 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
 <title>لعبة المجازفة — NoL</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+
 <style>
-  :root{
-    --bg-gradient: linear-gradient(135deg, #0c102b 0%, #1a1438 50%, #080a17 100%);
-    --panel: rgba(19, 23, 44, 0.95);
-    --line: #303b63;
-    --gold: #f3ce6b;
-    --text:#f1f0ec;
-    --text-dim:#9a9db3;
-    --red:#d32f2f; --green:#2e7d32; --blue:#1565c0; --yellow:#f9a825; --purple:#6a1b9a;
-  }
-  *{box-sizing:border-box;user-select:none;}
-  html,body{height:100%; overflow-x: hidden;}
-  body{
-    margin:0;
-    background: var(--bg-gradient);
-    background-attachment: fixed;
-    color:var(--text);
-    font-family:'Tajawal', sans-serif;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    padding: 8px;
-  }
+:root{
+  --bg-gradient:linear-gradient(135deg,#0c102b 0%,#1a1438 50%,#080a17 100%);
+  --panel:rgba(19,23,44,.95);
+  --line:#303b63;
+  --gold:#f3ce6b;
+  --text:#f1f0ec;
+  --text-dim:#9a9db3;
 
-  .wrap{max-width:480px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:8px;}
+  --red:#d32f2f;
+  --green:#2e7d32;
+  --blue:#1565c0;
+  --yellow:#f9a825;
+  --purple:#6a1b9a;
+}
 
-  .setup-screen {
-    position: fixed;
-    inset: 0;
-    background: rgba(10, 13, 28, 0.96);
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 15px;
-    overflow-y: auto;
-  }
-  .setup-box {
-    background: var(--panel);
-    border: 2px solid var(--gold);
-    border-radius: 20px;
-    padding: 20px;
-    width: 100%;
-    max-width: 380px;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-  .setup-box h2 { color: var(--gold); margin-top: 0; margin-bottom: 15px; font-weight: 900; }
-  .setup-group {
-    margin-bottom: 12px;
-    text-align: right;
-  }
-  .setup-group label {
-    display: block;
-    font-size: 13px;
-    color: var(--text-dim);
-    margin-bottom: 4px;
-    font-weight: 700;
-  }
-  .setup-group select, .setup-group input {
-    width: 100%;
-    padding: 9px;
-    border-radius: 10px;
-    background: #0c102b;
-    color: #fff;
-    border: 1px solid var(--line);
-    font-family: inherit;
-    font-size: 14px;
-  }
-  .teams-names-inputs {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 10px;
-  }
-  .setup-btn {
-    background: var(--gold);
-    border: none;
-    padding: 12px;
-    border-radius: 10px;
-    font-weight: 900;
-    font-size: 15px;
-    cursor: pointer;
-    color: #111;
-    width: 100%;
-    margin-top: 5px;
-    box-shadow: 0 4px 15px rgba(243, 206, 107, 0.3);
-  }
-  .share-link-box {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px dashed var(--line);
-    text-align: center;
-  }
-  .share-btn {
-    background: rgba(53, 162, 159, 0.2);
-    border: 1px solid #35a29f;
-    color: #4ee1dc;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 5px;
-  }
+*{
+  box-sizing:border-box;
+  user-select:none;
+}
 
-  .header-brand {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--panel);
-    padding: 8px 14px;
-    border-radius: 12px;
-    border: 1px solid var(--line);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-  }
-  .brand-title-group { display: flex; align-items: center; gap: 8px; }
-  .brand-title {
-    font-size: 20px;
-    font-weight: 900;
-    background: linear-gradient(to bottom, #fff, #b0c4de);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .nol-logo {
-    font-size: 12px;
-    font-weight: 900;
-    letter-spacing: 1px;
-    background: linear-gradient(135deg, #f3ce6b, #ff9f43);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    border: 1px solid rgba(243, 206, 107, 0.3);
-    padding: 2px 5px;
-    border-radius: 5px;
-    background-color: rgba(243, 206, 107, 0.05);
-  }
+html,body{
+  height:100%;
+  overflow-x:hidden;
+}
 
-  .top-actions { display: flex; gap: 6px; }
-  .top-btn {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--line);
-    color: var(--text-dim);
-    padding: 5px 8px;
-    border-radius: 6px;
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-  .top-btn:hover { color: #fff; border-color: var(--gold); }
+body{
+  margin:0;
+  background:var(--bg-gradient);
+  background-attachment:fixed;
+  color:var(--text);
+  font-family:'Tajawal',sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:8px;
+}
 
-  .teams-container { display: flex; gap: 6px; }
-  .team-card {
-    background: var(--panel);
-    border: 1.5px solid var(--line);
-    border-radius: 8px;
-    padding: 5px;
-    text-align: center;
-    flex: 1;
-    cursor: pointer;
-    transition: all .2s;
-  }
-  .team-card.active {
-    border-color: #4cd137;
-    background: rgba(76, 209, 55, 0.12);
-    box-shadow: 0 0 10px rgba(76, 209, 55, 0.3);
-  }
-  .team-card .t-name { font-size: 10px; color: var(--text-dim); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .team-card .t-score { font-size: 15px; font-weight: 900; color: #fff; }
+.wrap{
+  max-width:480px;
+  width:100%;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
 
-  .turn-banner {
-    background: rgba(19, 23, 44, 0.8);
-    border: 1px dashed var(--line);
-    padding: 5px;
-    border-radius: 6px;
-    text-align: center;
-    font-size: 11px;
-    color: var(--text-dim);
-  }
-  .turn-banner strong { color: var(--gold); }
+/* =========================
+   SETUP
+========================= */
 
-  .game-frame {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 4px;
-    background: rgba(13, 15, 26, 0.85);
-    padding: 8px;
-    border-radius: 14px;
-    border: 2px solid var(--line);
-    width: 100%;
-  }
+.setup-screen{
+  position:fixed;
+  inset:0;
+  background:rgba(10,13,28,.96);
+  z-index:100;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:15px;
+  overflow-y:auto;
+}
 
-  .card-cell {
-    background: #151a30;
-    border: 2px solid #3d4a7a;
-    border-radius: 6px;
-    aspect-ratio: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 900;
-    color: #e2e8f0;
-    cursor: pointer;
-    position: relative;
-    box-shadow: inset 0 0 4px rgba(0,0,0,0.6);
-    transition: transform 0.1s;
-  }
-  .card-cell::after {
-    content: '';
-    position: absolute;
-    inset: 2px;
-    border: 1px dotted rgba(243, 206, 107, 0.4);
-    border-radius: 4px;
-    pointer-events: none;
-  }
-  .card-cell:hover { transform: scale(1.04); border-color: var(--gold); }
+.setup-box{
+  background:var(--panel);
+  border:2px solid var(--gold);
+  border-radius:20px;
+  padding:20px;
+  width:100%;
+  max-width:380px;
+  text-align:center;
+  box-shadow:0 10px 30px rgba(0,0,0,.6);
+  max-height:92vh;
+  overflow-y:auto;
+}
 
-  .spectator-mode .card-cell { cursor: default !important; }
-  .spectator-mode .card-cell:hover { transform: none !important; border-color: #3d4a7a !important; }
+.setup-box h2{
+  color:var(--gold);
+  margin-top:0;
+  margin-bottom:15px;
+  font-weight:900;
+}
 
-  .card-cell.hidden-slot {
-    background: transparent !important;
-    border: 2px dashed rgba(255, 255, 255, 0.02) !important;
-    box-shadow: none !important;
-    pointer-events: none !important;
-    color: transparent !important;
-  }
-  .card-cell.hidden-slot::after { display: none; }
+.setup-group{
+  margin-bottom:12px;
+  text-align:right;
+}
 
-  .card-inner-val { font-size: 16px; font-weight: 900; }
-  .card-inner-sub { font-size: 9px; font-weight: 700; margin-top: -2px; opacity: 0.9; }
+.setup-group label{
+  display:block;
+  font-size:13px;
+  color:var(--text-dim);
+  margin-bottom:4px;
+  font-weight:700;
+}
 
-  .bg-red { background: var(--red) !important; border-color: #ff6b6b !important; color: #fff !important; }
-  .bg-green { background: var(--green) !important; border-color: #6ab04c !important; color: #fff !important; }
-  .bg-blue { background: var(--blue) !important; border-color: #48dbfb !important; color: #fff !important; }
-  .bg-yellow { background: var(--yellow) !important; border-color: #feca57 !important; color: #111 !important; }
-  .bg-purple { background: var(--purple) !important; border-color: #c56cf0 !important; color: #fff !important; }
-  .bg-bomb { background: #b71c1c !important; border-color: #ff5252 !important; color: #fff !important; font-size: 20px; }
-  .bg-double { background: #ff8f00 !important; border-color: #ffe082 !important; color: #111 !important; font-size: 15px; }
+.setup-group select,
+.setup-group input{
+  width:100%;
+  padding:9px;
+  border-radius:10px;
+  background:#0c102b;
+  color:#fff;
+  border:1px solid var(--line);
+  font-family:inherit;
+  font-size:14px;
+}
 
-  .footer-control { display: flex; gap: 6px; }
-  .action-btn {
-    flex: 1;
-    padding: 10px;
-    border-radius: 10px;
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 12px;
-    border: none;
-    cursor: pointer;
-    text-align: center;
-  }
-  .btn-save { background: #2e7d32; color: #fff; box-shadow: 0 4px 12px rgba(46, 125, 50, 0.4); }
-  .btn-fail { background: #c62828; color: #fff; box-shadow: 0 4px 12px rgba(198, 40, 40, 0.4); }
+.teams-names-inputs{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-bottom:10px;
+}
 
-  .spectator-banner {
-    background: rgba(53, 162, 159, 0.15);
-    border: 1px solid #35a29f;
-    color: #4ee1dc;
-    text-align: center;
-    padding: 8px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 12px;
-  }
+.setup-btn{
+  background:var(--gold);
+  border:none;
+  padding:12px;
+  border-radius:10px;
+  font-weight:900;
+  font-size:15px;
+  cursor:pointer;
+  color:#111;
+  width:100%;
+  margin-top:5px;
+  box-shadow:0 4px 15px rgba(243,206,107,.3);
+}
 
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 50; padding: 20px; }
-  .modal-overlay.active { display: flex; }
-  .modal-box { background: var(--panel); border: 2px solid var(--gold); border-radius: 16px; padding: 20px; width: 100%; max-width: 340px; text-align: center; }
-  .modal-box h3 { color: var(--gold); margin-top: 0; }
-  .modal-box button { background: var(--gold); border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; color: #111; width: 100%; }
+.share-link-box{
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px dashed var(--line);
+  text-align:center;
+}
+
+.room-code{
+  color:var(--gold);
+  font-weight:900;
+  font-size:20px;
+  margin:5px 0 10px;
+  letter-spacing:2px;
+  direction:ltr;
+}
+
+.share-btn{
+  background:rgba(53,162,159,.2);
+  border:1px solid #35a29f;
+  color:#4ee1dc;
+  padding:8px 12px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  width:100%;
+  margin-top:5px;
+}
+
+.end-session-btn{
+  background:rgba(211,47,47,.15);
+  border:1px solid #d32f2f;
+  color:#ff7272;
+  padding:8px 12px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  width:100%;
+  margin-top:7px;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header-brand{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:var(--panel);
+  padding:8px 14px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  box-shadow:0 4px 15px rgba(0,0,0,.5);
+}
+
+.brand-title-group{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.brand-title{
+  font-size:20px;
+  font-weight:900;
+  background:linear-gradient(to bottom,#fff,#b0c4de);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.nol-logo{
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:1px;
+  background:linear-gradient(135deg,#f3ce6b,#ff9f43);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  border:1px solid rgba(243,206,107,.3);
+  padding:2px 5px;
+  border-radius:5px;
+  background-color:rgba(243,206,107,.05);
+}
+
+.top-actions{
+  display:flex;
+  gap:6px;
+}
+
+.top-btn{
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--line);
+  color:var(--text-dim);
+  padding:5px 8px;
+  border-radius:6px;
+  font-family:inherit;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.top-btn:hover{
+  color:#fff;
+  border-color:var(--gold);
+}
+
+/* =========================
+   ROOM INFO
+========================= */
+
+.room-info{
+  background:rgba(243,206,107,.08);
+  border:1px solid rgba(243,206,107,.3);
+  border-radius:10px;
+  padding:7px;
+  text-align:center;
+  font-size:11px;
+}
+
+.room-info strong{
+  color:var(--gold);
+}
+
+.room-id{
+  direction:ltr;
+  display:inline-block;
+  color:#fff;
+  font-weight:900;
+  letter-spacing:2px;
+}
+
+/* =========================
+   TEAMS
+========================= */
+
+.teams-container{
+  display:flex;
+  gap:6px;
+}
+
+.team-card{
+  background:var(--panel);
+  border:1.5px solid var(--line);
+  border-radius:8px;
+  padding:5px;
+  text-align:center;
+  flex:1;
+  cursor:pointer;
+  transition:all .2s;
+}
+
+.team-card.active{
+  border-color:#4cd137;
+  background:rgba(76,209,55,.12);
+  box-shadow:0 0 10px rgba(76,209,55,.3);
+}
+
+.team-card .t-name{
+  font-size:10px;
+  color:var(--text-dim);
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.team-card .t-score{
+  font-size:15px;
+  font-weight:900;
+  color:#fff;
+}
+
+/* =========================
+   TURN
+========================= */
+
+.turn-banner{
+  background:rgba(19,23,44,.8);
+  border:1px dashed var(--line);
+  padding:5px;
+  border-radius:6px;
+  text-align:center;
+  font-size:11px;
+  color:var(--text-dim);
+}
+
+.turn-banner strong{
+  color:var(--gold);
+}
+
+/* =========================
+   BOARD
+========================= */
+
+.game-frame{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:4px;
+  background:rgba(13,15,26,.85);
+  padding:8px;
+  border-radius:14px;
+  border:2px solid var(--line);
+  width:100%;
+}
+
+.card-cell{
+  background:#151a30;
+  border:2px solid #3d4a7a;
+  border-radius:6px;
+  aspect-ratio:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  font-weight:900;
+  color:#e2e8f0;
+  cursor:pointer;
+  position:relative;
+  box-shadow:inset 0 0 4px rgba(0,0,0,.6);
+  transition:transform .1s;
+}
+
+.card-cell::after{
+  content:'';
+  position:absolute;
+  inset:2px;
+  border:1px dotted rgba(243,206,107,.4);
+  border-radius:4px;
+  pointer-events:none;
+}
+
+.card-cell:hover{
+  transform:scale(1.04);
+  border-color:var(--gold);
+}
+
+.spectator-mode .card-cell{
+  cursor:default!important;
+}
+
+.spectator-mode .card-cell:hover{
+  transform:none!important;
+  border-color:#3d4a7a!important;
+}
+
+.card-cell.hidden-slot{
+  background:transparent!important;
+  border:2px dashed rgba(255,255,255,.02)!important;
+  box-shadow:none!important;
+  pointer-events:none!important;
+  color:transparent!important;
+}
+
+.card-cell.hidden-slot::after{
+  display:none;
+}
+
+.card-inner-val{
+  font-size:16px;
+  font-weight:900;
+}
+
+.card-inner-sub{
+  font-size:9px;
+  font-weight:700;
+  margin-top:-2px;
+  opacity:.9;
+}
+
+.bg-red{
+  background:var(--red)!important;
+  border-color:#ff6b6b!important;
+  color:#fff!important;
+}
+
+.bg-green{
+  background:var(--green)!important;
+  border-color:#6ab04c!important;
+  color:#fff!important;
+}
+
+.bg-blue{
+  background:var(--blue)!important;
+  border-color:#48dbfb!important;
+  color:#fff!important;
+}
+
+.bg-yellow{
+  background:var(--yellow)!important;
+  border-color:#feca57!important;
+  color:#111!important;
+}
+
+.bg-purple{
+  background:var(--purple)!important;
+  border-color:#c56cf0!important;
+  color:#fff!important;
+}
+
+.bg-bomb{
+  background:#b71c1c!important;
+  border-color:#ff5252!important;
+  color:#fff!important;
+  font-size:20px;
+}
+
+.bg-double{
+  background:#ff8f00!important;
+  border-color:#ffe082!important;
+  color:#111!important;
+  font-size:15px;
+}
+
+/* =========================
+   CONTROLS
+========================= */
+
+.footer-control{
+  display:flex;
+  gap:6px;
+}
+
+.action-btn{
+  flex:1;
+  padding:10px;
+  border-radius:10px;
+  font-family:inherit;
+  font-weight:700;
+  font-size:12px;
+  border:none;
+  cursor:pointer;
+  text-align:center;
+}
+
+.btn-save{
+  background:#2e7d32;
+  color:#fff;
+  box-shadow:0 4px 12px rgba(46,125,50,.4);
+}
+
+.btn-fail{
+  background:#c62828;
+  color:#fff;
+  box-shadow:0 4px 12px rgba(198,40,40,.4);
+}
+
+.spectator-banner{
+  background:rgba(53,162,159,.15);
+  border:1px solid #35a29f;
+  color:#4ee1dc;
+  text-align:center;
+  padding:8px;
+  border-radius:10px;
+  font-weight:700;
+  font-size:12px;
+}
+
+/* =========================
+   MODAL
+========================= */
+
+.modal-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.85);
+  align-items:center;
+  justify-content:center;
+  z-index:200;
+  padding:20px;
+}
+
+.modal-overlay.active{
+  display:flex;
+}
+
+.modal-box{
+  background:var(--panel);
+  border:2px solid var(--gold);
+  border-radius:16px;
+  padding:20px;
+  width:100%;
+  max-width:340px;
+  text-align:center;
+}
+
+.modal-box h3{
+  color:var(--gold);
+  margin-top:0;
+}
+
+.modal-box button{
+  background:var(--gold);
+  border:none;
+  padding:10px 20px;
+  border-radius:8px;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:10px;
+  color:#111;
+  width:100%;
+}
+
+/* =========================
+   LOADING
+========================= */
+
+.loading{
+  position:fixed;
+  inset:0;
+  z-index:500;
+  background:#080a17;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:20px;
+}
+
+.loading-box{
+  color:#fff;
+}
+
+.loading-box h2{
+  color:var(--gold);
+}
+
+.hidden{
+  display:none!important;
+}
 </style>
 </head>
+
 <body id="pageBody">
 
+<div class="loading" id="loadingScreen">
+  <div class="loading-box">
+    <h2>المجازفة — NoL</h2>
+    <p id="loadingText">جاري الاتصال...</p>
+  </div>
+</div>
+
+<!-- =========================
+     SETUP
+========================= -->
+
 <div class="setup-screen" id="setupScreen">
+
   <div class="setup-box">
+
     <h2>إعدادات لعبة المجازفة</h2>
+
     <div class="setup-group">
       <label>عدد الفرق:</label>
+
       <select id="setupTeamsCount" onchange="updateTeamInputsGenerator()">
         <option value="2">فريقين (2)</option>
         <option value="3" selected>ثلاثة فرق (3)</option>
@@ -301,441 +604,1949 @@
 
     <div class="setup-group">
       <label>أسماء الفرق:</label>
-      <div class="teams-names-inputs" id="teamsNamesInputsContainer"></div>
+
+      <div
+        class="teams-names-inputs"
+        id="teamsNamesInputsContainer">
+      </div>
     </div>
 
     <div class="setup-group">
+
       <label>عدد القنابل:</label>
+
       <select id="setupBombsCount">
         <option value="2">2 قنابل</option>
         <option value="3" selected>3 قنابل</option>
         <option value="4">4 قنابل</option>
         <option value="5">5 قنابل</option>
       </select>
+
     </div>
+
     <div class="setup-group">
+
       <label>عدد الدبل (x2):</label>
+
       <select id="setupDoublesCount">
         <option value="2">2 دبل</option>
         <option value="3" selected>3 دبل</option>
         <option value="4">4 دبل</option>
         <option value="5">5 دبل</option>
       </select>
+
     </div>
-    <button class="setup-btn" onclick="startCustomGame()">ابدأ اللعبة الان 🚀</button>
-    
-    <div class="share-link-box">
-      <button class="share-btn" onclick="copySpectatorLink()">📋 نسخ رابط المشاهدة النظيف</button>
+
+    <button
+      class="setup-btn"
+      onclick="startCustomGame()">
+      ابدأ اللعبة الآن 🚀
+    </button>
+
+    <div
+      class="share-link-box"
+      id="shareArea"
+      style="display:none;">
+
+      <div style="font-size:12px;color:var(--text-dim);">
+        رمز الجلسة
+      </div>
+
+      <div
+        class="room-code"
+        id="setupRoomCode">
+      </div>
+
+      <button
+        class="share-btn"
+        onclick="copySpectatorLink()">
+        📋 نسخ رابط المشاهدة
+      </button>
+
+      <button
+        class="end-session-btn"
+        onclick="finishGame()">
+        🔒 إنهاء الجلسة وإبطال الرابط
+      </button>
+
     </div>
+
   </div>
+
 </div>
+
+<!-- =========================
+     MAIN GAME
+========================= -->
 
 <div class="wrap">
+
   <div class="header-brand">
+
     <div class="brand-title-group">
-      <div class="brand-title">المجازفة</div>
-      <div class="nol-logo">NoL</div>
+
+      <div class="brand-title">
+        المجازفة
+      </div>
+
+      <div class="nol-logo">
+        NoL
+      </div>
+
     </div>
-    <div class="top-actions" id="hostTopActions">
-      <button class="top-btn" onclick="openSetupAgain()">⚙️ الإعدادات</button>
-      <button class="top-btn" onclick="resetGame()">🔄 إعادة</button>
+
+    <div
+      class="top-actions"
+      id="hostTopActions">
+
+      <button
+        class="top-btn"
+        onclick="openSetupAgain()">
+        ⚙️ الإعدادات
+      </button>
+
+      <button
+        class="top-btn"
+        onclick="resetGame()">
+        🔄 إعادة
+      </button>
+
     </div>
+
   </div>
 
-  <div class="teams-container" id="teamsBar"></div>
+  <div
+    class="room-info"
+    id="roomInfo"
+    style="display:none;">
 
-  <div class="turn-banner" id="turnBanner">
-    دور الفريق: <strong id="activeTeamName">الفريق الأول</strong>
+    جلسة المشاهدة:
+    <strong class="room-id" id="roomCodeDisplay"></strong>
+
+    <button
+      class="share-btn"
+      onclick="copySpectatorLink()"
+      style="margin-top:5px;">
+      📋 نسخ الرابط
+    </button>
+
   </div>
 
-  <div class="game-frame" id="gameBoard"></div>
-
-  <div class="footer-control" id="hostControls">
-    <button class="action-btn btn-fail" onclick="failRound()">❌ تصفير الرصيد المؤقت (خسارة)</button>
-    <button class="action-btn btn-save" onclick="bankScore()">💾 حفظ الرصيد (<span id="tempScoreDisplay">0</span>)</button>
+  <div
+    class="teams-container"
+    id="teamsBar">
   </div>
 
-  <div class="spectator-banner" id="spectatorBanner" style="display:none;">
-    👀 وضع المشاهدة فقط — يتم تحديث اللعبة تلقائياً
+  <div
+    class="turn-banner"
+    id="turnBanner">
+
+    دور الفريق:
+    <strong id="activeTeamName">
+      الفريق الأول
+    </strong>
+
   </div>
+
+  <div
+    class="game-frame"
+    id="gameBoard">
+  </div>
+
+  <div
+    class="footer-control"
+    id="hostControls">
+
+    <button
+      class="action-btn btn-fail"
+      onclick="failRound()">
+      ❌ تصفير الرصيد المؤقت
+    </button>
+
+    <button
+      class="action-btn btn-save"
+      onclick="bankScore()">
+
+      💾 حفظ الرصيد
+      (<span id="tempScoreDisplay">0</span>)
+
+    </button>
+
+  </div>
+
+  <div
+    class="spectator-banner"
+    id="spectatorBanner"
+    style="display:none;">
+
+    👀 وضع المشاهدة فقط
+    — يتم تحديث اللعبة تلقائياً
+
+  </div>
+
+  <button
+    class="end-session-btn"
+    id="endGameButton"
+    onclick="finishGame()"
+    style="display:none;">
+
+    🔒 إنهاء اللعبة وإبطال رابط المشاهدة
+
+  </button>
+
 </div>
 
-<div class="modal-overlay" id="alertModal">
+<!-- =========================
+     MODAL
+========================= -->
+
+<div
+  class="modal-overlay"
+  id="alertModal">
+
   <div class="modal-box">
-    <h3 id="alertTitle">تنبيه</h3>
-    <p id="alertMessage" style="color:var(--text-dim);font-size:14px;margin-bottom:15px;"></p>
-    <button onclick="closeAlertModal()">حسناً</button>
+
+    <h3 id="alertTitle">
+      تنبيه
+    </h3>
+
+    <p
+      id="alertMessage"
+      style="
+        color:var(--text-dim);
+        font-size:14px;
+        margin-bottom:15px;
+        white-space:pre-line;
+      ">
+    </p>
+
+    <button onclick="closeAlertModal()">
+      حسناً
+    </button>
+
   </div>
+
 </div>
 
-<script>
-let teams = [];
-let activeTeamIndex = 0;
-let tempScore = 0;
-let currentRoundPicks = []; 
-let totalCards = 50; 
-let boardCards = [];
-let configBombs = 3;
-let configDoubles = 3;
-let isSpectator = false;
 
-const colorList = [
-  { name: 'red', label: 'أحمر', cls: 'bg-red' },
-  { name: 'green', label: 'أخضر', cls: 'bg-green' },
-  { name: 'blue', label: 'أزرق', cls: 'bg-blue' },
-  { name: 'yellow', label: 'أصفر', cls: 'bg-yellow' },
-  { name: 'purple', label: 'بنفسجي', cls: 'bg-purple' }
-];
+<!-- =====================================================
+     FIREBASE
+===================================================== -->
 
-window.onload = function() {
-  updateTeamInputsGenerator();
-  const urlParams = new URLSearchParams(window.location.search);
-  
-  if (urlParams.get('mode') === 'spectator') {
-    isSpectator = true;
-    setupSpectatorUI();
-    loadGameData();
-    setInterval(loadGameData, 1000);
-  } else {
-    const saved = localStorage.getItem('nol_game_state_v4');
-    if (saved) {
-      loadGameData();
-      document.getElementById('setupScreen').style.display = 'none';
-    } else {
-      startCustomGame();
-      document.getElementById('setupScreen').style.display = 'flex';
-    }
-  }
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  set,
+  get,
+  update,
+  onValue,
+  remove
+}
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+
+
+/*
+=========================================================
+ضع بيانات Firebase الخاصة بك هنا
+=========================================================
+
+Firebase Console
+→ Project settings
+→ Your apps
+→ Web app
+
+ثم انسخ firebaseConfig هنا.
+*/
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDiOGYHADTeRz4CrrMh264K0sOQNrINl4w",
+  authDomain: "nool-1fa3a.firebaseapp.com",
+  databaseURL: "https://nool-1fa3a-default-rtdb.firebaseio.com",
+  projectId: "nool-1fa3a",
+  storageBucket: "nool-1fa3a.firebasestorage.app",
+  messagingSenderId: "552551048252",
+  appId: "1:552551048252:web:c99ba47af88cb131078f39",
+  measurementId: "G-ZCMH5FFTL6"
 };
 
-function setupSpectatorUI() {
-  document.getElementById('setupScreen').style.display = 'none';
-  document.getElementById('pageBody').classList.add('spectator-mode');
-  document.getElementById('hostTopActions').style.display = 'none';
-  document.getElementById('hostControls').style.display = 'none';
-  document.getElementById('spectatorBanner').style.display = 'block';
-  document.getElementById('turnBanner').style.display = 'block';
-}
 
-function updateTeamInputsGenerator() {
-  const count = parseInt(document.getElementById('setupTeamsCount').value);
-  const container = document.getElementById('teamsNamesInputsContainer');
-  container.innerHTML = '';
-  
-  const defaultNames = ['فريق الوحوش', 'النمور', 'النسور', 'الصقور'];
-  for(let i=0; i<count; i++) {
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.id = `setupTeamName_${i}`;
-    input.value = teams[i]?.name || defaultNames[i];
-    input.placeholder = `اسم الفريق ${i+1}`;
-    container.appendChild(input);
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+
+
+/*
+نجعل Firebase متاحاً للكود الرئيسي
+*/
+
+window.NoLFirebase = {
+  db,
+  ref,
+  set,
+  get,
+  update,
+  onValue,
+  remove
+};
+
+window.dispatchEvent(
+  new Event("firebase-ready")
+);
+
+</script>
+
+
+<!-- =====================================================
+     GAME JAVASCRIPT
+===================================================== -->
+
+<script>
+
+let db = null;
+let firebaseReady = false;
+
+let roomId = null;
+
+let teams = [];
+
+let activeTeamIndex = 0;
+
+let tempScore = 0;
+
+let currentRoundPicks = [];
+
+let totalCards = 50;
+
+let boardCards = [];
+
+let configBombs = 3;
+
+let configDoubles = 3;
+
+let isSpectator = false;
+
+let gameFinished = false;
+
+let unsubscribeGame = null;
+
+
+const colorList = [
+
+  {
+    name:'red',
+    label:'أحمر',
+    cls:'bg-red'
+  },
+
+  {
+    name:'green',
+    label:'أخضر',
+    cls:'bg-green'
+  },
+
+  {
+    name:'blue',
+    label:'أزرق',
+    cls:'bg-blue'
+  },
+
+  {
+    name:'yellow',
+    label:'أصفر',
+    cls:'bg-yellow'
+  },
+
+  {
+    name:'purple',
+    label:'بنفسجي',
+    cls:'bg-purple'
   }
+
+];
+
+
+/* =====================================================
+   FIREBASE READY
+===================================================== */
+
+window.addEventListener(
+  'firebase-ready',
+  () => {
+
+    db = window.NoLFirebase.db;
+
+    firebaseReady = true;
+
+    initializeApplication();
+
+  }
+);
+
+
+/* =====================================================
+   START APPLICATION
+===================================================== */
+
+async function initializeApplication(){
+
+  const loading =
+    document.getElementById('loadingScreen');
+
+  const loadingText =
+    document.getElementById('loadingText');
+
+  try{
+
+    updateTeamInputsGenerator();
+
+    const urlParams =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const urlRoom =
+      urlParams.get('room');
+
+    /*
+    إذا يوجد room في الرابط
+    فهذا مشاهد.
+    */
+
+    if(urlRoom){
+
+      roomId =
+        urlRoom.toUpperCase();
+
+      isSpectator = true;
+
+      loadingText.textContent =
+        'جاري فتح جلسة المشاهدة...';
+
+      await openSpectatorRoom(roomId);
+
+    }
+
+    else{
+
+      /*
+      لا يوجد room
+      = مضيف جديد
+      */
+
+      isSpectator = false;
+
+      setupHostUI();
+
+      loading.style.display = 'none';
+
+      document
+        .getElementById('setupScreen')
+        .style.display = 'flex';
+
+    }
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    loadingText.textContent =
+      'حدث خطأ في الاتصال بـ Firebase.';
+
+  }
+
 }
 
-function copySpectatorLink() {
-  const currentUrl = window.location.href.split('?')[0];
-  const spectatorLink = `${currentUrl}?mode=spectator`;
-  
-  // حفظ الحالة الحالية للمضيف في ذاكرة مشتركة تتيح للمشاهد رؤيتها إذا كانوا على نفس المتصفح أو الشبكة، 
-  // والأهم: حفظها عبر localStorage لضمان استقرار العرض
-  saveGameData();
 
-  navigator.clipboard.writeText(spectatorLink).then(() => {
-    alert('✅ تم نسخ رابط المشاهدة النظيف بنجاح!\n(ملاحظة: بما أن الاستضافة مجانية وثابتة بدون قاعدة بيانات سحابية، افتح رابط المشاهدة كعلامة تبويب جديدة بجانب لعبتك لتتابعها بسلاسة تامة).');
-  });
+/* =====================================================
+   ROOM ID
+===================================================== */
+
+function generateRoomId(){
+
+  const chars =
+    'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+  let id = '';
+
+  for(let i=0;i<6;i++){
+
+    id += chars[
+      Math.floor(
+        Math.random() * chars.length
+      )
+    ];
+
+  }
+
+  return id;
+
 }
 
-function startCustomGame() {
-  const teamsCount = parseInt(document.getElementById('setupTeamsCount').value);
-  configBombs = parseInt(document.getElementById('setupBombsCount').value);
-  configDoubles = parseInt(document.getElementById('setupDoublesCount').value);
+
+/* =====================================================
+   CREATE NEW ROOM
+===================================================== */
+
+async function createRoom(){
+
+  let newId;
+
+  let exists = true;
+
+  while(exists){
+
+    newId =
+      generateRoomId();
+
+    const snapshot =
+      await window.NoLFirebase.get(
+        window.NoLFirebase.ref(
+          db,
+          `games/${newId}`
+        )
+      );
+
+    exists =
+      snapshot.exists();
+
+  }
+
+  roomId = newId;
+
+}
+
+
+/* =====================================================
+   HOST UI
+===================================================== */
+
+function setupHostUI(){
+
+  document
+    .getElementById('hostTopActions')
+    .style.display = 'flex';
+
+  document
+    .getElementById('hostControls')
+    .style.display = 'flex';
+
+  document
+    .getElementById('spectatorBanner')
+    .style.display = 'none';
+
+  document
+    .getElementById('endGameButton')
+    .style.display = 'block';
+
+}
+
+
+/* =====================================================
+   SPECTATOR UI
+===================================================== */
+
+function setupSpectatorUI(){
+
+  document
+    .getElementById('setupScreen')
+    .style.display = 'none';
+
+  document
+    .getElementById('pageBody')
+    .classList.add('spectator-mode');
+
+  document
+    .getElementById('hostTopActions')
+    .style.display = 'none';
+
+  document
+    .getElementById('hostControls')
+    .style.display = 'none';
+
+  document
+    .getElementById('spectatorBanner')
+    .style.display = 'block';
+
+  document
+    .getElementById('turnBanner')
+    .style.display = 'block';
+
+  document
+    .getElementById('endGameButton')
+    .style.display = 'none';
+
+}
+
+
+/* =====================================================
+   OPEN SPECTATOR ROOM
+===================================================== */
+
+async function openSpectatorRoom(id){
+
+  setupSpectatorUI();
+
+  const roomRef =
+    window.NoLFirebase.ref(
+      db,
+      `games/${id}`
+    );
+
+  const snapshot =
+    await window.NoLFirebase.get(roomRef);
+
+  if(!snapshot.exists()){
+
+    showAlert(
+      '❌ الجلسة غير موجودة',
+      'هذا الرابط غير صالح أو أن الجلسة انتهت.'
+    );
+
+    document
+      .getElementById('loadingScreen')
+      .style.display = 'none';
+
+    return;
+
+  }
+
+  const data =
+    snapshot.val();
+
+  if(data.status === 'finished'){
+
+    showAlert(
+      '🔒 انتهت الجلسة',
+      'هذه اللعبة انتهت ولم يعد رابط المشاهدة صالحاً.'
+    );
+
+    document
+      .getElementById('loadingScreen')
+      .style.display = 'none';
+
+    return;
+
+  }
+
+  /*
+  عرض بيانات الغرفة
+  */
+
+  document
+    .getElementById('roomInfo')
+    .style.display = 'block';
+
+  document
+    .getElementById('roomCodeDisplay')
+    .textContent = id;
+
+
+  applyGameState(data);
+
+  /*
+  الاستماع للتغييرات لحظياً
+  */
+
+  unsubscribeGame =
+    window.NoLFirebase.onValue(
+      roomRef,
+      snapshot => {
+
+        if(!snapshot.exists()){
+
+          gameFinished = true;
+
+          showAlert(
+            '🔒 انتهت الجلسة',
+            'قام المضيف بإغلاق هذه الجلسة.'
+          );
+
+          return;
+
+        }
+
+        const data =
+          snapshot.val();
+
+        if(data.status === 'finished'){
+
+          gameFinished = true;
+
+          showAlert(
+            '🔒 انتهت اللعبة',
+            'تم إغلاق رابط المشاهدة لهذه الجلسة.'
+          );
+
+          return;
+
+        }
+
+        applyGameState(data);
+
+      }
+    );
+
+
+  document
+    .getElementById('loadingScreen')
+    .style.display = 'none';
+
+}
+
+
+/* =====================================================
+   APPLY FIREBASE STATE
+===================================================== */
+
+function applyGameState(data){
+
+  teams =
+    Array.isArray(data.teams)
+      ? data.teams
+      : Object.values(data.teams || {});
+
+  activeTeamIndex =
+    Number(data.activeTeamIndex || 0);
+
+  tempScore =
+    Number(data.tempScore || 0);
+
+  boardCards =
+    Array.isArray(data.boardCards)
+      ? data.boardCards
+      : Object.values(data.boardCards || {});
+
+  currentRoundPicks =
+    Array.isArray(data.currentRoundPicks)
+      ? data.currentRoundPicks
+      : Object.values(data.currentRoundPicks || {});
+
+  renderTeams();
+
+  renderBoard();
+
+  updateTempDisplay();
+
+}
+
+
+/* =====================================================
+   UPDATE TEAM INPUTS
+===================================================== */
+
+function updateTeamInputsGenerator(){
+
+  const select =
+    document.getElementById(
+      'setupTeamsCount'
+    );
+
+  if(!select) return;
+
+  const count =
+    parseInt(select.value);
+
+  const container =
+    document.getElementById(
+      'teamsNamesInputsContainer'
+    );
+
+  container.innerHTML = '';
+
+  const defaultNames = [
+    'فريق الوحوش',
+    'النمور',
+    'النسور',
+    'الصقور'
+  ];
+
+  for(let i=0;i<count;i++){
+
+    const input =
+      document.createElement('input');
+
+    input.type = 'text';
+
+    input.id =
+      `setupTeamName_${i}`;
+
+    input.value =
+      teams[i]?.name ||
+      defaultNames[i];
+
+    input.placeholder =
+      `اسم الفريق ${i+1}`;
+
+    container.appendChild(input);
+
+  }
+
+}
+
+
+/* =====================================================
+   START GAME
+===================================================== */
+
+async function startCustomGame(){
+
+  if(isSpectator) return;
+
+  if(!firebaseReady){
+
+    showAlert(
+      'انتظر',
+      'جاري الاتصال بقاعدة البيانات.'
+    );
+
+    return;
+
+  }
+
+  const teamsCount =
+    parseInt(
+      document.getElementById(
+        'setupTeamsCount'
+      ).value
+    );
+
+  configBombs =
+    parseInt(
+      document.getElementById(
+        'setupBombsCount'
+      ).value
+    );
+
+  configDoubles =
+    parseInt(
+      document.getElementById(
+        'setupDoublesCount'
+      ).value
+    );
+
 
   teams = [];
-  for(let i=0; i<teamsCount; i++) {
-    const customNameInput = document.getElementById(`setupTeamName_${i}`);
-    const name = customNameInput && customNameInput.value.trim() !== '' ? customNameInput.value.trim() : `الفريق ${i+1}`;
-    teams.push({ name: name, score: 0 });
+
+  for(let i=0;i<teamsCount;i++){
+
+    const input =
+      document.getElementById(
+        `setupTeamName_${i}`
+      );
+
+    const name =
+      input &&
+      input.value.trim() !== ''
+        ? input.value.trim()
+        : `الفريق ${i+1}`;
+
+    teams.push({
+      name:name,
+      score:0
+    });
+
   }
 
-  document.getElementById('setupScreen').style.display = 'none';
+
+  /*
+  إنشاء غرفة جديدة
+  */
+
+  await createRoom();
+
+  document
+    .getElementById('setupScreen')
+    .style.display = 'none';
+
+  document
+    .getElementById('roomInfo')
+    .style.display = 'block';
+
+  document
+    .getElementById('roomCodeDisplay')
+    .textContent = roomId;
+
+  document
+    .getElementById('endGameButton')
+    .style.display = 'block';
+
+
+  /*
+  إظهار منطقة الرابط
+  */
+
+  document
+    .getElementById('shareArea')
+    .style.display = 'block';
+
+  document
+    .getElementById('setupRoomCode')
+    .textContent = roomId;
+
+
   initGame();
+
 }
 
-function openSetupAgain() {
-  updateTeamInputsGenerator();
-  document.getElementById('setupScreen').style.display = 'flex';
-}
 
-function initGame() {
-  let indices = Array.from({length: totalCards}, (_, i) => i);
-  indices.sort(() => Math.random() - 0.5);
+/* =====================================================
+   INIT GAME
+===================================================== */
 
-  let bombSet = new Set(indices.slice(0, configBombs));
-  let doubleSet = new Set(indices.slice(configBombs, configBombs + configDoubles));
-  
-  let remainingIndices = indices.slice(configBombs + configDoubles);
+function initGame(){
+
+  let indices =
+    Array.from(
+      {length:totalCards},
+      (_,i)=>i
+    );
+
+  indices.sort(
+    ()=>Math.random()-.5
+  );
+
+
+  const bombSet =
+    new Set(
+      indices.slice(
+        0,
+        configBombs
+      )
+    );
+
+
+  const doubleSet =
+    new Set(
+      indices.slice(
+        configBombs,
+        configBombs + configDoubles
+      )
+    );
+
+
+  let remainingIndices =
+    indices.slice(
+      configBombs + configDoubles
+    );
+
 
   let normalValuesPool = [];
-  for(let i=0; i<5; i++) {
-    for(let n=1; n<=9; n++) {
+
+  for(let i=0;i<5;i++){
+
+    for(let n=1;n<=9;n++){
+
       normalValuesPool.push(n);
+
     }
+
   }
-  normalValuesPool.sort(() => Math.random() - 0.5);
+
+  normalValuesPool.sort(
+    ()=>Math.random()-.5
+  );
+
 
   let normalColorsPool = [];
-  let colorCounter = Math.ceil(remainingIndices.length / colorList.length) + 2;
-  for(let c=0; c<colorCounter; c++) {
-    colorList.forEach(col => normalColorsPool.push(col));
+
+  let colorCounter =
+    Math.ceil(
+      remainingIndices.length /
+      colorList.length
+    ) + 2;
+
+
+  for(let c=0;c<colorCounter;c++){
+
+    colorList.forEach(
+      col =>
+        normalColorsPool.push(col)
+    );
+
   }
-  normalColorsPool.sort(() => Math.random() - 0.5);
+
+
+  normalColorsPool.sort(
+    ()=>Math.random()-.5
+  );
+
 
   let pool = [];
+
   let normalIdx = 0;
 
-  for(let i=0; i<totalCards; i++) {
-    let cardId = i + 1;
+
+  for(let i=0;i<totalCards;i++){
+
+    let cardId = i+1;
+
     let type = 'normal';
+
     let val = 0;
+
     let colObj = null;
+
     let cls = '';
-    let displayText = cardId.toString();
+
+    let displayText =
+      cardId.toString();
+
     let displaySub = '';
 
-    if (bombSet.has(i)) {
+
+    if(bombSet.has(i)){
+
       type = 'bomb';
+
       cls = 'bg-bomb';
+
       displayText = '💣';
+
       displaySub = 'قنبلة';
-    } else if (doubleSet.has(i)) {
-      type = 'double';
-      cls = 'bg-double';
-      displayText = '✖2';
-      displaySub = 'دبل';
-    } else {
-      val = normalValuesPool[normalIdx % normalValuesPool.length];
-      colObj = normalColorsPool[normalIdx % normalColorsPool.length];
-      normalIdx++;
-      cls = colObj.cls;
-      displayText = val.toString();
-      displaySub = colObj.label;
+
     }
+
+    else if(doubleSet.has(i)){
+
+      type = 'double';
+
+      cls = 'bg-double';
+
+      displayText = '✖2';
+
+      displaySub = 'دبل';
+
+    }
+
+    else{
+
+      val =
+        normalValuesPool[
+          normalIdx %
+          normalValuesPool.length
+        ];
+
+      colObj =
+        normalColorsPool[
+          normalIdx %
+          normalColorsPool.length
+        ];
+
+      normalIdx++;
+
+      cls = colObj.cls;
+
+      displayText =
+        val.toString();
+
+      displaySub =
+        colObj.label;
+
+    }
+
 
     pool.push({
-      id: cardId,
-      gridNum: cardId,
-      type: type,
-      value: val,
-      color: colObj ? colObj.name : null,
-      cls: cls,
-      text: displayText,
-      subText: displaySub,
-      isOpen: false,
-      permanentlyGone: false
+
+      id:cardId,
+
+      gridNum:cardId,
+
+      type:type,
+
+      value:val,
+
+      color:
+        colObj
+          ? colObj.name
+          : null,
+
+      cls:cls,
+
+      text:displayText,
+
+      subText:displaySub,
+
+      isOpen:false,
+
+      permanentlyGone:false
+
     });
+
   }
+
 
   boardCards = pool;
+
   tempScore = 0;
+
   currentRoundPicks = [];
+
   activeTeamIndex = 0;
+
   saveGameData();
+
   renderTeams();
+
   renderBoard();
+
   updateTempDisplay();
+
 }
 
-function saveGameData() {
-  const gameState = { teams, activeTeamIndex, tempScore, boardCards, currentRoundPicks };
-  localStorage.setItem('nol_game_state_v4', JSON.stringify(gameState));
-}
 
-function loadGameData() {
-  const saved = localStorage.getItem('nol_game_state_v4');
-  if (saved) {
-    const data = JSON.parse(saved);
-    teams = data.teams || teams;
-    activeTeamIndex = data.activeTeamIndex || 0;
-    tempScore = data.tempScore || 0;
-    boardCards = data.boardCards || [];
-    currentRoundPicks = data.currentRoundPicks || [];
-    if(boardCards.length > 0) {
-      renderTeams();
-      renderBoard();
-      updateTempDisplay();
-    }
+/* =====================================================
+   SAVE GAME TO FIREBASE
+===================================================== */
+
+async function saveGameData(){
+
+  if(
+    isSpectator ||
+    !roomId ||
+    !firebaseReady ||
+    gameFinished
+  ){
+    return;
   }
-}
 
-function renderTeams() {
-  const container = document.getElementById('teamsBar');
-  if (!container) return;
-  container.innerHTML = '';
-  teams.forEach((team, index) => {
-    const card = document.createElement('div');
-    card.className = `team-card ${index === activeTeamIndex ? 'active' : ''}`;
-    if (!isSpectator) {
-      card.onclick = () => { 
-        if(currentRoundPicks.length > 0) failRound(false);
-        activeTeamIndex = index; 
-        renderTeams(); 
-        saveGameData();
-      };
-    }
-    card.innerHTML = `
-      <div class="t-name">${team.name}</div>
-      <div class="t-score">${team.score}</div>
-    `;
-    container.appendChild(card);
-  });
-  if(document.getElementById('activeTeamName')) {
-    document.getElementById('activeTeamName').textContent = teams[activeTeamIndex]?.name || '';
+
+  const gameState = {
+
+    status:'active',
+
+    teams:teams,
+
+    activeTeamIndex:
+      activeTeamIndex,
+
+    tempScore:
+      tempScore,
+
+    boardCards:
+      boardCards,
+
+    currentRoundPicks:
+      currentRoundPicks,
+
+    configBombs:
+      configBombs,
+
+    configDoubles:
+      configDoubles,
+
+    updatedAt:
+      Date.now()
+
+  };
+
+
+  try{
+
+    await window.NoLFirebase.set(
+
+      window.NoLFirebase.ref(
+        db,
+        `games/${roomId}`
+      ),
+
+      gameState
+
+    );
+
   }
+
+  catch(error){
+
+    console.error(
+      'Firebase save error:',
+      error
+    );
+
+    showAlert(
+      'خطأ',
+      'تعذر حفظ حالة اللعبة.'
+    );
+
+  }
+
 }
 
-function renderBoard() {
-  const board = document.getElementById('gameBoard');
-  if (!board) return;
-  board.innerHTML = '';
-  
-  boardCards.forEach((item) => {
-    const cell = document.createElement('div');
-    
-    if (item.permanentlyGone) {
-      cell.className = 'card-cell hidden-slot';
-      cell.textContent = '';
-    } else if (item.isOpen) {
-      cell.className = `card-cell used ${item.cls}`;
-      cell.innerHTML = `
-        <div class="card-inner-val">${item.text}</div>
-        <div class="card-inner-sub">${item.subText || ''}</div>
-      `;
-    } else {
-      cell.className = 'card-cell';
-      cell.textContent = item.gridNum;
-      if (!isSpectator) {
-        cell.onclick = () => revealCard(item);
+
+/* =====================================================
+   COPY SPECTATOR LINK
+===================================================== */
+
+async function copySpectatorLink(){
+
+  if(!roomId){
+
+    showAlert(
+      'تنبيه',
+      'ابدأ اللعبة أولاً.'
+    );
+
+    return;
+
+  }
+
+
+  await saveGameData();
+
+
+  const spectatorLink =
+    `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+
+
+  try{
+
+    await navigator.clipboard.writeText(
+      spectatorLink
+    );
+
+    showAlert(
+      '✅ تم نسخ الرابط',
+      'أرسل الرابط للمشاهدين.\n\nأي شخص يفتحه سيشاهد نفس جلسة اللعبة مباشرة.'
+    );
+
+  }
+
+  catch(error){
+
+    /*
+    حل بديل إذا كان المتصفح يمنع clipboard
+    */
+
+    prompt(
+      'انسخ رابط المشاهدة:',
+      spectatorLink
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   END GAME
+===================================================== */
+
+async function finishGame(){
+
+  if(isSpectator) return;
+
+  if(!roomId) return;
+
+
+  const confirmed =
+    confirm(
+      'هل تريد إنهاء هذه الجلسة؟\n\nبعد الإنهاء سيصبح رابط المشاهدة غير صالح.'
+    );
+
+
+  if(!confirmed) return;
+
+
+  gameFinished = true;
+
+
+  try{
+
+    /*
+    نضع الحالة finished أولاً
+    حتى يحصل المشاهدون على رسالة انتهاء.
+    */
+
+    await window.NoLFirebase.update(
+
+      window.NoLFirebase.ref(
+        db,
+        `games/${roomId}`
+      ),
+
+      {
+        status:'finished',
+        finishedAt:Date.now()
       }
-    }
-    board.appendChild(cell);
-  });
+
+    );
+
+
+    /*
+    حذف الغرفة بعد فترة قصيرة.
+    */
+
+    setTimeout(
+      async ()=>{
+
+        try{
+
+          await window.NoLFirebase.remove(
+
+            window.NoLFirebase.ref(
+              db,
+              `games/${roomId}`
+            )
+
+          );
+
+        }
+
+        catch(error){
+
+          console.error(
+            'Room delete error:',
+            error
+          );
+
+        }
+
+      },
+      3000
+    );
+
+
+    showAlert(
+      '🔒 انتهت الجلسة',
+      'تم إنهاء اللعبة.\nرابط المشاهدة أصبح غير صالح.'
+    );
+
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    gameFinished = false;
+
+    showAlert(
+      'خطأ',
+      'تعذر إنهاء الجلسة.'
+    );
+
+  }
+
 }
 
-function revealCard(item) {
-  if (isSpectator || item.isOpen || item.permanentlyGone) return;
 
-  if (item.type === 'bomb') {
+/* =====================================================
+   SETUP AGAIN
+===================================================== */
+
+function openSetupAgain(){
+
+  if(isSpectator) return;
+
+  updateTeamInputsGenerator();
+
+  document
+    .getElementById('setupScreen')
+    .style.display = 'flex';
+
+}
+
+
+/* =====================================================
+   RENDER TEAMS
+===================================================== */
+
+function renderTeams(){
+
+  const container =
+    document.getElementById(
+      'teamsBar'
+    );
+
+  if(!container) return;
+
+  container.innerHTML = '';
+
+
+  teams.forEach(
+    (team,index)=>{
+
+      const card =
+        document.createElement('div');
+
+      card.className =
+        `team-card ${
+          index === activeTeamIndex
+            ? 'active'
+            : ''
+        }`;
+
+
+      if(!isSpectator){
+
+        card.onclick = ()=>{
+
+          if(
+            currentRoundPicks.length > 0
+          ){
+
+            failRound(false);
+
+          }
+
+          activeTeamIndex = index;
+
+          renderTeams();
+
+          saveGameData();
+
+        };
+
+      }
+
+
+      card.innerHTML = `
+
+        <div class="t-name">
+          ${escapeHtml(team.name)}
+        </div>
+
+        <div class="t-score">
+          ${team.score}
+        </div>
+
+      `;
+
+
+      container.appendChild(card);
+
+    }
+  );
+
+
+  const activeName =
+    document.getElementById(
+      'activeTeamName'
+    );
+
+  if(activeName){
+
+    activeName.textContent =
+      teams[
+        activeTeamIndex
+      ]?.name || '';
+
+  }
+
+}
+
+
+/* =====================================================
+   RENDER BOARD
+===================================================== */
+
+function renderBoard(){
+
+  const board =
+    document.getElementById(
+      'gameBoard'
+    );
+
+  if(!board) return;
+
+  board.innerHTML = '';
+
+
+  boardCards.forEach(
+    item=>{
+
+      const cell =
+        document.createElement('div');
+
+
+      if(item.permanentlyGone){
+
+        cell.className =
+          'card-cell hidden-slot';
+
+        cell.textContent = '';
+
+      }
+
+      else if(item.isOpen){
+
+        cell.className =
+          `card-cell used ${item.cls}`;
+
+        cell.innerHTML = `
+
+          <div class="card-inner-val">
+            ${item.text}
+          </div>
+
+          <div class="card-inner-sub">
+            ${item.subText || ''}
+          </div>
+
+        `;
+
+      }
+
+      else{
+
+        cell.className =
+          'card-cell';
+
+        cell.textContent =
+          item.gridNum;
+
+
+        if(!isSpectator){
+
+          cell.onclick =
+            ()=>revealCard(item);
+
+        }
+
+      }
+
+
+      board.appendChild(cell);
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   REVEAL CARD
+===================================================== */
+
+function revealCard(item){
+
+  if(
+    isSpectator ||
+    gameFinished ||
+    item.isOpen ||
+    item.permanentlyGone
+  ){
+    return;
+  }
+
+
+  if(item.type === 'bomb'){
+
     item.isOpen = true;
+
     currentRoundPicks.push(item);
-    
-    let affectedTeamName = teams[activeTeamIndex].name;
-    teams[activeTeamIndex].score = 0;
-    
+
+
+    const affectedTeamName =
+      teams[
+        activeTeamIndex
+      ].name;
+
+
+    teams[
+      activeTeamIndex
+    ].score = 0;
+
+
     saveGameData();
+
     renderBoard();
+
     renderTeams();
-    
-    setTimeout(() => {
-      showAlert('💥 بوووم! قنبلة مدمرة!', `يا للاسف يا "${affectedTeamName}" اخترتم قنبلة!\nتم تصفير رصيدكم الإجمالي بالكامل وانتقال الدور.`);
-      currentRoundPicks.forEach(p => p.permanentlyGone = true);
-      failRound(true);
-    }, 200);
+
+
+    setTimeout(
+      ()=>{
+
+        showAlert(
+          '💥 بوووم! قنبلة مدمرة!',
+          `يا للأسف يا "${affectedTeamName}" اخترتم قنبلة!\nتم تصفير رصيدكم الإجمالي بالكامل وانتقال الدور.`
+        );
+
+
+        currentRoundPicks.forEach(
+          p =>
+            p.permanentlyGone = true
+        );
+
+
+        failRound(true);
+
+      },
+      200
+    );
+
     return;
+
   }
 
-  if (item.type === 'double') {
+
+  if(item.type === 'double'){
+
     item.isOpen = true;
+
     currentRoundPicks.push(item);
-    tempScore = tempScore === 0 ? 5 : tempScore * 2; 
+
+    tempScore =
+      tempScore === 0
+        ? 5
+        : tempScore * 2;
+
+
     saveGameData();
+
     renderBoard();
+
     updateTempDisplay();
+
     return;
+
   }
 
-  let hasColorConflict = currentRoundPicks.some(p => p.type === 'normal' && p.color === item.color);
-  let hasNumberConflict = currentRoundPicks.some(p => p.type === 'normal' && p.value === item.value);
 
-  if (hasColorConflict || hasNumberConflict) {
+  const hasColorConflict =
+    currentRoundPicks.some(
+      p =>
+        p.type === 'normal' &&
+        p.color === item.color
+    );
+
+
+  const hasNumberConflict =
+    currentRoundPicks.some(
+      p =>
+        p.type === 'normal' &&
+        p.value === item.value
+    );
+
+
+  if(
+    hasColorConflict ||
+    hasNumberConflict
+  ){
+
     item.isOpen = true;
+
     currentRoundPicks.push(item);
+
     saveGameData();
+
     renderBoard();
-    
-    let reasonText = hasColorConflict && hasNumberConflict ? 'تشابه في اللون ورقم الكرت!' : (hasColorConflict ? 'تشابه في اللون مع بطاقة سابقة!' : 'تشابه في الرقم مع بطاقة سابقة!');
-    
-    setTimeout(() => {
-      showAlert('❌ حدث تشابه وخسارة!', `${reasonText}\nتم تصفير النقاط المؤقتة التي كسبتها في هذه الجولة فقط وانتقال اللعبة للفريق التالي.`);
-      currentRoundPicks.forEach(p => p.permanentlyGone = true);
-      failRound(true);
-    }, 200);
+
+
+    const reasonText =
+      hasColorConflict &&
+      hasNumberConflict
+
+        ? 'تشابه في اللون ورقم الكرت!'
+
+        : hasColorConflict
+
+          ? 'تشابه في اللون مع بطاقة سابقة!'
+
+          : 'تشابه في الرقم مع بطاقة سابقة!';
+
+
+    setTimeout(
+      ()=>{
+
+        showAlert(
+          '❌ حدث تشابه وخسارة!',
+          `${reasonText}\nتم تصفير النقاط المؤقتة التي كسبتها في هذه الجولة فقط وانتقال اللعبة للفريق التالي.`
+        );
+
+
+        currentRoundPicks.forEach(
+          p =>
+            p.permanentlyGone = true
+        );
+
+
+        failRound(true);
+
+      },
+      200
+    );
+
     return;
+
   }
+
 
   item.isOpen = true;
+
   currentRoundPicks.push(item);
+
   tempScore += item.value;
-  
+
+
   saveGameData();
+
   renderBoard();
+
   updateTempDisplay();
+
 }
 
-function updateTempDisplay() {
-  const display = document.getElementById('tempScoreDisplay');
-  if(display) display.textContent = tempScore;
-}
 
-function bankScore() {
-  if (isSpectator || tempScore <= 0) return;
-  teams[activeTeamIndex].score += tempScore;
-  currentRoundPicks.forEach(p => p.permanentlyGone = true);
-  resetRoundState();
-  nextTurn();
-}
+/* =====================================================
+   TEMP SCORE
+===================================================== */
 
-function failRound(switchTurn = true) {
-  if (isSpectator) return;
-  resetRoundState();
-  if (switchTurn) {
-    nextTurn();
+function updateTempDisplay(){
+
+  const display =
+    document.getElementById(
+      'tempScoreDisplay'
+    );
+
+  if(display){
+
+    display.textContent =
+      tempScore;
+
   }
+
 }
 
-function resetRoundState() {
+
+/* =====================================================
+   BANK SCORE
+===================================================== */
+
+function bankScore(){
+
+  if(
+    isSpectator ||
+    tempScore <= 0 ||
+    gameFinished
+  ){
+    return;
+  }
+
+
+  teams[
+    activeTeamIndex
+  ].score += tempScore;
+
+
+  currentRoundPicks.forEach(
+    p =>
+      p.permanentlyGone = true
+  );
+
+
+  resetRoundState();
+
+  nextTurn();
+
+}
+
+
+/* =====================================================
+   FAIL ROUND
+===================================================== */
+
+function failRound(
+  switchTurn = true
+){
+
+  if(
+    isSpectator ||
+    gameFinished
+  ){
+    return;
+  }
+
+
+  resetRoundState();
+
+
+  if(switchTurn){
+
+    nextTurn();
+
+  }
+
+}
+
+
+/* =====================================================
+   RESET ROUND
+===================================================== */
+
+function resetRoundState(){
+
   tempScore = 0;
-  currentRoundPicks.forEach(p => {
-    if (!p.permanentlyGone) p.isOpen = false; 
-  });
+
+
+  currentRoundPicks.forEach(
+    p=>{
+
+      if(!p.permanentlyGone){
+
+        p.isOpen = false;
+
+      }
+
+    }
+  );
+
+
   currentRoundPicks = [];
+
+
   updateTempDisplay();
+
   saveGameData();
+
   renderBoard();
+
 }
 
-function nextTurn() {
-  activeTeamIndex = (activeTeamIndex + 1) % teams.length;
+
+/* =====================================================
+   NEXT TURN
+===================================================== */
+
+function nextTurn(){
+
+  if(!teams.length) return;
+
+  activeTeamIndex =
+    (
+      activeTeamIndex + 1
+    ) % teams.length;
+
+
   saveGameData();
+
   renderTeams();
+
 }
 
-function resetGame() {
-  if (isSpectator) return;
+
+/* =====================================================
+   RESET GAME
+===================================================== */
+
+function resetGame(){
+
+  if(
+    isSpectator ||
+    gameFinished
+  ){
+    return;
+  }
+
+
+  const confirmed =
+    confirm(
+      'هل تريد إعادة اللعبة بالكامل؟\nسيتم إنشاء لوحة جديدة.'
+    );
+
+
+  if(!confirmed) return;
+
+
   activeTeamIndex = 0;
-  teams.forEach(t => t.score = 0);
+
+  teams.forEach(
+    t =>
+      t.score = 0
+  );
+
+
   initGame();
+
 }
 
-function showAlert(title, message) {
-  document.getElementById('alertTitle').textContent = title;
-  document.getElementById('alertMessage').textContent = message;
-  document.getElementById('alertModal').classList.add('active');
+
+/* =====================================================
+   ALERT
+===================================================== */
+
+function showAlert(
+  title,
+  message
+){
+
+  document
+    .getElementById(
+      'alertTitle'
+    )
+    .textContent = title;
+
+
+  document
+    .getElementById(
+      'alertMessage'
+    )
+    .textContent = message;
+
+
+  document
+    .getElementById(
+      'alertModal'
+    )
+    .classList.add('active');
+
 }
 
-function closeAlertModal() {
-  document.getElementById('alertModal').classList.remove('active');
+
+function closeAlertModal(){
+
+  document
+    .getElementById(
+      'alertModal'
+    )
+    .classList.remove('active');
+
 }
+
+
+/* =====================================================
+   HTML ESCAPE
+===================================================== */
+
+function escapeHtml(value){
+
+  return String(value)
+
+    .replace(
+      /&/g,
+      '&amp;'
+    )
+
+    .replace(
+      /</g,
+      '&lt;'
+    )
+
+    .replace(
+      />/g,
+      '&gt;'
+    )
+
+    .replace(
+      /"/g,
+      '&quot;'
+    )
+
+    .replace(
+      /'/g,
+      '&#039;'
+    );
+
+}
+
 </script>
+
 </body>
 </html>

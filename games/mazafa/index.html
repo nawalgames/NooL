@@ -9,120 +9,131 @@
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg-gradient: linear-gradient(135deg, #0a0d1c 0%, #171b36 50%, #0d0f1a 100%);
-    --panel: #13172c;
-    --line: #2e3559;
+    --bg: #0b0f19;
+    --panel: #131826;
+    --line: #222c45;
     --gold: #f3ce6b;
     --text:#f1f0ec;
-    --text-dim:#9a9db3;
-    --red:#d32f2f; --green:#2e7d32; --blue:#1565c0; --yellow:#f9a825; --purple:#6a1b9a;
+    --text-dim:#8b92af;
+    --red:#e53935; --green:#2e7d32; --blue:#1e88e5; --yellow:#fbc02d; --purple:#8e24aa;
   }
   *{box-sizing:border-box;user-select:none;}
   html,body{height:100%;}
   body{
     margin:0;
-    background: var(--bg-gradient);
-    background-attachment: fixed;
+    background: var(--bg);
     color:var(--text);
     font-family:'Tajawal', sans-serif;
     display:flex;
     flex-direction:column;
     align-items:center;
-    padding: 10px;
+    padding: 12px;
   }
 
-  .wrap{max-width:480px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:10px;}
+  .wrap{max-width:440px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:12px;}
 
-  /* الهيدر والعنوان المطابق مع شعار NoL */
+  /* الهيدر النظيف الفاخر بدون أي إضافات مزعجة */
   .header-brand {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(19, 23, 44, 0.85);
-    padding: 10px 16px;
+    background: var(--panel);
+    padding: 12px 16px;
     border-radius: 14px;
     border: 1px solid var(--line);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
   }
   .brand-title-group {
     display: flex;
-    align-items: baseline;
-    gap: 10px;
+    align-items: center;
+    gap: 12px;
   }
   .brand-title {
     font-size: 22px;
     font-weight: 900;
-    background: linear-gradient(to bottom, #fff, #b0c4de);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 2px 10px rgba(255,255,255,0.2);
+    color: #fff;
+    letter-spacing: 0.5px;
   }
-  /* شعار NoL المميز */
   .nol-logo {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 900;
     letter-spacing: 1px;
-    background: linear-gradient(135deg, #f3ce6b, #ff9f43);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-transform: uppercase;
-    border: 1px solid rgba(243, 206, 107, 0.3);
-    padding: 1px 6px;
+    color: var(--gold);
+    border: 1px solid rgba(243, 206, 107, 0.4);
+    padding: 2px 8px;
     border-radius: 6px;
-    background-color: rgba(243, 206, 107, 0.05);
+    background: rgba(243, 206, 107, 0.08);
   }
-  .brand-site { font-size: 11px; color: var(--text-dim); text-align: left; }
-  .brand-site span { color: var(--gold); display: block; font-weight: 700; }
-
-  /* شريط التنقل والتحكم السريع */
-  .top-toolbar { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 0 4px; }
-  .top-toolbar a, .top-toolbar button { background: none; border: none; color: var(--gold); font-family: inherit; font-weight: 700; cursor: pointer; text-decoration: none; }
-  .top-toolbar a:hover, .top-toolbar button:hover { text-decoration: underline; }
+  
+  .top-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .top-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .top-btn:hover { color: #fff; border-color: var(--gold); }
 
   /* شريط الفرق الأفقي */
   .teams-container {
     display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 4px;
+    gap: 8px;
   }
   .team-card {
     background: var(--panel);
     border: 1.5px solid var(--line);
-    border-radius: 10px;
-    padding: 6px 10px;
+    border-radius: 12px;
+    padding: 8px;
     text-align: center;
-    min-width: 90px;
     flex: 1;
     cursor: pointer;
-    transition: all .2s;
+    transition: all 0.2s;
   }
   .team-card.active {
     border-color: #4cd137;
-    background: rgba(76, 209, 55, 0.1);
-    box-shadow: 0 0 10px rgba(76, 209, 55, 0.3);
+    background: rgba(76, 209, 55, 0.08);
+    box-shadow: 0 0 12px rgba(76, 209, 55, 0.2);
   }
-  .team-card .t-name { font-size: 11px; color: var(--text-dim); font-weight: 700; }
-  .team-card .t-score { font-size: 16px; font-weight: 900; color: #fff; }
+  .team-card .t-name { font-size: 11px; color: var(--text-dim); font-weight: 700; margin-bottom: 2px; }
+  .team-card .t-score { font-size: 18px; font-weight: 900; color: #fff; }
 
-  /* لوحة البطاقات الكلاسيكية */
+  /* معلومات الدور الحالي بشكل أنيق */
+  .turn-banner {
+    background: rgba(243, 206, 107, 0.05);
+    border: 1px dashed rgba(243, 206, 107, 0.3);
+    padding: 8px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .turn-banner strong { color: var(--gold); }
+
+  /* لوحة البطاقات الكلاسيكية والمرتبة */
   .game-frame {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
-    background: rgba(13, 15, 26, 0.6);
-    padding: 10px;
+    gap: 8px;
+    background: var(--panel);
+    padding: 12px;
     border-radius: 16px;
-    border: 2px solid var(--line);
+    border: 1px solid var(--line);
   }
 
   .card-cell {
-    background: #191f3a;
-    border: 2px solid #3d4a7a;
+    background: #182033;
+    border: 2px solid #2b3758;
     border-radius: 10px;
     aspect-ratio: 1;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     font-size: 18px;
@@ -130,24 +141,16 @@
     color: #e2e8f0;
     cursor: pointer;
     position: relative;
-    box-shadow: inset 0 0 8px rgba(0,0,0,0.6), 0 4px 6px rgba(0,0,0,0.3);
-    transition: transform 0.1s ease, filter 0.15s ease;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+    transition: all 0.15s ease;
   }
   
-  .card-cell::after {
-    content: '';
-    position: absolute;
-    inset: 3px;
-    border: 1px dotted rgba(243, 206, 107, 0.35);
-    border-radius: 7px;
-    pointer-events: none;
-  }
-
   .card-cell:hover {
-    transform: scale(1.05);
+    transform: translateY(-2px);
     border-color: var(--gold);
   }
 
+  /* ألوان البطاقات المفتوحة */
   .card-cell.used { pointer-events: none; }
   .bg-red { background: var(--red) !important; border-color: #ff6b6b !important; color: #fff !important; }
   .bg-green { background: var(--green) !important; border-color: #6ab04c !important; color: #fff !important; }
@@ -155,15 +158,14 @@
   .bg-yellow { background: var(--yellow) !important; border-color: #feca57 !important; color: #111 !important; }
   .bg-purple { background: var(--purple) !important; border-color: #c56cf0 !important; color: #fff !important; }
 
-  /* لوحة المؤقت والتحكم بالأسفل */
+  /* أزرار التحكم السفلية */
   .footer-control {
     display: flex;
     gap: 10px;
-    margin-top: 5px;
   }
   .action-btn {
     flex: 1;
-    padding: 12px;
+    padding: 14px;
     border-radius: 12px;
     font-family: inherit;
     font-weight: 700;
@@ -172,11 +174,11 @@
     cursor: pointer;
     text-align: center;
   }
-  .btn-save { background: #2e7d32; color: #fff; box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4); }
-  .btn-fail { background: #c62828; color: #fff; box-shadow: 0 4px 15px rgba(198, 40, 40, 0.4); }
+  .btn-save { background: #2e7d32; color: #fff; box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3); }
+  .btn-fail { background: #c62828; color: #fff; box-shadow: 0 4px 15px rgba(198, 40, 40, 0.3); }
 
   /* النوافذ المنبثقة */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 50; padding: 20px; }
   .modal-overlay.active { display: flex; }
   .modal-box { background: var(--panel); border: 2px solid var(--gold); border-radius: 16px; padding: 20px; width: 100%; max-width: 340px; text-align: center; }
   .modal-box h3 { color: var(--gold); margin-top: 0; }
@@ -186,31 +188,32 @@
 <body>
 
 <div class="wrap">
-  <!-- هيدر العنوان وشعار NoL -->
+  <!-- الهيدر النظيف بدون فلاشي -->
   <div class="header-brand">
     <div class="brand-title-group">
       <div class="brand-title">المجازفة</div>
       <div class="nol-logo">NoL</div>
     </div>
-    <div class="brand-site">منصة الألعاب<span>flashi.me</span></div>
-  </div>
-
-  <!-- شريط الأدوار والتالي وتحديث الأسماء -->
-  <div class="top-toolbar">
-    <button onclick="openNamesModal()">✏️ تحديث الأسماء</button>
-    <span style="color:var(--text-dim);" id="topTurnInfo">الدور: <strong style="color:var(--gold)">الفريق الأول</strong></span>
-    <button onclick="resetGame()">🔄 إعادة اللعبة</button>
+    <div class="top-actions">
+      <button class="top-btn" onclick="openNamesModal()">✏️ الأسماء</button>
+      <button class="top-btn" onclick="resetGame()">🔄 إعادة</button>
+    </div>
   </div>
 
   <!-- شريط الفرق الأفقية -->
   <div class="teams-container" id="teamsBar"></div>
 
-  <!-- شبكة البطاقات الكلاسيكية -->
+  <!-- بيان الدور الحالي -->
+  <div class="turn-banner" id="turnBanner">
+    دور الفريق: <strong id="activeTeamName">الفريق الأول</strong>
+  </div>
+
+  <!-- شبكة البطاقات الكلاسيكية المرتبة -->
   <div class="game-frame" id="gameBoard"></div>
 
-  <!-- أزرار حفظ الرصيد وتصفير المؤقت السفلي -->
+  <!-- أزرار حفظ الرصيد وتصفير المؤقت -->
   <div class="footer-control">
-    <button class="action-btn btn-fail" onclick="failRound()">❌ تصفير المؤقت (خسارة)</button>
+    <button class="action-btn btn-fail" onclick="failRound()">❌ تصفير الرصيد (خسارة)</button>
     <button class="action-btn btn-save" onclick="bankScore()">💾 حفظ الرصيد (<span id="tempScoreDisplay">0</span>)</button>
   </div>
 </div>
@@ -218,33 +221,23 @@
 <!-- نافذة تعديل الأسماء -->
 <div class="modal-overlay" id="namesModal">
   <div class="modal-box">
-    <h3>إدارة الفرق</h3>
+    <h3>تحديث أسماء الفرق</h3>
     <div id="teamsInputsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:15px;text-align:right;"></div>
     <button onclick="saveTeamNames()">حفظ وتطبيق</button>
   </div>
 </div>
 
-<!-- نافذة الفائز -->
-<div class="modal-overlay" id="winnerModal">
-  <div class="modal-box">
-    <div style="font-size:36px;margin-bottom:5px;">🏆</div>
-    <h3 id="winnerText"></h3>
-    <button onclick="resetGame()">لعبة جديدة</button>
-  </div>
-</div>
-
 <script>
 let teams = [
-  { name: 'الفريق الأول', score: 8 },
+  { name: 'الفريق الأول', score: 0 },
   { name: 'الفريق الثاني', score: 0 },
   { name: 'الفريق الثالث', score: 0 }
 ];
 
 let activeTeamIndex = 0;
 let tempScore = 0;
-let roundColors = [];
-let roundValues = [];
-let totalCards = 35;
+let currentRoundPicks = []; // لتتبع البطاقات المفتوحة في المحاولة الحالية فقط لإرجاعها لو حدث تكرار
+let totalCards = 30; // 30 بطاقة مرتبة ونظيفة
 let boardCards = [];
 
 const availableColors = [
@@ -259,16 +252,20 @@ function initGame() {
   let pool = [];
   for(let i=1; i<=totalCards; i++) {
     let col = availableColors[Math.floor(Math.random() * availableColors.length)];
-    let val = (i % 9) + 1;
+    let val = (i % 8) + 1; // قيم من 1 إلى 8
     pool.push({
+      id: i,
       gridNum: i,
       color: col.name,
       cls: col.cls,
       value: val,
-      text: val
+      isOpen: false,
+      permanentlyUsed: false // إذا تم حفظها بنجاح تختفي أو تقفل نهائياً
     });
   }
   boardCards = pool;
+  tempScore = 0;
+  currentRoundPicks = [];
   renderTeams();
   renderBoard();
   updateTempDisplay();
@@ -280,14 +277,19 @@ function renderTeams() {
   teams.forEach((team, index) => {
     const card = document.createElement('div');
     card.className = `team-card ${index === activeTeamIndex ? 'active' : ''}`;
-    card.onclick = () => { activeTeamIndex = index; renderTeams(); };
+    card.onclick = () => { 
+      // عند تغيير الفريق يدوياً يتم تصفير محاولة الفريق السابق المحتملة
+      if(currentRoundPicks.length > 0) failRound(false);
+      activeTeamIndex = index; 
+      renderTeams(); 
+    };
     card.innerHTML = `
       <div class="t-name">${team.name}</div>
       <div class="t-score">${team.score}</div>
     `;
     container.appendChild(card);
   });
-  document.getElementById('topTurnInfo').innerHTML = `الدور: <strong style="color:var(--gold)">${teams[activeTeamIndex].name}</strong>`;
+  document.getElementById('activeTeamName').textContent = teams[activeTeamIndex].name;
 }
 
 function renderBoard() {
@@ -297,29 +299,48 @@ function renderBoard() {
   boardCards.forEach((item, idx) => {
     const cell = document.createElement('div');
     cell.className = 'card-cell';
-    cell.textContent = item.gridNum;
-    cell.onclick = () => revealCard(cell, item);
+    
+    if (item.permanentlyUsed) {
+      cell.classList.add('used');
+      cell.style.opacity = '0.15';
+      cell.style.pointerEvents = 'none';
+      cell.textContent = '';
+    } else if (item.isOpen) {
+      cell.className = `card-cell used ${item.cls}`;
+      cell.textContent = item.value;
+    } else {
+      cell.textContent = item.gridNum;
+    }
+
+    cell.onclick = () => revealCard(item);
     board.appendChild(cell);
   });
 }
 
-function revealCard(cell, item) {
-  if (cell.classList.contains('used')) return;
+function revealCard(item) {
+  if (item.isOpen || item.permanentlyUsed) return;
 
-  if (roundColors.includes(item.color) || roundValues.includes(item.value)) {
-    cell.classList.add('used', item.cls);
-    cell.textContent = item.text;
-    alert('❌ تكرار اللون أو الرقم! خسر الفريق الرصيد المؤقت.');
-    failRound();
+  // التحقق من التكرار في نفس دور الفريق الحالي (سواء اللون أو الرقم)
+  let isDuplicate = currentRoundPicks.some(p => p.color === item.color || p.value === item.value);
+
+  if (isDuplicate) {
+    // فتح البطاقة مؤقتاً لتوضيح سبب الخسارة ثم إخفاؤها وإرجاع كل شيء
+    item.isOpen = true;
+    renderBoard();
+    
+    setTimeout(() => {
+      alert('❌ حصل تكرار (في اللون أو الرقم)! خسر الفريق الرصيد المؤقت وعادت البطاقات مغلقة.');
+      failRound(true);
+    }, 200);
     return;
   }
 
-  roundColors.push(item.color);
-  roundValues.push(item.value);
+  // إذا لم يحدث تكرار، تفتح البطاقة ويُضاف الرصيد المؤقت
+  item.isOpen = true;
+  currentRoundPicks.push(item);
   tempScore += item.value;
-
-  cell.classList.add('used', item.cls);
-  cell.textContent = item.text;
+  
+  renderBoard();
   updateTempDisplay();
 }
 
@@ -330,20 +351,28 @@ function updateTempDisplay() {
 function bankScore() {
   if (tempScore <= 0) return;
   teams[activeTeamIndex].score += tempScore;
-  resetRound();
+  
+  // تثبيت البطاقات التي فتحها هذا الفريق نهائياً حتى لا تختار مرة أخرى
+  currentRoundPicks.forEach(p => p.permanentlyUsed = true);
+  
+  resetRoundState();
   nextTurn();
 }
 
-function failRound() {
-  resetRound();
-  nextTurn();
+function failRound(switchTurn = true) {
+  // إعادة البطاقات التي فتحها الفريق في هذه المحاولة إلى حالتها الأصلية المغلقة (تختفي الأرقام والألوان)
+  currentRoundPicks.forEach(p => p.isOpen = false);
+  resetRoundState();
+  if (switchTurn) {
+    nextTurn();
+  }
 }
 
-function resetRound() {
+function resetRoundState() {
   tempScore = 0;
-  roundColors = [];
-  roundValues = [];
+  currentRoundPicks = [];
   updateTempDisplay();
+  renderBoard();
 }
 
 function nextTurn() {
@@ -352,8 +381,6 @@ function nextTurn() {
 }
 
 function resetGame() {
-  document.getElementById('winnerModal').classList.remove('active');
-  resetRound();
   activeTeamIndex = 0;
   teams.forEach(t => t.score = 0);
   initGame();
@@ -363,7 +390,7 @@ function openNamesModal() {
   const list = document.getElementById('teamsInputsList');
   list.innerHTML = '';
   teams.forEach((t, i) => {
-    list.innerHTML += `<div>الاسم ${i+1}: <input type="text" id="teamInput_${i}" value="${t.name}" style="width:100%;padding:6px;border-radius:6px;background:#0d0f1a;color:#fff;border:1px solid var(--line);"></div>`;
+    list.innerHTML += `<div>الاسم ${i+1}: <input type="text" id="teamInput_${i}" value="${t.name}" style="width:100%;padding:8px;border-radius:8px;background:#0b0f19;color:#fff;border:1px solid var(--line);"></div>`;
   });
   document.getElementById('namesModal').classList.add('active');
 }

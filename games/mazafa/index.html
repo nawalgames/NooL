@@ -10,7 +10,7 @@
 <style>
   :root{
     --bg-gradient: linear-gradient(135deg, #0c102b 0%, #1a1438 50%, #080a17 100%);
-    --panel: rgba(19, 23, 44, 0.9);
+    --panel: rgba(19, 23, 44, 0.95);
     --line: #303b63;
     --gold: #f3ce6b;
     --text:#f1f0ec;
@@ -18,7 +18,7 @@
     --red:#d32f2f; --green:#2e7d32; --blue:#1565c0; --yellow:#f9a825; --purple:#6a1b9a;
   }
   *{box-sizing:border-box;user-select:none;}
-  html,body{height:100%;}
+  html,body{height:100%; overflow-x: hidden;}
   body{
     margin:0;
     background: var(--bg-gradient);
@@ -28,16 +28,16 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    padding: 10px;
+    padding: 8px;
   }
 
-  .wrap{max-width:480px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:10px;}
+  .wrap{max-width:480px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:8px;}
 
   /* شاشة إعدادات المضيف */
   .setup-screen {
     position: fixed;
     inset: 0;
-    background: rgba(10, 13, 28, 0.95);
+    background: rgba(10, 13, 28, 0.96);
     z-index: 100;
     display: flex;
     align-items: center;
@@ -114,29 +114,29 @@
     justify-content: space-between;
     align-items: center;
     background: var(--panel);
-    padding: 10px 16px;
-    border-radius: 14px;
+    padding: 8px 14px;
+    border-radius: 12px;
     border: 1px solid var(--line);
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
   }
-  .brand-title-group { display: flex; align-items: center; gap: 10px; }
+  .brand-title-group { display: flex; align-items: center; gap: 8px; }
   .brand-title {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 900;
     background: linear-gradient(to bottom, #fff, #b0c4de);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   .nol-logo {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 900;
     letter-spacing: 1px;
     background: linear-gradient(135deg, #f3ce6b, #ff9f43);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     border: 1px solid rgba(243, 206, 107, 0.3);
-    padding: 2px 6px;
-    border-radius: 6px;
+    padding: 2px 5px;
+    border-radius: 5px;
     background-color: rgba(243, 206, 107, 0.05);
   }
 
@@ -145,8 +145,8 @@
     background: rgba(255,255,255,0.05);
     border: 1px solid var(--line);
     color: var(--text-dim);
-    padding: 6px 10px;
-    border-radius: 8px;
+    padding: 5px 8px;
+    border-radius: 6px;
     font-family: inherit;
     font-size: 11px;
     font-weight: 700;
@@ -159,8 +159,8 @@
   .team-card {
     background: var(--panel);
     border: 1.5px solid var(--line);
-    border-radius: 10px;
-    padding: 6px;
+    border-radius: 8px;
+    padding: 5px;
     text-align: center;
     flex: 1;
     cursor: pointer;
@@ -168,52 +168,51 @@
   }
   .team-card.active {
     border-color: #4cd137;
-    background: rgba(76, 209, 55, 0.1);
+    background: rgba(76, 209, 55, 0.12);
     box-shadow: 0 0 10px rgba(76, 209, 55, 0.3);
   }
-  .team-card .t-name { font-size: 11px; color: var(--text-dim); font-weight: 700; }
-  .team-card .t-score { font-size: 16px; font-weight: 900; color: #fff; }
+  .team-card .t-name { font-size: 10px; color: var(--text-dim); font-weight: 700; }
+  .team-card .t-score { font-size: 15px; font-weight: 900; color: #fff; }
 
   /* بيان الدور */
   .turn-banner {
-    background: rgba(19, 23, 44, 0.6);
+    background: rgba(19, 23, 44, 0.8);
     border: 1px dashed var(--line);
-    padding: 6px;
-    border-radius: 8px;
+    padding: 5px;
+    border-radius: 6px;
     text-align: center;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-dim);
   }
   .turn-banner strong { color: var(--gold); }
 
-  /* شبكة البطاقات (50 بطاقة - 5 أعمدة) */
+  /* شبكة البطاقات (50 بطاقة - 5 أعمدة تضمن ظهور الكروت بوضوح) */
   .game-frame {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 5px;
-    background: rgba(13, 15, 26, 0.7);
-    padding: 10px;
-    border-radius: 16px;
+    gap: 4px;
+    background: rgba(13, 15, 26, 0.85);
+    padding: 8px;
+    border-radius: 14px;
     border: 2px solid var(--line);
-    max-height: 52vh;
-    overflow-y: auto;
+    width: 100%;
   }
 
   .card-cell {
     background: #151a30;
     border: 2px solid #3d4a7a;
-    border-radius: 8px;
+    border-radius: 6px;
     aspect-ratio: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 900;
     color: #e2e8f0;
     cursor: pointer;
     position: relative;
-    box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.6);
     transition: transform 0.1s;
   }
   .card-cell::after {
@@ -221,7 +220,7 @@
     position: absolute;
     inset: 2px;
     border: 1px dotted rgba(243, 206, 107, 0.4);
-    border-radius: 6px;
+    border-radius: 4px;
     pointer-events: none;
   }
   .card-cell:hover { transform: scale(1.04); border-color: var(--gold); }
@@ -232,16 +231,16 @@
   /* البطاقات المفتوحة أو المحفوظة تختفي تماماً */
   .card-cell.hidden-slot {
     background: transparent !important;
-    border: 2px dashed rgba(255, 255, 255, 0.03) !important;
+    border: 2px dashed rgba(255, 255, 255, 0.02) !important;
     box-shadow: none !important;
     pointer-events: none !important;
     color: transparent !important;
   }
   .card-cell.hidden-slot::after { display: none; }
 
-  /* أنماط محتوى الكرت عند فتحه */
-  .card-inner-val { font-size: 18px; font-weight: 900; }
-  .card-inner-sub { font-size: 10px; font-weight: 700; margin-top: -2px; opacity: 0.9; }
+  /* أشكال محتوى الكرت عند فتحه */
+  .card-inner-val { font-size: 16px; font-weight: 900; }
+  .card-inner-sub { font-size: 9px; font-weight: 700; margin-top: -2px; opacity: 0.9; }
 
   /* الألوان والخاصيات الداخلية */
   .bg-red { background: var(--red) !important; border-color: #ff6b6b !important; color: #fff !important; }
@@ -249,34 +248,34 @@
   .bg-blue { background: var(--blue) !important; border-color: #48dbfb !important; color: #fff !important; }
   .bg-yellow { background: var(--yellow) !important; border-color: #feca57 !important; color: #111 !important; }
   .bg-purple { background: var(--purple) !important; border-color: #c56cf0 !important; color: #fff !important; }
-  .bg-bomb { background: #b71c1c !important; border-color: #ff5252 !important; color: #fff !important; font-size: 22px; }
-  .bg-double { background: #ff8f00 !important; border-color: #ffe082 !important; color: #111 !important; font-size: 16px; }
+  .bg-bomb { background: #b71c1c !important; border-color: #ff5252 !important; color: #fff !important; font-size: 20px; }
+  .bg-double { background: #ff8f00 !important; border-color: #ffe082 !important; color: #111 !important; font-size: 15px; }
 
   /* الأزرار السفلية */
-  .footer-control { display: flex; gap: 8px; }
+  .footer-control { display: flex; gap: 6px; }
   .action-btn {
     flex: 1;
-    padding: 12px;
-    border-radius: 12px;
+    padding: 10px;
+    border-radius: 10px;
     font-family: inherit;
     font-weight: 700;
-    font-size: 13px;
+    font-size: 12px;
     border: none;
     cursor: pointer;
     text-align: center;
   }
-  .btn-save { background: #2e7d32; color: #fff; box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4); }
-  .btn-fail { background: #c62828; color: #fff; box-shadow: 0 4px 15px rgba(198, 40, 40, 0.4); }
+  .btn-save { background: #2e7d32; color: #fff; box-shadow: 0 4px 12px rgba(46, 125, 50, 0.4); }
+  .btn-fail { background: #c62828; color: #fff; box-shadow: 0 4px 12px rgba(198, 40, 40, 0.4); }
 
   .spectator-banner {
     background: rgba(53, 162, 159, 0.15);
     border: 1px solid #35a29f;
     color: #4ee1dc;
     text-align: center;
-    padding: 10px;
-    border-radius: 12px;
+    padding: 8px;
+    border-radius: 10px;
     font-weight: 700;
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 50; padding: 20px; }
@@ -352,7 +351,7 @@
 
   <!-- أزرار التحكم -->
   <div class="footer-control" id="hostControls">
-    <button class="action-btn btn-fail" onclick="failRound()">❌ تصفير الرصيد المؤقت (خسارة)</button>
+    <button class="action-btn btn-fail" onclick="failRound()">❌ تصفير الرصيد (خسارة)</button>
     <button class="action-btn btn-save" onclick="bankScore()">💾 حفظ الرصيد (<span id="tempScoreDisplay">0</span>)</button>
   </div>
 
@@ -445,7 +444,6 @@ function initGame() {
   
   let remainingIndices = indices.slice(configBombs + configDoubles);
 
-  // إعداد مصفوفة الأرقام العادية (1 إلى 9 مكررة 5 مرات = 45 قيمة، سيتم اقتطاع أو ملء المتبقي بدقة)
   let normalValuesPool = [];
   for(let i=0; i<5; i++) {
     for(let n=1; n<=9; n++) {
@@ -454,7 +452,6 @@ function initGame() {
   }
   normalValuesPool.sort(() => Math.random() - 0.5);
 
-  // إعداد مصفوفة الألوان المتاحة لتوزع بشكل متوازن عشوائي
   let normalColorsPool = [];
   let colorCounter = Math.ceil(remainingIndices.length / colorList.length) + 2;
   for(let c=0; c<colorCounter; c++) {
@@ -560,7 +557,6 @@ function renderTeams() {
     container.appendChild(card);
   });
   if(document.getElementById('activeTeamName')) {
-    document.getElementById('activeTeamNameтена') = teams[activeTeamIndex]?.name || '';
     document.getElementById('activeTeamName').textContent = teams[activeTeamIndex]?.name || '';
   }
 }
@@ -595,7 +591,6 @@ function renderBoard() {
 function revealCard(item) {
   if (isSpectator || item.isOpen || item.permanentlyGone) return;
 
-  // 1. التعامل مع القنبلة
   if (item.type === 'bomb') {
     item.isOpen = true;
     currentRoundPicks.push(item);
@@ -610,7 +605,6 @@ function revealCard(item) {
     return;
   }
 
-  // 2. التعامل مع الدبل (x2)
   if (item.type === 'double') {
     item.isOpen = true;
     currentRoundPicks.push(item);
@@ -621,7 +615,6 @@ function revealCard(item) {
     return;
   }
 
-  // 3. التحقق من تشابه الألوان أو الأرقام داخل نفس الجولة الحالية فقط
   let hasColorConflict = currentRoundPicks.some(p => p.type === 'normal' && p.color === item.color);
   let hasNumberConflict = currentRoundPicks.some(p => p.type === 'normal' && p.value === item.value);
 
@@ -641,7 +634,6 @@ function revealCard(item) {
     return;
   }
 
-  // كرت عادي صحيح وغير متشابه
   item.isOpen = true;
   currentRoundPicks.push(item);
   tempScore += item.value;

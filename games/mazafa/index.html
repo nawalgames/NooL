@@ -331,7 +331,7 @@
     <button class="setup-btn" onclick="startCustomGame()">ابدأ اللعبة الان 🚀</button>
     
     <div class="share-link-box">
-      <button class="share-btn" onclick="copySpectatorLink()">📋 نسخ رابط المشاهدة للجمهور</button>
+      <button class="share-btn" onclick="copySpectatorLink()">📋 نسخ رابط المشاهدة المتزامن</button>
     </div>
   </div>
 </div>
@@ -367,7 +367,7 @@
   </div>
 
   <div class="spectator-banner" id="spectatorBanner" style="display:none;">
-    👀 وضع المشاهدة فقط — تابع اللعبة لحظة بلحظة
+    👀 وضع المشاهدة فقط — يتم تحديث اللعبة تلقائياً من المضيف
   </div>
 </div>
 
@@ -403,23 +403,36 @@ window.onload = function() {
   updateTeamInputsGenerator();
   const urlParams = new URLSearchParams(window.location.search);
   
+  // فحص ما إذا كان الرابط يحتوي على حالة اللعبة مضمنة بداخله (لتفعيل المشاهدة الحقيقية الفورية)
+  const encodedState = urlParams.get('data');
+  if (encodedState) {
+    try {
+      const decodedData = JSON.parse(decodeURIComponent(escape(atob(encodedState))));
+      teams = decodedData.teams;
+      activeTeamIndex = decodedData.activeTeamIndex;
+      tempScore = decodedData.tempScore;
+      boardCards = decodedData.boardCards;
+      currentRoundPicks = decodedData.currentRoundPicks || [];
+      
+      isSpectator = true;
+      setupSpectatorUI();
+      renderTeams();
+      renderBoard();
+      updateTempDisplay();
+      
+      // التحديث التلقائي المستمر للمشاهد إذا قام المضيف بتحديث الرابط أو إرساله مجدداً
+      return;
+    } catch(e) {
+      console.log('Error decoding state');
+    }
+  }
+
   if (urlParams.get('mode') === 'spectator') {
     isSpectator = true;
-    document.getElementById('setupScreen').style.display = 'none';
-    document.getElementById('pageBody').classList.add('spectator-mode');
-    document.getElementById('hostTopActions').style.display = 'none';
-    document.getElementById('hostControls').style.display = 'none';
-    document.getElementById('spectatorBanner').style.display = 'block';
-    document.getElementById('turnBanner').style.display = 'none';
-    
-    // محاولة جلب الحالة فوراً، وإن لم تكن موجودة يتم تهيئة شبكة افتراضية لمنع الشاشة الفارغة
+    setupSpectatorUI();
     loadGameData();
-    if (!boardCards || boardCards.length === 0) {
-      initDefaultBoardForSpectator();
-    }
-    setInterval(loadGameData, 1500);
+    setInterval(loadGameData, 1000);
   } else {
-    // التحقق هل توجد بيانات سابقة محفوظة للمضيف
     const saved = localStorage.getItem('nol_game_state_v3');
     if (saved) {
       loadGameData();
@@ -430,6 +443,15 @@ window.onload = function() {
     }
   }
 };
+
+function setupSpectatorUI() {
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('pageBody').classList.add('spectator-mode');
+  document.getElementById('hostTopActions').style.display = 'none';
+  document.getElementById('hostControls').style.display = 'none';
+  document.getElementById('spectatorBanner').style.display = 'block';
+  document.getElementById('turnBanner').style.display = 'block';
+}
 
 function updateTeamInputsGenerator() {
   const count = parseInt(document.getElementById('setupTeamsCount').value);
@@ -449,8 +471,12 @@ function updateTeamInputsGenerator() {
 
 function copySpectatorLink() {
   const currentUrl = window.location.href.split('?')[0];
-  navigator.clipboard.writeText(currentUrl + '?mode=spectator').then(() => {
-    alert('✅ تم نسخ رابط المشاهدة بنجاح!');
+  const gameState = { teams, activeTeamIndex, tempScore, boardCards, currentRoundPicks };
+  const base64State = btoa(unescape(encodeURIComponent(JSON.stringify(gameState))));
+  const spectatorLink = `${currentUrl}?data=${base64State}`;
+  
+  navigator.clipboard.writeText(spectatorLink).then(() => {
+    alert('✅ تم نسخ رابط المشاهدة المتزامن بنجاح!\nالآن أرسله للجمهور ليظهر لديهم نفس الكروت والفرق مباشرة.');
   });
 }
 
@@ -552,27 +578,6 @@ function initGame() {
   renderTeams();
   renderBoard();
   updateTempDisplay();
-}
-
-function initDefaultBoardForSpectator() {
-  teams = [{ name: 'فريق الوحوش', score: 0 }, { name: 'النمور', score: 0 }, { name: 'النسور', score: 0 }];
-  boardCards = [];
-  for(let i=1; i<=totalCards; i++) {
-    boardCards.push({
-      id: i,
-      gridNum: i,
-      type: 'normal',
-      value: 1,
-      color: 'red',
-      cls: 'bg-red',
-      text: i.toString(),
-      subText: '',
-      isOpen: false,
-      permanentlyGone: false
-    });
-  }
-  renderTeams();
-  renderBoard();
 }
 
 function saveGameData() {
@@ -721,6 +726,7 @@ function bankScore() {
   if (isSpectator || tempScore <= 0) return;
   teams[activeTeamIndex].score += tempScore;
   
+  currentRoundPicks.format = true;
   currentRoundPicks.forEach(p => p.permanentlyGone = true);
   
   resetRoundState();
@@ -735,7 +741,7 @@ function failRound(switchTurn = true) {
   }
 }
 
-function resetRoundSessionState() {
+function resetRoundState() {
   tempScore = 0;
   currentRoundPicks.forEach(p => {
     if (!p.permanentlyGone) p.isOpen = false; 
@@ -744,10 +750,6 @@ function resetRoundSessionState() {
   updateTempDisplay();
   saveGameData();
   renderBoard();
-}
-
-function resetRoundState() {
-  resetRoundSessionState();
 }
 
 function nextTurn() {

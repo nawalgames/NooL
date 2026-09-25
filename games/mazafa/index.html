@@ -10,6 +10,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 
+<!-- ========================================================================
+   Firebase Realtime Database (Compat) - الإصدار المستقر والمتطابق
+========================================================================= -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+
 <style>
 :root{
   --bg-gradient:linear-gradient(135deg,#0c102b 0%,#1a1438 50%,#080a17 100%);
@@ -951,26 +957,10 @@ body{
 
 
 <!-- =====================================================
-     FIREBASE
+     FIREBASE & GAME LOGIC (Compat Version)
 ================================================     -->
-
-<script type="module">
-
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
-import {
-  getDatabase,
-  ref,
-  set,
-  get,
-  update,
-  onValue,
-  remove
-}
-from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
-
-
+<script>
+// تهيئة Firebase المتوافقة (Compat) لتجنب التعليق
 const firebaseConfig = {
   apiKey: "AIzaSyDiOGYHADTeRz4CrrMh264K0sOQNrINl4w",
   authDomain: "nool-1fa3a.firebaseapp.com",
@@ -982,35 +972,17 @@ const firebaseConfig = {
   measurementId: "G-ZCMH5FFTL6"
 };
 
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-window.NoLFirebase = {
-  db,
-  ref,
-  set,
-  get,
-  update,
-  onValue,
-  remove
-};
-
-window.dispatchEvent(
-  new Event("firebase-ready")
-);
-
-</script>
-
-
-<!-- =====================================================
-     GAME JAVASCRIPT
-================================================     -->
-
-<script>
-
 let db = null;
 let firebaseReady = false;
+
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  firebaseReady = true;
+} catch (e) {
+  console.error("Firebase initialization error:", e);
+}
+
 let roomId = null;
 let teams = [];
 let activeTeamIndex = 0;
@@ -1032,12 +1004,9 @@ const colorList = [
   { name:'purple', label:'بنفسجي', cls:'bg-purple' }
 ];
 
-window.addEventListener('firebase-ready', () => {
-  db = window.NoLFirebase.db;
-  firebaseReady = true;
+window.addEventListener('DOMContentLoaded', () => {
   initializeApplication();
 });
-
 
 async function initializeApplication(){
   const loading = document.getElementById('loadingScreen');
@@ -1057,7 +1026,6 @@ async function initializeApplication(){
       isSpectator = false;
       loading.style.display = 'none';
 
-      // التحقق من وجود اشتراك مسبق مخزن محلياً
       const savedKey = localStorage.getItem('nol_license_key');
       if(savedKey){
         loading.style.display = 'flex';
@@ -1081,7 +1049,6 @@ async function initializeApplication(){
   }
 }
 
-// دالة التحقق وتحديث الأكواد لتتوافق 100% مع لوحة التحكم (تفعيل وتتبع)
 async function verifyLicenseKey(){
   const inputKey = document.getElementById('licenseKeyInput').value.trim();
   if(!inputKey){
@@ -1108,23 +1075,19 @@ async function verifyLicenseKey(){
 
 async function validateKeyOnServer(key){
   try{
-    const keyRef = window.NoLFirebase.ref(db, `codes/${key}`);
-    const snapshot = await window.NoLFirebase.get(keyRef);
-
+    const snapshot = await db.ref(`codes/${key}`).once('value');
     if(!snapshot.exists()) return false;
 
     const data = snapshot.val();
     const now = Date.now();
 
-    // إذا كان الكود ملغى مسبقاً
     if(data.status === 'revoked') return false;
 
-    // إذا كان الكود جديداً ولم يُفعل من قبل
     if(data.status === 'new' || !data.status){
       const durationDays = Number(data.days) || 30;
       const expiresAt = now + (durationDays * 24 * 60 * 60 * 1000);
       
-      await window.NoLFirebase.update(keyRef, {
+      await db.ref(`codes/${key}`).update({
         status: 'active',
         activatedAt: now,
         expiresAt: expiresAt
@@ -1132,12 +1095,10 @@ async function validateKeyOnServer(key){
       return true;
     }
 
-    // إذا كان نشطاً لكن انتهى وقت صلاحيته
     if(data.status === 'active' && data.expiresAt && data.expiresAt < now){
       return false;
     }
 
-    // إذا كان نشطاً وصالحاً
     if(data.status === 'active'){
       return true;
     }
@@ -1149,14 +1110,11 @@ async function validateKeyOnServer(key){
   }
 }
 
-// دوال التنقل الجديدة (التواصل مع الدعم والرجوع للقائمة الرئيسية)
 function goToSupportPage(){
-  // استبدل الرابط أدناه برابط صفحة الروابط الخاصة بك إذا كانت صفحة مستقلة، أو اربطها بالمعرف المناسب
-  window.location.href = 'support.html'; 
+  window.location.href = 'index.html'; 
 }
 
 function goBackHome(){
-  // العودة للصفحة الرئيسية للمنصة
   window.location.href = 'index.html'; 
 }
 
@@ -1174,7 +1132,7 @@ async function createRoom(){
   let exists = true;
   while(exists){
     newId = generateRoomId();
-    const snapshot = await window.NoLFirebase.get(window.NoLFirebase.ref(db, `games/${newId}`));
+    const snapshot = await db.ref(`games/${newId}`).once('value');
     exists = snapshot.exists();
   }
   roomId = newId;
@@ -1200,8 +1158,8 @@ function setupSpectatorUI(){
 
 async function openSpectatorRoom(id){
   setupSpectatorUI();
-  const roomRef = window.NoLFirebase.ref(db, `games/${id}`);
-  const snapshot = await window.NoLFirebase.get(roomRef);
+  const roomRef = db.ref(`games/${id}`);
+  const snapshot = await roomRef.once('value');
 
   if(!snapshot.exists()){
     showAlert('❌ الجلسة غير موجودة', 'هذا الرابط غير صالح أو أن الجلسة انتهت.');
@@ -1220,7 +1178,7 @@ async function openSpectatorRoom(id){
   document.getElementById('roomCodeDisplay').textContent = id;
   applyGameState(data);
 
-  unsubscribeGame = window.NoLFirebase.onValue(roomRef, snapshot => {
+  roomRef.on('value', snapshot => {
     if(!snapshot.exists()){
       gameFinished = true;
       showAlert('🔒 انتهت الجلسة', 'قام المضيف بإغلاق هذه الجلسة.');
@@ -1391,7 +1349,7 @@ async function saveGameData(){
   };
 
   try{
-    await window.NoLFirebase.set(window.NoLFirebase.ref(db, `games/${roomId}`), gameState);
+    await db.ref(`games/${roomId}`).set(gameState);
   } catch(error){
     console.error('Firebase save error:', error);
   }
@@ -1419,14 +1377,14 @@ async function finishGame(){
 
   gameFinished = true;
   try{
-    await window.NoLFirebase.update(window.NoLFirebase.ref(db, `games/${roomId}`), {
+    await db.ref(`games/${roomId}`).update({
       status: 'finished',
       finishedAt: Date.now()
     });
 
     setTimeout(async ()=>{
       try{
-        await window.NoLFirebase.remove(window.NoLFirebase.ref(db, `games/${roomId}`));
+        await db.ref(`games/${roomId}`).remove();
       } catch(error){
         console.error('Room delete error:', error);
       }
@@ -1444,6 +1402,13 @@ function openSetupAgain(){
   if(isSpectator) return;
   updateTeamInputsGenerator();
   document.getElementById('setupScreen').style.display = 'flex';
+}
+
+function resetGame(){
+  if(isSpectator) return;
+  const confirmed = confirm('هل تريد إعادة تعيين اللوحة وبدء جولة جديدة بنفس الفرق؟');
+  if(!confirmed) return;
+  initGame();
 }
 
 function renderTeams(){
@@ -1510,5 +1475,101 @@ function renderBoard(){
 function revealCard(item){
   if(isSpectator || gameFinished || item.isOpen || item.permanentlyGone) return;
 
+  item.isOpen = true;
+  currentRoundPicks.push(item);
+
   if(item.type === 'bomb'){
-    item.isOpen = true
+    tempScore = 0;
+    showAlert('💥 بوووم!', `انفجرت القنبلة بوجه ${teams[activeTeamIndex].name}!\nتم تصفير الرصيد المؤقت.`);
+    currentRoundPicks.forEach(p => p.permanentlyGone = true);
+    currentRoundPicks = [];
+    nextTurn();
+  } else if(item.type === 'double'){
+    if(tempScore === 0){
+      tempScore = 10;
+    } else {
+      tempScore *= 2;
+    }
+    updateTempDisplay();
+  } else {
+    if(tempScore === 0){
+      tempScore = item.value;
+    } else {
+      tempScore += item.value;
+    }
+    updateTempDisplay();
+  }
+
+  renderBoard();
+  saveGameData();
+}
+
+function updateTempDisplay(){
+  const display = document.getElementById('tempScoreDisplay');
+  if(display){
+    display.textContent = tempScore;
+  }
+}
+
+function bankScore(){
+  if(isSpectator || gameFinished) return;
+  if(tempScore <= 0){
+    showAlert('تنبيه', 'لا يوجد رصيد مؤقت لحفظه.');
+    return;
+  }
+
+  teams[activeTeamIndex].score += tempScore;
+  currentRoundPicks.forEach(p => p.permanentlyGone = true);
+  currentRoundPicks = [];
+  tempScore = 0;
+
+  updateTempDisplay();
+  renderTeams();
+  renderBoard();
+  nextTurn();
+  saveGameData();
+}
+
+function failRound(showAlertMsg = true){
+  if(isSpectator || gameFinished) return;
+  tempScore = 0;
+  currentRoundPicks.forEach(p => p.isOpen = false);
+  currentRoundPicks = [];
+  updateTempDisplay();
+  renderBoard();
+  nextTurn();
+  saveGameData();
+  if(showAlertMsg){
+    showAlert('انتهت المحاولة', 'تم تصفير الرصيد المؤقت وإرجاع الكروت المغلقة.');
+  }
+}
+
+function nextTurn(){
+  activeTeamIndex = (activeTeamIndex + 1) % teams.length;
+  renderTeams();
+}
+
+function showAlert(title, message){
+  document.getElementById('alertTitle').textContent = title;
+  document.getElementById('alertMessage').textContent = message;
+  document.getElementById('alertModal').classList.add('active');
+}
+
+function closeAlertModal(){
+  document.getElementById('alertModal').classList.remove('active');
+}
+
+function escapeHtml(text){
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+</script>
+
+</body>
+</html>

@@ -312,14 +312,14 @@
     <p class="tagline">اختر لعبة وابدأ اللعب مع أصحابك</p>
     <div class="grid" id="gamesGrid">
       
-      <!-- كرت لعبة طبول الحرب -->
-      <div class="game-card" onclick="openGame('games/harb/index.html')">
+      <!-- كرت لعبة طبول الحرب (تفتح مباشرة للجميع بدون كود) -->
+      <div class="game-card" onclick="openFreeGame('games/harb/index.html')">
         <img src="assets/war-drums.pngg.PNG" alt="طبول الحرب" class="game-card-img">
         <div class="game-card-title">طبول الحرب</div>
       </div>
 
-      <!-- كرت لعبة المجازفة -->
-      <div class="game-card" onclick="openGame('games/mazafa/index.html')">
+      <!-- كرت لعبة المجازفة (تتطلب كود اشتراك) -->
+      <div class="game-card" onclick="openLockedGame('games/mazafa/index.html')">
         <img src="assets/mazafa.png" alt="لعبة المجازفة" class="game-card-img">
         <div class="game-card-title">المجازفة</div>
       </div>
@@ -346,7 +346,7 @@
 <div class="modal-overlay" id="codeOverlay">
   <div class="modal">
     <h2>تفعيل كود الاشتراك</h2>
-    <p>هذه اللعبة تتطلب كود تفعيل ساري. أخل الكود للبدء:</p>
+    <p>هذه اللعبة تتطلب كود تفعيل ساري. أدخل الكود للبدء:</p>
     <input type="text" id="codeInput" placeholder="أدخل كود الاشتراك..." maxlength="30" autocomplete="off">
     <p class="modal-msg" id="codeMsg"></p>
     <div class="modal-actions">
@@ -391,15 +391,19 @@ backBtn.addEventListener('click', () => {
   homeView.classList.add('active');
 });
 
-// التعامل مع فتح الألعاب والتحقق من الاشتراك
 let targetGameUrl = '';
 
-async function openGame(url) {
+// 1. دالة للألعاب المجانية (تفتح مباشرة للجميع بدون كود مثل طبول الحرب)
+function openFreeGame(url) {
+  window.location.href = url;
+}
+
+// 2. دالة للألعاب المقفلة (تتحقق من الكود أولاً مثل المجازفة)
+async function openLockedGame(url) {
   targetGameUrl = url;
   const savedKey = localStorage.getItem('nol_license_key');
 
   if (savedKey && db) {
-    // التحقق السريع من صلاحية الكود المخزن
     const isValid = await checkKeyInFirebase(savedKey);
     if (isValid) {
       window.location.href = targetGameUrl;
@@ -423,7 +427,6 @@ async function checkKeyInFirebase(key) {
     if (data.status === 'revoked') return false;
     if (data.status === 'active' && data.expiresAt && data.expiresAt < now) return false;
     if (data.status === 'new' || !data.status) {
-      // تفعيل الكود لأول مرة
       const durationDays = Number(data.days) || 30;
       const expiresAt = now + (durationDays * 24 * 60 * 60 * 1000);
       await db.ref(`codes/${key}`).update({
@@ -440,7 +443,6 @@ async function checkKeyInFirebase(key) {
   }
 }
 
-// أزرار النافذة المنخفضة
 document.getElementById('codeCancel').addEventListener('click', () => {
   document.getElementById('codeOverlay').classList.remove('active');
 });

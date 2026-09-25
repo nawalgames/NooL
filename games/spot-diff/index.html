@@ -1,1 +1,431 @@
-1
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>اختلاف الصور — NoL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<style>
+:root{--bg:#0d0f1a;--panel:#191d2e;--bg-soft:#141827;--line:rgba(255,255,255,.08);--text:#f1f0ec;--text-dim:#9a9db3;--accent:#ffb545;--accent-2:#6ee7c8;--red:#ff6b6b;
+padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+*{box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;margin:0;}
+body{background:var(--bg);color:var(--text);font-family:'Tajawal',sans-serif;}
+.wrap{max-width:480px;margin:0 auto;padding:14px;min-height:100vh;display:flex;flex-direction:column;}
+h1{font-size:19px;margin:0 0 4px;color:var(--accent);}
+.sub{color:var(--text-dim);font-size:13px;margin:0 0 16px;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px;}
+label{display:block;font-size:13px;color:var(--text-dim);margin:10px 0 5px;}
+input[type=text],input[type=number]{width:100%;background:var(--bg-soft);border:1.5px solid var(--line);border-radius:10px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:15px;}
+input:focus{outline:none;border-color:var(--accent-2);}
+.btn{width:100%;font-family:inherit;font-size:15px;font-weight:700;border-radius:12px;padding:13px;cursor:pointer;border:none;background:var(--accent);color:#1a1200;margin-top:8px;}
+.btn.alt{background:var(--panel);border:1.5px solid var(--line);color:var(--text);}
+.btn.small{width:auto;padding:8px 14px;font-size:12px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.row{display:flex;gap:8px;}
+.linkbox{display:flex;gap:8px;align-items:center;background:var(--bg-soft);border:1.5px dashed var(--line);border-radius:10px;padding:10px;font-size:12px;direction:ltr;overflow:hidden;}
+.linkbox span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:var(--accent-2);}
+.plist{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;}
+.prow{display:flex;justify-content:space-between;align-items:center;background:var(--bg-soft);border-radius:10px;padding:9px 12px;font-size:13px;}
+.prow .nm{font-weight:700;}
+.prow .st{color:var(--text-dim);font-size:11px;}
+.prow.locked{opacity:.5;}
+.badge{background:var(--accent-2);color:#062018;font-weight:900;border-radius:8px;padding:2px 9px;font-size:12px;}
+.statusbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:700;font-size:14px;}
+.statusbar .timer{color:var(--accent);font-variant-numeric:tabular-nums;}
+.statusbar .cnt{color:var(--accent-2);}
+.game-frame{display:flex;flex-direction:column;gap:8px;position:relative;}
+.pic-box{position:relative;width:100%;aspect-ratio:4/3;border-radius:12px;overflow:hidden;border:2px solid var(--line);background:#000;cursor:crosshair;}
+.pic-box img{width:100%;height:100%;object-fit:cover;pointer-events:none;transition:filter .3s;}
+.game-frame.locked .pic-box img{filter:grayscale(1) brightness(.5);}
+.game-frame.locked .pic-box{cursor:not-allowed;}
+.lockmsg{display:none;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;color:#fff;font-weight:900;font-size:14px;background:rgba(0,0,0,.35);z-index:5;padding:20px;}
+.game-frame.locked .lockmsg{display:flex;}
+.marker{position:absolute;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;}
+.marker.found{border:3px solid var(--accent-2);box-shadow:0 0 10px rgba(110,231,200,.8);width:44px;height:44px;}
+.marker.miss{border:3px solid var(--red);width:32px;height:32px;box-shadow:0 0 10px rgba(255,107,107,.8);animation:fo .7s ease forwards;}
+@keyframes fo{to{opacity:0;}}
+.feed{display:flex;flex-direction:column;gap:4px;max-height:140px;overflow-y:auto;font-size:12px;color:var(--text-dim);}
+.rank{display:flex;justify-content:space-between;align-items:center;background:var(--bg-soft);border-radius:10px;padding:10px 14px;margin-bottom:6px;}
+.rank .pos{font-weight:900;color:var(--accent);width:24px;}
+.view{display:none;}
+.view.active{display:flex;flex-direction:column;flex:1;}
+.center{align-items:center;justify-content:center;text-align:center;flex:1;}
+.msg{font-size:13px;color:var(--text-dim);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="view center active" id="loadingView"><p class="msg">جاري التحميل...</p></div>
+
+<!-- ===== شاشة إعداد المضيف ===== -->
+<div class="view" id="hostSetupView">
+  <h1>إنشاء جلسة اختلاف الصور</h1>
+  <p class="sub">اضبط إعدادات الجولة ثم أنشئ رابط المشاركة</p>
+  <div class="card">
+    <label>عدد الصور (الجولات) — حد أقصى 9</label>
+    <input type="number" id="setRounds" value="5" min="1" max="9">
+    <label>وقت كل جولة (بالثواني)</label>
+    <input type="number" id="setTime" value="90" min="20" max="600">
+    <label>عدد الأخطاء المسموح قبل القفل</label>
+    <input type="number" id="setMistakes" value="5" min="1" max="20">
+    <button class="btn" onclick="createSession()">إنشاء الجلسة</button>
+  </div>
+</div>
+
+<!-- ===== شاشة استضافة (بعد الإنشاء) ===== -->
+<div class="view" id="hostLobbyView">
+  <h1>لوحة المضيف</h1>
+  <div class="card">
+    <label>رابط المشاركة (أرسله للاعبين)</label>
+    <div class="linkbox"><span id="shareLink"></span><button class="btn small" onclick="copyLink()">نسخ</button></div>
+  </div>
+  <div class="card">
+    <div class="statusbar"><span>اللاعبون المنضمون</span><span class="badge" id="playerCount">0</span></div>
+    <div class="plist" id="hostPlayersLobby"></div>
+    <button class="btn" id="startBtn" onclick="hostStartGame()" disabled>ابدأ اللعبة</button>
+  </div>
+</div>
+
+<!-- ===== شاشة متابعة المضيف أثناء اللعب ===== -->
+<div class="view" id="hostPlayView">
+  <div class="statusbar">
+    <span>جولة <span id="hRoundNum"></span>/<span id="hRoundTotal"></span> — <span id="hThemeName"></span></span>
+    <span class="timer" id="hTimer">00:00</span>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--text-dim);margin-bottom:6px;">الاختلافات: <span class="badge" id="hFound">0/0</span></div>
+    <div class="plist" id="hostPlayersLive"></div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--text-dim);margin-bottom:6px;">آخر الإجابات</div>
+    <div class="feed" id="hFeed"></div>
+  </div>
+  <button class="btn alt" onclick="hostNextRound()">⏭️ الصورة التالية</button>
+</div>
+
+<!-- ===== شاشة انضمام اللاعب ===== -->
+<div class="view" id="joinView">
+  <h1>الانضمام للجلسة</h1>
+  <p class="sub">أدخل اسمك للانضمام إلى اللعبة</p>
+  <div class="card">
+    <label>اسمك</label>
+    <input type="text" id="joinName" maxlength="16" placeholder="اكتب اسمك هنا">
+    <button class="btn" onclick="playerJoin()">دخول</button>
+    <p class="msg" id="joinMsg"></p>
+  </div>
+</div>
+
+<!-- ===== شاشة انتظار اللاعب ===== -->
+<div class="view center" id="waitView">
+  <p style="font-size:22px;">⏳</p>
+  <p class="msg">بانتظار بدء المضيف للعبة...</p>
+</div>
+
+<!-- ===== شاشة اللعب (اللاعب) ===== -->
+<div class="view" id="playView">
+  <div class="statusbar">
+    <span></span>
+    <span class="timer" id="pTimer">00:00</span>
+    <span class="badge" id="pFound">0/0</span>
+  </div>
+  <div class="game-frame" id="gameFrame">
+    <div class="lockmsg" id="lockMsg">🚫 تم قفلك بسبب كثرة الأخطاء<br>انتظر الجولة القادمة</div>
+    <div class="pic-box" id="picBox0"><img id="img0" src="" alt=""></div>
+    <div class="pic-box" id="picBox1"><img id="img1" src="" alt=""></div>
+  </div>
+</div>
+
+<!-- ===== شاشة النهاية (الجميع) ===== -->
+<div class="view" id="endView">
+  <h1>🏆 النتائج النهائية</h1>
+  <div class="card" id="finalRanks"></div>
+</div>
+
+</div>
+<script>
+/* ============ بيانات الصور والاختلافات ============ */
+const GAME_DATA = {"winter":{"label":"شتاء","ext0":"jpg","ext1":"jpg","diffs":[{"id":"cloud3","x0":648,"y0":77,"r0":100,"x1":648,"y1":77,"r1":100},{"id":"hat1","x0":540,"y0":513,"r0":28,"x1":540,"y1":513,"r1":28},{"id":"hat2","x0":423,"y0":468,"r0":28,"x1":423,"y1":468,"r1":28},{"id":"house3","x0":506,"y0":313,"r0":60,"x1":506,"y1":313,"r1":60},{"id":"reindeer2","x0":684,"y0":469,"r0":60,"x1":684,"y1":469,"r1":60},{"id":"skier1","x0":350,"y0":318,"r0":50,"x1":350,"y1":318,"r1":50},{"id":"sled2","x0":69,"y0":413,"r0":55,"x1":69,"y1":413,"r1":55},{"id":"snowman3","x0":533,"y0":564,"r0":70,"x1":533,"y1":564,"r1":70},{"id":"sun1","x0":89,"y0":85,"r0":65,"x1":89,"y1":85,"r1":65},{"id":"tree2","x0":282,"y0":264,"r0":55,"x1":282,"y1":264,"r1":55},{"id":"tree5","x0":185,"y0":285,"r0":55,"x1":185,"y1":285,"r1":55}]},"beach":{"label":"شاطئ","ext0":"jpg","ext1":"jpg","diffs":[{"id":"chair1","x0":625,"y0":463,"r0":75,"x1":625,"y1":463,"r1":75},{"id":"float3","x0":727,"y0":244,"r0":65,"x1":727,"y1":244,"r1":65},{"id":"sunshade1","x0":141,"y0":503,"r0":155,"x1":141,"y1":503,"r1":155},{"id":"sunshade4","x0":319,"y0":348,"r0":120,"x1":319,"y1":348,"r1":120}]},"farm":{"label":"مزرعة","ext0":"jpg","ext1":"jpg","diffs":[{"id":"bird1","x0":275,"y0":106,"r0":45,"x1":275,"y1":106,"r1":45},{"id":"bird4","x0":481,"y0":333,"r0":40,"x1":481,"y1":333,"r1":40},{"id":"cloud4","x0":517,"y0":137,"r0":70,"x1":517,"y1":137,"r1":70},{"id":"fence1","x0":473,"y0":398,"r0":70,"x1":473,"y1":398,"r1":70},{"id":"pig1","x0":758,"y0":657,"r0":50,"x1":758,"y1":657,"r1":50},{"id":"tractor1","x0":161,"y0":408,"r0":130,"x1":161,"y1":408,"r1":130},{"id":"tractor2","x0":388,"y0":580,"r0":165,"x1":388,"y1":580,"r1":165}]},"city":{"label":"مدينة","ext0":"jpg","ext1":"jpg","diffs":[{"id":"airplane1","x0":390,"y0":74,"r0":85,"x1":390,"y1":74,"r1":85},{"id":"building1","x0":90,"y0":383,"r0":150,"x1":90,"y1":383,"r1":150},{"id":"car1","x0":407,"y0":627,"r0":190,"x1":407,"y1":627,"r1":190},{"id":"light4","x0":383,"y0":484,"r0":75,"x1":383,"y1":484,"r1":75},{"id":"light5","x0":86,"y0":521,"r0":75,"x1":86,"y1":521,"r1":75},{"id":"lightning1","x0":798,"y0":216,"r0":80,"x1":798,"y1":216,"r1":80},{"id":"man1","x0":407,"y0":627,"r0":190,"x1":407,"y1":627,"r1":190}]},"church":{"label":"كنيسة","ext0":"JPG","ext1":"JPG","diffs":[{"id":"church2","x0":825,"y0":425,"r0":170,"x1":825,"y1":425,"r1":170},{"id":"cloud2","x0":87,"y0":113,"r0":65,"x1":87,"y1":113,"r1":65},{"id":"cow2","x0":506,"y0":455,"r0":70,"x1":506,"y1":455,"r1":70},{"id":"cross1","x0":205,"y0":145,"r0":28,"x1":205,"y1":145,"r1":28},{"id":"star4","x0":530,"y0":176,"r0":30,"x1":530,"y1":176,"r1":30},{"id":"stone2","x0":676,"y0":649,"r0":90,"x1":676,"y1":649,"r1":90}]},"jungle":{"label":"غابة","ext0":"jpg","ext1":"jpg","diffs":[{"id":"cloud1","x0":200,"y0":104,"r0":150,"x1":200,"y1":104,"r1":150},{"id":"giraffe1","x0":795,"y0":422,"r0":130,"x1":795,"y1":422,"r1":130},{"id":"tree2","x0":179,"y0":474,"r0":90,"x1":213,"y1":398,"r1":80}]},"house":{"label":"منزل","ext0":"jpg","ext1":"jpg","diffs":[{"id":"cat1","x0":877,"y0":447,"r0":70,"x1":877,"y1":447,"r1":70},{"id":"chimney1","x0":735,"y0":321,"r0":40,"x1":735,"y1":321,"r1":40},{"id":"cloud2","x0":120,"y0":158,"r0":80,"x1":120,"y1":158,"r1":80},{"id":"flower6","x0":124,"y0":612,"r0":30,"x1":124,"y1":612,"r1":30},{"id":"stone3","x0":292,"y0":425,"r0":100,"x1":292,"y1":425,"r1":100},{"id":"stone5","x0":734,"y0":648,"r0":100,"x1":734,"y1":648,"r1":100}]},"sea":{"label":"بحر","ext0":"jpg","ext1":"jpg","diffs":[{"id":"jellyfish3","x0":798,"y0":437,"r0":50,"x1":798,"y1":437,"r1":50},{"id":"octopus2","x0":112,"y0":259,"r0":90,"x1":112,"y1":259,"r1":90},{"id":"seahorse2","x0":220,"y0":432,"r0":30,"x1":220,"y1":432,"r1":30},{"id":"shark2","x0":796,"y0":200,"r0":120,"x1":796,"y1":200,"r1":120}]},"sheep":{"label":"أغنام","ext0":"JPG","ext1":"JPG","diffs":[{"id":"apple3","x0":193,"y0":247,"r0":28,"x1":193,"y1":247,"r1":28},{"id":"flower1","x0":525,"y0":510,"r0":35,"x1":525,"y1":510,"r1":35},{"id":"flower2","x0":475,"y0":544,"r0":35,"x1":475,"y1":544,"r1":35},{"id":"oranges1","x0":748,"y0":284,"r0":130,"x1":748,"y1":284,"r1":130},{"id":"sheep2","x0":243,"y0":570,"r0":60,"x1":243,"y1":570,"r1":60},{"id":"stone2","x0":316,"y0":413,"r0":110,"x1":316,"y1":413,"r1":110},{"id":"stone3","x0":679,"y0":426,"r0":70,"x1":679,"y1":426,"r1":70},{"id":"sun1","x0":479,"y0":99,"r0":100,"x1":479,"y1":99,"r1":100}]}};
+const IMG_W=960, IMG_H=720, HIT_TOL=12;
+
+/* ============ Firebase (نفس إعداد موقع NoL) ============ */
+const firebaseConfig={apiKey:"AIzaSyDiOGYHADTeRz4CrrMh264K0sOQNrINl4w",authDomain:"nool-1fa3a.firebaseapp.com",databaseURL:"https://nool-1fa3a-default-rtdb.firebaseio.com",projectId:"nool-1fa3a",storageBucket:"nool-1fa3a.firebasestorage.app",messagingSenderId:"552551048252",appId:"1:552551048252:web:c99ba47af88cb131078f39"};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const INC = firebase.database.ServerValue.increment;
+
+function show(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function rid(n){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<n;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
+function shuffledThemes(n){const k=Object.keys(GAME_DATA);for(let i=k.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[k[i],k[j]]=[k[j],k[i]];}return k.slice(0,n);}
+function fmt(s){s=Math.max(0,Math.floor(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+
+const params = new URLSearchParams(location.search);
+const roomCode = params.get('room');
+let myPid = null, mySessRef = null, roleIsHost = !roomCode;
+
+/* ================= مسار المضيف ================= */
+if (roleIsHost){
+  show('hostSetupView');
+
+  window.createSession = function(){
+    const rounds = Math.min(9, Math.max(1, parseInt(document.getElementById('setRounds').value)||5));
+    const roundTime = Math.max(10, parseInt(document.getElementById('setTime').value)||90);
+    const maxMistakes = Math.max(1, parseInt(document.getElementById('setMistakes').value)||5);
+    const code = rid(5);
+    const themeList = shuffledThemes(rounds);
+    mySessRef = db.ref('sd_sessions/'+code);
+    mySessRef.set({
+      createdAt: Date.now(),
+      status: 'lobby',
+      settings: {rounds, roundTime, maxMistakes, themeList},
+      roundIndex: -1,
+      players: {}
+    });
+    const link = location.origin + location.pathname + '?room=' + code;
+    document.getElementById('shareLink').textContent = link;
+    document.getElementById('shareLink').dataset.link = link;
+    show('hostLobbyView');
+    listenHostLobby(mySessRef);
+  };
+
+  window.copyLink = function(){
+    navigator.clipboard.writeText(document.getElementById('shareLink').dataset.link).then(()=>alert('تم نسخ الرابط!'));
+  };
+
+  function listenHostLobby(ref){
+    ref.child('players').on('value', snap=>{
+      const players = snap.val() || {};
+      const ids = Object.keys(players);
+      document.getElementById('playerCount').textContent = ids.length;
+      document.getElementById('startBtn').disabled = ids.length === 0;
+      const list = document.getElementById('hostPlayersLobby');
+      list.innerHTML = '';
+      ids.forEach(pid=>{
+        const p = players[pid];
+        const row = document.createElement('div');
+        row.className = 'prow';
+        row.innerHTML = `<span class="nm">${escapeHtml(p.name)}</span><span class="st">منضم</span>`;
+        list.appendChild(row);
+      });
+    });
+  }
+
+  window.hostStartGame = function(){
+    mySessRef.child('players').once('value', snap=>{
+      const players = snap.val() || {};
+      const upd = {};
+      Object.keys(players).forEach(pid=>{ upd['players/'+pid+'/score']=0; upd['players/'+pid+'/mistakes']=0; upd['players/'+pid+'/locked']=false; });
+      mySessRef.update(upd).then(()=> startRound(0));
+    });
+  };
+
+  function startRound(idx){
+    mySessRef.once('value', snap=>{
+      const s = snap.val();
+      const theme = s.settings.themeList[idx];
+      const now = Date.now();
+      const upd = {
+        status:'playing', roundIndex: idx, currentTheme: theme,
+        roundStartAt: now, roundEndAt: now + s.settings.roundTime*1000,
+        foundIds: null
+      };
+      const players = s.players || {};
+      Object.keys(players).forEach(pid=>{ upd['players/'+pid+'/mistakes']=0; upd['players/'+pid+'/locked']=false; });
+      mySessRef.update(upd);
+    });
+  }
+
+  window.hostNextRound = function(){
+    mySessRef.once('value', snap=>{
+      const s = snap.val();
+      if (s.roundIndex + 1 >= s.settings.rounds){ mySessRef.update({status:'ended'}); }
+      else { startRound(s.roundIndex + 1); }
+    });
+  };
+
+  let hostTimerInt = null, autoAdvanced = false;
+  function listenHostPlay(){
+    mySessRef.on('value', snap=>{
+      const s = snap.val();
+      if (!s) return;
+      if (s.status === 'playing'){
+        show('hostPlayView');
+        autoAdvanced = false;
+        renderHostPlay(s);
+        if (hostTimerInt) clearInterval(hostTimerInt);
+        hostTimerInt = setInterval(()=>{
+          const left = (s.roundEndAt - Date.now())/1000;
+          document.getElementById('hTimer').textContent = fmt(left);
+          if (left <= 0 && !autoAdvanced){ autoAdvanced = true; clearInterval(hostTimerInt); window.hostNextRound(); }
+        }, 500);
+      } else if (s.status === 'ended'){
+        if (hostTimerInt) clearInterval(hostTimerInt);
+        renderFinal(s.players || {});
+      }
+    });
+  }
+
+  function renderHostPlay(s){
+    document.getElementById('hRoundNum').textContent = s.roundIndex+1;
+    document.getElementById('hRoundTotal').textContent = s.settings.rounds;
+    document.getElementById('hThemeName').textContent = GAME_DATA[s.currentTheme].label;
+    const total = GAME_DATA[s.currentTheme].diffs.length;
+    const found = s.foundIds ? Object.keys(s.foundIds).length : 0;
+    document.getElementById('hFound').textContent = found+'/'+total;
+    const players = s.players || {};
+    const list = document.getElementById('hostPlayersLive');
+    list.innerHTML = '';
+    Object.values(players).sort((a,b)=>b.score-a.score).forEach(p=>{
+      const row = document.createElement('div');
+      row.className = 'prow' + (p.locked?' locked':'');
+      row.innerHTML = `<span class="nm">${escapeHtml(p.name)}</span><span class="st">نقاط: ${p.score||0} — أخطاء: ${p.mistakes||0}${p.locked?' 🚫':''}</span>`;
+      list.appendChild(row);
+    });
+    const feed = document.getElementById('hFeed');
+    feed.innerHTML = '';
+    const entries = Object.entries(s.foundIds||{}).sort((a,b)=>b[1].at-a[1].at).slice(0,10);
+    entries.forEach(([id,f])=>{ const d=document.createElement('div'); d.textContent = `✅ ${f.name} اكتشف اختلافًا`; feed.appendChild(d); });
+    if (autoAdvanced === false){}
+    // auto-advance عند اكتمال كل الاختلافات
+    if (found >= total && !hostAdvancingLock){ hostAdvancingLock = true; setTimeout(()=>{ hostAdvancingLock=false; window.hostNextRound(); }, 1400); }
+  }
+  let hostAdvancingLock = false;
+  listenHostPlay();
+}
+
+/* ================= مسار اللاعب ================= */
+if (!roleIsHost){
+  mySessRef = db.ref('sd_sessions/'+roomCode);
+  mySessRef.once('value', snap=>{
+    if (!snap.exists()){ show('joinView'); document.getElementById('joinMsg').textContent='الجلسة غير موجودة أو انتهت.'; return; }
+    myPid = sessionStorage.getItem('sd_pid_'+roomCode);
+    if (myPid){
+      mySessRef.child('players/'+myPid).once('value', s2=>{
+        if (s2.exists()){ startPlayerListeners(); } else { show('joinView'); }
+      });
+    } else { show('joinView'); }
+  });
+
+  window.playerJoin = function(){
+    const name = document.getElementById('joinName').value.trim();
+    if (!name){ document.getElementById('joinMsg').textContent='الرجاء إدخال اسمك.'; return; }
+    const pref = mySessRef.child('players').push();
+    myPid = pref.key;
+    sessionStorage.setItem('sd_pid_'+roomCode, myPid);
+    pref.set({name, score:0, mistakes:0, locked:false, joinedAt: Date.now()}).then(startPlayerListeners);
+  };
+
+  let pTimerInt = null, lastRoundIndex = -1;
+  function startPlayerListeners(){
+    mySessRef.on('value', snap=>{
+      const s = snap.val();
+      if (!s) return;
+      if (s.status === 'lobby'){ show('waitView'); }
+      else if (s.status === 'playing'){
+        if (s.roundIndex !== lastRoundIndex){ lastRoundIndex = s.roundIndex; loadRound(s); }
+        show('playView');
+        renderPlayerState(s);
+        if (pTimerInt) clearInterval(pTimerInt);
+        pTimerInt = setInterval(()=>{
+          const left=(s.roundEndAt-Date.now())/1000;
+          document.getElementById('pTimer').textContent = fmt(left);
+          if (left<=0) clearInterval(pTimerInt);
+        },500);
+      } else if (s.status === 'ended'){
+        if (pTimerInt) clearInterval(pTimerInt);
+        renderFinal(s.players || {});
+      }
+    });
+  }
+
+  function loadRound(s){
+    const t = GAME_DATA[s.currentTheme];
+    document.getElementById('img0').src = 'pics/'+s.currentTheme+'0.'+t.ext0;
+    document.getElementById('img1').src = 'pics/'+s.currentTheme+'1.'+t.ext1;
+    document.querySelectorAll('.marker').forEach(m=>m.remove());
+  }
+
+  function renderPlayerState(s){
+    const total = GAME_DATA[s.currentTheme].diffs.length;
+    const found = s.foundIds ? Object.keys(s.foundIds).length : 0;
+    document.getElementById('pFound').textContent = found+'/'+total;
+    const me = (s.players||{})[myPid] || {};
+    document.getElementById('gameFrame').classList.toggle('locked', !!me.locked);
+    // ارسم كل العلامات المكتشفة (مشتركة بين اللاعبين)
+    document.querySelectorAll('.marker.found').forEach(m=>m.remove());
+    Object.keys(s.foundIds||{}).forEach(id=>{
+      const d = GAME_DATA[s.currentTheme].diffs.find(x=>x.id===id);
+      if (d){ placeMarker(0,d.x0,d.y0,true); placeMarker(1,d.x1,d.y1,true); }
+    });
+  }
+
+  function placeMarker(picIndex,x,y,found){
+    const box = document.getElementById(picIndex===0?'picBox0':'picBox1');
+    const m = document.createElement('div');
+    m.className = 'marker ' + (found?'found':'miss');
+    m.style.left = (x/IMG_W*100)+'%';
+    m.style.top = (y/IMG_H*100)+'%';
+    box.appendChild(m);
+    if (!found) setTimeout(()=>m.remove(),700);
+  }
+
+  function handleClick(evt, picIndex){
+    mySessRef.once('value', snap=>{
+      const s = snap.val();
+      if (!s || s.status !== 'playing') return;
+      const me = (s.players||{})[myPid];
+      if (!me || me.locked) return;
+      const rect = evt.currentTarget.getBoundingClientRect();
+      const px = ((evt.clientX-rect.left)/rect.width)*IMG_W;
+      const py = ((evt.clientY-rect.top)/rect.height)*IMG_H;
+      const diffs = GAME_DATA[s.currentTheme].diffs;
+      const found = s.foundIds || {};
+      let matched = null;
+      for (const d of diffs){
+        if (found[d.id]) continue;
+        const dx = picIndex===0?d.x0:d.x1, dy = picIndex===0?d.y0:d.y1, dr=(picIndex===0?d.r0:d.r1)+HIT_TOL;
+        if (Math.hypot(px-dx,py-dy) <= dr){ matched = d; break; }
+      }
+      if (matched){
+        const claimRef = mySessRef.child('foundIds/'+matched.id);
+        claimRef.transaction(cur=> cur===null ? {pid:myPid, name:me.name, at:Date.now()} : cur, (err,committed)=>{
+          if (committed) mySessRef.child('players/'+myPid+'/score').set(INC(10));
+        });
+      } else {
+        placeMarker(picIndex, px, py, false);
+        mySessRef.child('players/'+myPid).transaction(cur=>{
+          if (!cur) return cur;
+          cur.mistakes = (cur.mistakes||0) + 1;
+          if (cur.mistakes >= s.settings.maxMistakes) cur.locked = true;
+          return cur;
+        });
+      }
+    });
+  }
+  document.getElementById('picBox0').addEventListener('click', e=>handleClick(e,0));
+  document.getElementById('picBox1').addEventListener('click', e=>handleClick(e,1));
+}
+
+/* ================= مشترك ================= */
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function renderFinal(players){
+  show('endView');
+  const sorted = Object.values(players||{}).sort((a,b)=>(b.score||0)-(a.score||0));
+  const wrap = document.getElementById('finalRanks');
+  wrap.innerHTML = '';
+  const medals = ['🥇','🥈','🥉'];
+  sorted.forEach((p,i)=>{
+    const r = document.createElement('div');
+    r.className = 'rank';
+    r.innerHTML = `<span class="pos">${medals[i]||(i+1)}</span><span class="nm" style="flex:1;text-align:right;">${escapeHtml(p.name)}</span><span class="badge">${p.score||0}</span>`;
+    wrap.appendChild(r);
+  });
+}
+</script>
+</body>
+</html>

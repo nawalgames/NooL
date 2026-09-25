@@ -185,12 +185,17 @@ if (roleIsHost){
       settings: {rounds, roundTime, maxMistakes, themeList},
       roundIndex: -1,
       players: {}
+    }).then(()=>{
+      const link = location.origin + location.pathname + '?room=' + code;
+      document.getElementById('shareLink').textContent = link;
+      document.getElementById('shareLink').dataset.link = link;
+      show('hostLobbyView');
+      listenHostLobby(mySessRef);
+      listenHostPlay();
+    }).catch(err=>{
+      alert('تعذر إنشاء الجلسة — تحقق من قواعد Firebase (Rules) لمسار sd_sessions.');
+      console.error(err);
     });
-    const link = location.origin + location.pathname + '?room=' + code;
-    document.getElementById('shareLink').textContent = link;
-    document.getElementById('shareLink').dataset.link = link;
-    show('hostLobbyView');
-    listenHostLobby(mySessRef);
   };
 
   window.copyLink = function(){
@@ -212,7 +217,7 @@ if (roleIsHost){
         row.innerHTML = `<span class="nm">${escapeHtml(p.name)}</span><span class="st">منضم</span>`;
         list.appendChild(row);
       });
-    });
+    }, err=>{ alert('تعذر متابعة اللاعبين — تحقق من قواعد Firebase (sd_sessions).'); console.error(err); });
   }
 
   window.hostStartGame = function(){
@@ -267,7 +272,7 @@ if (roleIsHost){
         if (hostTimerInt) clearInterval(hostTimerInt);
         renderFinal(s.players || {});
       }
-    });
+    }, err=>{ alert('انقطع الاتصال بالجلسة — تحقق من الإنترنت أو قواعد Firebase.'); console.error(err); });
   }
 
   function renderHostPlay(s){
@@ -295,29 +300,41 @@ if (roleIsHost){
     if (found >= total && !hostAdvancingLock){ hostAdvancingLock = true; setTimeout(()=>{ hostAdvancingLock=false; window.hostNextRound(); }, 1400); }
   }
   let hostAdvancingLock = false;
-  listenHostPlay();
 }
 
 /* ================= مسار اللاعب ================= */
+function showConnError(err){
+  console.error(err);
+  document.getElementById('loadingView').innerHTML =
+    '<p class="msg">⚠️ تعذر الاتصال بالجلسة.<br>تأكد من اتصال الإنترنت أو أن الرابط صحيح.</p>'+
+    '<button class="btn" style="margin-top:14px;" onclick="location.reload()">إعادة المحاولة</button>';
+}
+
 if (!roleIsHost){
   mySessRef = db.ref('sd_sessions/'+roomCode);
-  mySessRef.once('value', snap=>{
+  const connTimeout = setTimeout(()=>showConnError('timeout'), 10000);
+  mySessRef.once('value').then(snap=>{
+    clearTimeout(connTimeout);
     if (!snap.exists()){ show('joinView'); document.getElementById('joinMsg').textContent='الجلسة غير موجودة أو انتهت.'; return; }
     myPid = sessionStorage.getItem('sd_pid_'+roomCode);
     if (myPid){
-      mySessRef.child('players/'+myPid).once('value', s2=>{
+      mySessRef.child('players/'+myPid).once('value').then(s2=>{
         if (s2.exists()){ startPlayerListeners(); } else { show('joinView'); }
-      });
+      }).catch(showConnError);
     } else { show('joinView'); }
-  });
+  }).catch(showConnError);
 
   window.playerJoin = function(){
     const name = document.getElementById('joinName').value.trim();
     if (!name){ document.getElementById('joinMsg').textContent='الرجاء إدخال اسمك.'; return; }
+    document.getElementById('joinMsg').textContent = 'جاري الانضمام...';
     const pref = mySessRef.child('players').push();
     myPid = pref.key;
     sessionStorage.setItem('sd_pid_'+roomCode, myPid);
-    pref.set({name, score:0, mistakes:0, locked:false, joinedAt: Date.now()}).then(startPlayerListeners);
+    pref.set({name, score:0, mistakes:0, locked:false, joinedAt: Date.now()}).then(startPlayerListeners).catch(err=>{
+      document.getElementById('joinMsg').textContent = 'فشل الانضمام — تحقق من قواعد Firebase (Rules).';
+      console.error(err);
+    });
   };
 
   let pTimerInt = null, lastRoundIndex = -1;
@@ -340,7 +357,7 @@ if (!roleIsHost){
         if (pTimerInt) clearInterval(pTimerInt);
         renderFinal(s.players || {});
       }
-    });
+    }, showConnError);
   }
 
   function loadRound(s){

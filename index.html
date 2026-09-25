@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NoL</title>
+<title>NoL — المنصة الرئيسية</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 
 <!-- ========================================================================
-  Firebase Realtime Database
+   Firebase Realtime Database (Compat)
 ========================================================================= -->
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
@@ -98,7 +98,7 @@
     gap:14px;
   }
   
-  /* تنسيق كرت اللعبة بالصورة بشكل دقيق ومضبوط */
+  /* تنسيق كرت اللعبة */
   .game-card {
     position: relative;
     width: 100%;
@@ -111,6 +111,7 @@
     text-decoration: none;
     border: 1.5px solid var(--line);
     background: var(--panel);
+    cursor: pointer;
     transition: transform .12s ease, border-color .12s ease;
   }
   .game-card:hover {
@@ -150,34 +151,22 @@
     text-align:center;
     padding:12px;
   }
-  .slot.filled{
-    border-style:solid;
-    border-color:var(--line);
-    cursor:pointer;
-    color:var(--text);
-    transition:transform .12s ease, border-color .12s ease;
-  }
-  .slot.filled:hover, .slot.filled:focus-visible{
-    transform:translateY(-3px);
-    border-color:var(--accent);
-  }
   .slot .plus{
     font-size:26px;
     line-height:1;
     color:var(--line);
   }
-  .slot{position:relative;}
 
   /* ---------- code modal ---------- */
   .modal-overlay{
     display:none;
     position:fixed;
     inset:0;
-    background:rgba(0,0,0,.55);
+    background:rgba(0,0,0,.65);
     align-items:center;
     justify-content:center;
     padding:20px;
-    z-index:50;
+    z-index:100;
   }
   .modal-overlay.active{display:flex;}
   .modal{
@@ -191,6 +180,7 @@
   .modal h2{
     font-size:18px;
     margin:0 0 4px;
+    color: var(--accent);
   }
   .modal p{
     font-size:13px;
@@ -215,6 +205,8 @@
     font-size:13px;
     min-height:18px;
     margin:10px 0 0;
+    text-align: center;
+    font-weight: 700;
   }
   .modal-msg.error{color:#ff8080;}
   .modal-msg.ok{color:var(--accent-2);}
@@ -240,7 +232,6 @@
     border-color:var(--accent);
     color:#1a1200;
   }
-  .modal-actions button{opacity:1;cursor:pointer;}
 
   /* ---------- support view ---------- */
   .back-btn{
@@ -302,13 +293,6 @@
 
   .view{display:none;}
   .view.active{display:block;}
-
-  @media (prefers-color-scheme: light){
-    :root:not([data-theme="dark"]){
-      --bg:#f6f5f1; --bg-soft:#ffffff; --panel:#ffffff;
-      --line:rgba(0,0,0,0.1); --text:#16161a; --text-dim:#68697a;
-    }
-  }
 </style>
 </head>
 <body>
@@ -329,16 +313,16 @@
     <div class="grid" id="gamesGrid">
       
       <!-- كرت لعبة طبول الحرب -->
-      <a href="games/harb/index.html" class="game-card">
+      <div class="game-card" onclick="openGame('games/harb/index.html')">
         <img src="assets/war-drums.pngg.PNG" alt="طبول الحرب" class="game-card-img">
         <div class="game-card-title">طبول الحرب</div>
-      </a>
+      </div>
 
       <!-- كرت لعبة المجازفة -->
-      <a href="games/mazafa/index.html" class="game-card">
+      <div class="game-card" onclick="openGame('games/mazafa/index.html')">
         <img src="assets/mazafa.png" alt="لعبة المجازفة" class="game-card-img">
         <div class="game-card-title">المجازفة</div>
-      </a>
+      </div>
 
       <div class="slot"><span class="plus">+</span></div>
       <div class="slot"><span class="plus">+</span></div>
@@ -361,18 +345,19 @@
 <!-- ===== نافذة إدخال كود الاشتراك ===== -->
 <div class="modal-overlay" id="codeOverlay">
   <div class="modal">
-    <h2 id="codeModalTitle">أدخل كود الاشتراك</h2>
-    <p id="codeModalSub">هذه اللعبة تتطلب كوداً فعّالاً. لطلب كود تواصل مع الدعم.</p>
-    <input type="text" id="codeInput" placeholder="XXXX-XXXX" maxlength="20" autocomplete="off">
+    <h2>تفعيل كود الاشتراك</h2>
+    <p>هذه اللعبة تتطلب كود تفعيل ساري. أخل الكود للبدء:</p>
+    <input type="text" id="codeInput" placeholder="أدخل كود الاشتراك..." maxlength="30" autocomplete="off">
     <p class="modal-msg" id="codeMsg"></p>
     <div class="modal-actions">
       <button type="button" id="codeCancel">إلغاء</button>
-      <button type="button" class="confirm" id="codeConfirm">تفعيل</button>
+      <button type="button" class="confirm" id="codeConfirm">تحقق ودخل</button>
     </div>
   </div>
 </div>
 
 <script>
+// تهيئة Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDiOGYHADTeRz4CrrMh264K0sOQNrINl4w",
   authDomain: "nool-1fa3a.firebaseapp.com",
@@ -383,12 +368,13 @@ const firebaseConfig = {
   appId: "1:552551048252:web:c99ba47af88cb131078f39",
   measurementId: "G-ZCMH5FFTL6"
 };
+
 let db = null;
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.database();
 } catch (e) {
-  console.warn("Firebase غير مهيأ بعد.", e);
+  console.warn("Firebase غير مهيأ.", e);
 }
 
 const homeView = document.getElementById('homeView');
@@ -405,6 +391,88 @@ backBtn.addEventListener('click', () => {
   homeView.classList.add('active');
 });
 
+// التعامل مع فتح الألعاب والتحقق من الاشتراك
+let targetGameUrl = '';
+
+async function openGame(url) {
+  targetGameUrl = url;
+  const savedKey = localStorage.getItem('nol_license_key');
+
+  if (savedKey && db) {
+    // التحقق السريع من صلاحية الكود المخزن
+    const isValid = await checkKeyInFirebase(savedKey);
+    if (isValid) {
+      window.location.href = targetGameUrl;
+      return;
+    }
+  }
+
+  // إذا لم يكن هناك كود أو انتهى، إظهار نافذة إدخال الكود
+  document.getElementById('codeInput').value = '';
+  document.getElementById('codeMsg').textContent = '';
+  document.getElementById('codeOverlay').classList.add('active');
+}
+
+async function checkKeyInFirebase(key) {
+  try {
+    const snapshot = await db.ref(`codes/${key}`).once('value');
+    if (!snapshot.exists()) return false;
+    const data = snapshot.val();
+    const now = Date.now();
+
+    if (data.status === 'revoked') return false;
+    if (data.status === 'active' && data.expiresAt && data.expiresAt < now) return false;
+    if (data.status === 'new' || !data.status) {
+      // تفعيل الكود لأول مرة
+      const durationDays = Number(data.days) || 30;
+      const expiresAt = now + (durationDays * 24 * 60 * 60 * 1000);
+      await db.ref(`codes/${key}`).update({
+        status: 'active',
+        activatedAt: now,
+        expiresAt: expiresAt
+      });
+      return true;
+    }
+    return data.status === 'active';
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+}
+
+// أزرار النافذة المنخفضة
+document.getElementById('codeCancel').addEventListener('click', () => {
+  document.getElementById('codeOverlay').classList.remove('active');
+});
+
+document.getElementById('codeConfirm').addEventListener('click', async () => {
+  const inputKey = document.getElementById('codeInput').value.trim();
+  const msgEl = document.getElementById('codeMsg');
+
+  if (!inputKey) {
+    msgEl.className = 'modal-msg error';
+    msgEl.textContent = 'الرجاء إدخال الكود.';
+    return;
+  }
+
+  msgEl.className = 'modal-msg';
+  msgEl.textContent = 'جاري التحقق...';
+
+  const isValid = await checkKeyInFirebase(inputKey);
+  if (isValid) {
+    localStorage.setItem('nol_license_key', inputKey);
+    msgEl.className = 'modal-msg ok';
+    msgEl.textContent = 'تم التفعيل بنجاح! جاري الدخول...';
+    setTimeout(() => {
+      window.location.href = targetGameUrl;
+    }, 1000);
+  } else {
+    msgEl.className = 'modal-msg error';
+    msgEl.textContent = 'الكود غير صحيح أو منتهي الصلاحية.';
+  }
+});
+
+// قائمة وسائل التواصل والدعم
 const defaultSocials = [
   { label:'X (تويتر)', handle:'@NoL', url:'https://x.com/', icon:'x' },
   { label:'انستغرام',   handle:'@NoL', url:'https://instagram.com/', icon:'instagram' },

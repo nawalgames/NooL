@@ -15,6 +15,7 @@
 ========================================================================= -->
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 
 <style>
 :root{
@@ -974,12 +975,16 @@ const firebaseConfig = {
 let db = null;
 let firebaseReady = false;
 
-try {
-  firebase.initializeApp(firebaseConfig);
-  db = firebase.database();
-  firebaseReady = true;
-} catch (e) {
-  console.error("Firebase initialization error:", e);
+async function initFirebase(){
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    await firebase.auth().signInAnonymously();
+    firebaseReady = true;
+  } catch (e) {
+    console.error("Firebase initialization error:", e);
+    firebaseReady = false;
+  }
 }
 
 let roomId = null;
@@ -1012,6 +1017,13 @@ async function initializeApplication(){
   const loadingText = document.getElementById('loadingText');
 
   try{
+    await initFirebase();
+
+    if(!firebaseReady){
+      loadingText.textContent = 'تعذر الاتصال بقاعدة البيانات.';
+      return;
+    }
+
     updateTeamInputsGenerator();
     const urlParams = new URLSearchParams(window.location.search);
     const urlRoom = urlParams.get('room');

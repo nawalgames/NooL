@@ -135,6 +135,26 @@ body{
   color:var(--gold);
   text-decoration:none;
   font-weight:700;
+  cursor:pointer;
+}
+
+.back-home-btn{
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--line);
+  color:var(--text-dim);
+  padding:10px;
+  border-radius:10px;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  width:100%;
+  margin-top:10px;
+}
+
+.back-home-btn:hover{
+  color:#fff;
+  border-color:var(--gold);
 }
 
 /* =========================
@@ -676,8 +696,10 @@ body{
     
     <div class="support-contact">
       ليس لديك كود اشتراك؟<br>
-      تواصل معنا للحصول على كود جديد عبر <a href="https://wa.me/" target="_blank">واتساب الدعم</a>
+      <a onclick="goToSupportPage()">تواصل مع الدعم</a>
     </div>
+
+    <button class="back-home-btn" onclick="goBackHome()">الرجوع للقائمة الرئيسية</button>
   </div>
 </div>
 
@@ -930,7 +952,7 @@ body{
 
 <!-- =====================================================
      FIREBASE
-===================================================== -->
+================================================     -->
 
 <script type="module">
 
@@ -983,7 +1005,7 @@ window.dispatchEvent(
 
 <!-- =====================================================
      GAME JAVASCRIPT
-===================================================== -->
+================================================     -->
 
 <script>
 
@@ -1125,6 +1147,17 @@ async function validateKeyOnServer(key){
     console.error(e);
     return false;
   }
+}
+
+// دوال التنقل الجديدة (التواصل مع الدعم والرجوع للقائمة الرئيسية)
+function goToSupportPage(){
+  // استبدل الرابط أدناه برابط صفحة الروابط الخاصة بك إذا كانت صفحة مستقلة، أو اربطها بالمعرف المناسب
+  window.location.href = 'support.html'; 
+}
+
+function goBackHome(){
+  // العودة للصفحة الرئيسية للمنصة
+  window.location.href = 'index.html'; 
 }
 
 function generateRoomId(){
@@ -1478,131 +1511,4 @@ function revealCard(item){
   if(isSpectator || gameFinished || item.isOpen || item.permanentlyGone) return;
 
   if(item.type === 'bomb'){
-    item.isOpen = true;
-    currentRoundPicks.push(item);
-    const affectedTeamName = teams[activeTeamIndex].name;
-    teams[activeTeamIndex].score = 0;
-    saveGameData();
-    renderBoard();
-    renderTeams();
-
-    setTimeout(()=>{
-      showAlert('💥 بوووم! قنبلة مدمرة!', `يا للأسف يا "${affectedTeamName}" اخترتم قنبلة!\nتم تصفير رصيدكم الإجمالي بالكامل وانتقال الدور.`);
-      currentRoundPicks.forEach(p => p.permanentlyGone = true);
-      failRound(true);
-    }, 200);
-    return;
-  }
-
-  if(item.type === 'double'){
-    item.isOpen = true;
-    currentRoundPicks.push(item);
-    tempScore = tempScore === 0 ? 5 : tempScore * 2;
-    saveGameData();
-    renderBoard();
-    updateTempDisplay();
-    return;
-  }
-
-  const hasColorConflict = currentRoundPicks.some(p => p.type === 'normal' && p.color === item.color);
-  const hasNumberConflict = currentRoundPicks.some(p => p.type === 'normal' && p.value === item.value);
-
-  if(hasColorConflict || hasNumberConflict){
-    item.isOpen = true;
-    currentRoundPicks.push(item);
-    saveGameData();
-    renderBoard();
-
-    const reasonText = hasColorConflict && hasNumberConflict ? 'تشابه في اللون ورقم الكرت!' : hasColorConflict ? 'تشابه في اللون مع بطاقة سابقة!' : 'تشابه في الرقم مع بطاقة سابقة!';
-
-    setTimeout(()=>{
-      showAlert('❌ حدث تشابه وخسارة!', `${reasonText}\nتم تصفير النقاط المؤقتة التي كسبتها في هذه الجولة فقط وانتقال اللعبة للفريق التالي.`);
-      currentRoundPicks.forEach(p => p.permanentlyGone = true);
-      failRound(true);
-    }, 200);
-    return;
-  }
-
-  item.isOpen = true;
-  currentRoundPicks.push(item);
-  tempScore += item.value;
-  saveGameData();
-  renderBoard();
-  updateTempDisplay();
-}
-
-function updateTempDisplay(){
-  const display = document.getElementById('tempScoreDisplay');
-  if(display){
-    display.textContent = tempScore;
-  }
-}
-
-function bankScore(){
-  if(isSpectator || tempScore <= 0 || gameFinished) return;
-  teams[activeTeamIndex].score += tempScore;
-  currentRoundPicks.forEach(p => p.permanentlyGone = true);
-  resetRoundState();
-  nextTurn();
-}
-
-function failRound(switchTurn = true){
-  if(isSpectator || gameFinished) return;
-  resetRoundState();
-  if(switchTurn){
-    nextTurn();
-  }
-}
-
-function resetRoundState(){
-  tempScore = 0;
-  currentRoundPicks.forEach(p=>{
-    if(!p.permanentlyGone){
-      p.isOpen = false;
-    }
-  });
-  currentRoundPicks = [];
-  updateTempDisplay();
-  saveGameData();
-  renderBoard();
-}
-
-function nextTurn(){
-  if(!teams.length) return;
-  activeTeamIndex = (activeTeamIndex + 1) % teams.length;
-  saveGameData();
-  renderTeams();
-}
-
-function resetGame(){
-  if(isSpectator || gameFinished) return;
-  const confirmed = confirm('هل تريد إعادة اللعبة بالكامل؟\nسيتم إنشاء لوحة جديدة.');
-  if(!confirmed) return;
-  activeTeamIndex = 0;
-  teams.forEach(t => t.score = 0);
-  initGame();
-}
-
-function showAlert(title, message){
-  document.getElementById('alertTitle').textContent = title;
-  document.getElementById('alertMessage').textContent = message;
-  document.getElementById('alertModal').classList.add('active');
-}
-
-function closeAlertModal(){
-  document.getElementById('alertModal').classList.remove('active');
-}
-
-function escapeHtml(value){
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-</script>
-
-</body>
-</html>
+    item.isOpen = true

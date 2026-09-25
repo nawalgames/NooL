@@ -999,6 +999,7 @@ let configDoubles = 3;
 let isSpectator = false;
 let gameFinished = false;
 let unsubscribeGame = null;
+let redirectAfterAlert = null;
 
 const colorList = [
   { name:'red', label:'أحمر', cls:'bg-red' },
@@ -1122,11 +1123,11 @@ async function validateKeyOnServer(key){
 }
 
 function goToSupportPage(){
-  window.location.href = 'index.html'; 
+  window.location.href = '../../index.html';
 }
 
 function goBackHome(){
-  window.location.href = 'index.html'; 
+  window.location.href = '../../index.html';
 }
 
 function generateRoomId(){
@@ -1409,7 +1410,8 @@ async function finishGame(){
       }
     }, 3000);
 
-    showAlert('🔒 انتهت الجلسة', 'تم إنهاء اللعبة.\nرابط المشاهدة أصبح غير صالح.');
+    redirectAfterAlert = '../../index.html';
+    showAlert('🔒 انتهت الجلسة', 'تم إنهاء اللعبة.\nرابط المشاهدة أصبح غير صالح.\n\nسيتم الرجوع للصفحة الرئيسية.');
   } catch(error){
     console.error(error);
     gameFinished = false;
@@ -1421,13 +1423,6 @@ function openSetupAgain(){
   if(isSpectator) return;
   updateTeamInputsGenerator();
   document.getElementById('setupScreen').style.display = 'flex';
-}
-
-function resetGame(){
-  if(isSpectator) return;
-  const confirmed = confirm('هل تريد إعادة تعيين اللوحة وبدء جولة جديدة بنفس الفرق؟');
-  if(!confirmed) return;
-  initGame();
 }
 
 function renderTeams(){
@@ -1491,36 +1486,66 @@ function renderBoard(){
   });
 }
 
+/* =========================================================
+   نظام اللعبة الأصلي بالتفصيل (القنابل / الدبل / تشابه اللون
+   والرقم) — منقول كما هو من النسخة القديمة
+========================================================= */
+
 function revealCard(item){
   if(isSpectator || gameFinished || item.isOpen || item.permanentlyGone) return;
 
-  item.isOpen = true;
-  currentRoundPicks.push(item);
-
   if(item.type === 'bomb'){
-    tempScore = 0;
-    showAlert('💥 بوووم!', `انفجرت القنبلة بوجه ${teams[activeTeamIndex].name}!\nتم تصفير الرصيد المؤقت.`);
-    currentRoundPicks.forEach(p => p.permanentlyGone = true);
-    currentRoundPicks = [];
-    nextTurn();
-  } else if(item.type === 'double'){
-    if(tempScore === 0){
-      tempScore = 10;
-    } else {
-      tempScore *= 2;
-    }
-    updateTempDisplay();
-  } else {
-    if(tempScore === 0){
-      tempScore = item.value;
-    } else {
-      tempScore += item.value;
-    }
-    updateTempDisplay();
+    item.isOpen = true;
+    currentRoundPicks.push(item);
+    const affectedTeamName = teams[activeTeamIndex].name;
+    teams[activeTeamIndex].score = 0;
+    saveGameData();
+    renderBoard();
+    renderTeams();
+
+    setTimeout(()=>{
+      showAlert('💥 بوووم! قنبلة مدمرة!', `يا للأسف يا "${affectedTeamName}" اخترتم قنبلة!\nتم تصفير رصيدكم الإجمالي بالكامل وانتقال الدور.`);
+      currentRoundPicks.forEach(p => p.permanentlyGone = true);
+      failRound(true);
+    }, 200);
+    return;
   }
 
-  renderBoard();
+  if(item.type === 'double'){
+    item.isOpen = true;
+    currentRoundPicks.push(item);
+    tempScore = tempScore === 0 ? 5 : tempScore * 2;
+    saveGameData();
+    renderBoard();
+    updateTempDisplay();
+    return;
+  }
+
+  const hasColorConflict = currentRoundPicks.some(p => p.type === 'normal' && p.color === item.color);
+  const hasNumberConflict = currentRoundPicks.some(p => p.type === 'normal' && p.value === item.value);
+
+  if(hasColorConflict || hasNumberConflict){
+    item.isOpen = true;
+    currentRoundPicks.push(item);
+    saveGameData();
+    renderBoard();
+
+    const reasonText = hasColorConflict && hasNumberConflict ? 'تشابه في اللون ورقم الكرت!' : hasColorConflict ? 'تشابه في اللون مع بطاقة سابقة!' : 'تشابه في الرقم مع بطاقة سابقة!';
+
+    setTimeout(()=>{
+      showAlert('❌ حدث تشابه وخسارة!', `${reasonText}\nتم تصفير النقاط المؤقتة التي كسبتها في هذه الجولة فقط وانتقال اللعبة للفريق التالي.`);
+      currentRoundPicks.forEach(p => p.permanentlyGone = true);
+      failRound(true);
+    }, 200);
+    return;
+  }
+
+  item.isOpen = true;
+  currentRoundPicks.push(item);
+  tempScore += item.value;
   saveGameData();
+  renderBoard();
+  updateTempDisplay();
 }
 
 function updateTempDisplay(){
@@ -1531,41 +1556,48 @@ function updateTempDisplay(){
 }
 
 function bankScore(){
-  if(isSpectator || gameFinished) return;
-  if(tempScore <= 0){
-    showAlert('تنبيه', 'لا يوجد رصيد مؤقت لحفظه.');
-    return;
-  }
-
+  if(isSpectator || tempScore <= 0 || gameFinished) return;
   teams[activeTeamIndex].score += tempScore;
   currentRoundPicks.forEach(p => p.permanentlyGone = true);
-  currentRoundPicks = [];
-  tempScore = 0;
-
-  updateTempDisplay();
-  renderTeams();
-  renderBoard();
+  resetRoundState();
   nextTurn();
-  saveGameData();
 }
 
-function failRound(showAlertMsg = true){
+function failRound(switchTurn = true){
   if(isSpectator || gameFinished) return;
+  resetRoundState();
+  if(switchTurn){
+    nextTurn();
+  }
+}
+
+function resetRoundState(){
   tempScore = 0;
-  currentRoundPicks.forEach(p => p.isOpen = false);
+  currentRoundPicks.forEach(p=>{
+    if(!p.permanentlyGone){
+      p.isOpen = false;
+    }
+  });
   currentRoundPicks = [];
   updateTempDisplay();
-  renderBoard();
-  nextTurn();
   saveGameData();
-  if(showAlertMsg){
-    showAlert('انتهت المحاولة', 'تم تصفير الرصيد المؤقت وإرجاع الكروت المغلقة.');
-  }
+  renderBoard();
 }
 
 function nextTurn(){
+  if(!teams.length) return;
   activeTeamIndex = (activeTeamIndex + 1) % teams.length;
+  saveGameData();
   renderTeams();
+}
+
+function resetGame(){
+  if(isSpectator || gameFinished) return;
+  const confirmed = confirm('هل تريد إعادة اللعبة بالكامل؟\nسيتم إنشاء لوحة جديدة.');
+  if(!confirmed) return;
+  activeTeamIndex = 0;
+  teams.forEach(t => t.score = 0);
+  initGame();
 }
 
 function showAlert(title, message){
@@ -1576,6 +1608,11 @@ function showAlert(title, message){
 
 function closeAlertModal(){
   document.getElementById('alertModal').classList.remove('active');
+  if(redirectAfterAlert){
+    const target = redirectAfterAlert;
+    redirectAfterAlert = null;
+    window.location.href = target;
+  }
 }
 
 function escapeHtml(text){

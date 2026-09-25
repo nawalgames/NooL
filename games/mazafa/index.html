@@ -1000,6 +1000,7 @@ let isSpectator = false;
 let gameFinished = false;
 let unsubscribeGame = null;
 let redirectAfterAlert = null;
+let winnerAnnounced = false;
 
 const colorList = [
   { name:'red', label:'أحمر', cls:'bg-red' },
@@ -1214,6 +1215,12 @@ function applyGameState(data){
   tempScore = Number(data.tempScore || 0);
   boardCards = Array.isArray(data.boardCards) ? data.boardCards : Object.values(data.boardCards || {});
   currentRoundPicks = Array.isArray(data.currentRoundPicks) ? data.currentRoundPicks : Object.values(data.currentRoundPicks || {});
+
+  const isFreshBoard = boardCards.length > 0 && boardCards.every(c => !c.isOpen && !c.permanentlyGone);
+  if(isFreshBoard){
+    winnerAnnounced = false;
+  }
+
   renderTeams();
   renderBoard();
   updateTempDisplay();
@@ -1339,6 +1346,7 @@ function initGame(){
   tempScore = 0;
   currentRoundPicks = [];
   activeTeamIndex = 0;
+  winnerAnnounced = false;
   saveGameData();
   renderTeams();
   renderBoard();
@@ -1484,7 +1492,30 @@ function renderBoard(){
     }
     board.appendChild(cell);
   });
+
+  checkForWinner();
 }
+
+function checkForWinner(){
+  if(winnerAnnounced || gameFinished) return;
+  if(!boardCards.length || !teams.length) return;
+
+  const stillPlayable = boardCards.some(c => !c.isOpen && !c.permanentlyGone);
+  if(stillPlayable) return;
+
+  winnerAnnounced = true;
+
+  const maxScore = Math.max(...teams.map(t => t.score));
+  const winners = teams.filter(t => t.score === maxScore);
+
+  if(winners.length === 1){
+    showAlert('🏆 انتهت اللعبة!', `انتهت جميع الخانات!\nالفريق الفائز هو "${winners[0].name}" برصيد ${maxScore} نقطة 🎉`);
+  } else {
+    const names = winners.map(w => w.name).join('، ');
+    showAlert('🏆 انتهت اللعبة بالتعادل!', `انتهت جميع الخانات!\nتعادلت الفرق: ${names}\nبرصيد ${maxScore} نقطة لكل منهم!`);
+  }
+}
+
 
 /* =========================================================
    نظام اللعبة الأصلي بالتفصيل (القنابل / الدبل / تشابه اللون

@@ -960,7 +960,6 @@ body{
      FIREBASE & GAME LOGIC (Compat Version)
 ================================================     -->
 <script>
-// تهيئة Firebase المتوافقة (Compat) لتجنب التعليق
 const firebaseConfig = {
   apiKey: "AIzaSyDiOGYHADTeRz4CrrMh264K0sOQNrINl4w",
   authDomain: "nool-1fa3a.firebaseapp.com",
@@ -1018,7 +1017,7 @@ async function initializeApplication(){
     const urlRoom = urlParams.get('room');
 
     if(urlRoom){
-      roomId = urlRoom.toUpperCase();
+      roomId = decodeURIComponent(urlRoom).trim().toUpperCase();
       isSpectator = true;
       loadingText.textContent = 'جاري فتح جلسة المشاهدة...';
       await openSpectatorRoom(roomId);
@@ -1360,8 +1359,16 @@ async function copySpectatorLink(){
     showAlert('تنبيه', 'ابدأ اللعبة أولاً.');
     return;
   }
+
   await saveGameData();
-  const spectatorLink = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+
+  const spectatorUrl = new URL(window.location.href);
+  spectatorUrl.search = '';
+  spectatorUrl.hash = '';
+  spectatorUrl.searchParams.set('room', roomId);
+
+  const spectatorLink = spectatorUrl.toString();
+
   try{
     await navigator.clipboard.writeText(spectatorLink);
     showAlert('✅ تم نسخ الرابط', 'أرسل الرابط للمشاهدين.\n\nأي شخص يفتحه سيشاهد نفس جلسة اللعبة مباشرة.');

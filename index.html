@@ -398,8 +398,17 @@ function openFreeGame(url) {
   window.location.href = url;
 }
 
-// 2. دالة للألعاب المقفلة (تتحقق من الكود أولاً مثل المجازفة)
+// 2. دالة للألعاب المقفلة (تتحقق من الكود أو تنقل المباشر للمشاهدة إذا وُجد رابط room)
 async function openLockedGame(url) {
+  // فحص ما إذا كان الرابط الأساسي يحتوي على باراميتر غرفة (مشاهدة مباشرة)
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomParam = urlParams.get('room');
+
+  if (roomParam) {
+    window.location.href = `${url}?room=${roomParam}`;
+    return;
+  }
+
   targetGameUrl = url;
   const savedKey = localStorage.getItem('nol_license_key');
 
@@ -474,7 +483,7 @@ document.getElementById('codeConfirm').addEventListener('click', async () => {
   }
 });
 
-// قائمة وسائل التواصل والدعم (تم تحديث تويتر بالرابط واليوزر المطلوب)
+// قائمة وسائل التواصل والدعم
 const defaultSocials = [
   { label:'X (تويتر)', handle:'@noole_n', url:'https://x.com/noole_n?s=11', icon:'x' },
   { label:'انستغرام',   handle:'@NoL', url:'https://instagram.com/', icon:'instagram' },

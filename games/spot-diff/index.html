@@ -318,6 +318,13 @@ input:focus{
   height:44px;
 }
 
+.marker.host-answer{
+  border:3px solid var(--accent);
+  box-shadow:0 0 12px rgba(255,181,69,.9);
+  width:48px;
+  height:48px;
+}
+
 .marker.miss{
   border:3px solid var(--red);
   width:32px;
@@ -460,21 +467,6 @@ input:focus{
   margin-bottom:10px;
 }
 
-.diff-answer{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  background:var(--bg-soft);
-  border-radius:10px;
-  padding:8px 10px;
-  margin-bottom:5px;
-  font-size:12px;
-}
-
-.diff-answer span:first-child{
-  font-weight:700;
-}
-
 .exit-space{
   margin-top:auto;
   padding-top:12px;
@@ -486,13 +478,9 @@ input:focus{
 
 <div class="wrap">
 
-<!-- ================= التحميل ================= -->
-
 <div class="view center active" id="loadingView">
   <p class="msg">جاري التحميل...</p>
 </div>
-
-<!-- ================= إعداد المضيف ================= -->
 
 <div class="view" id="hostSetupView">
 
@@ -518,8 +506,6 @@ input:focus{
 
   </div>
 </div>
-
-<!-- ================= لوبي المضيف ================= -->
 
 <div class="view" id="hostLobbyView">
 
@@ -556,8 +542,6 @@ input:focus{
 
 </div>
 
-<!-- ================= لعب المضيف ================= -->
-
 <div class="view" id="hostPlayView">
 
   <div class="page-head">
@@ -577,18 +561,37 @@ input:focus{
 
   </div>
 
+  <!-- صور المضيف -->
+  <div class="card">
+
+    <div style="font-size:13px;color:var(--text-dim);margin-bottom:8px;">
+      👑 عرض المضيف — جميع الفروقات محددة
+    </div>
+
+    <div class="game-frame" id="hostGameFrame">
+
+      <div class="pic-box" id="hostPicBox0">
+        <img id="hostImg0" src="" alt="">
+      </div>
+
+      <div class="pic-box" id="hostPicBox1">
+        <img id="hostImg1" src="" alt="">
+      </div>
+
+    </div>
+
+  </div>
+
   <div class="card">
 
     <div style="font-size:13px;color:var(--text-dim);margin-bottom:6px;">
-      الاختلافات:
+      الاختلافات المكتشفة:
       <span class="badge" id="hFound">0/0</span>
     </div>
 
     <div class="plist" id="hostPlayersLive"></div>
 
   </div>
-
-  <!-- حالة الجولة -->
 
   <div class="card">
 
@@ -599,7 +602,7 @@ input:focus{
     <div class="host-actions">
 
       <button class="btn blue" id="showScoreBtn" onclick="hostToggleScore()">
-        🏆 إظهار السكور
+        🏆 إظهار السكور للاعبين
       </button>
 
       <button class="btn alt" id="showAnswersBtn" onclick="hostToggleAnswers()">
@@ -640,8 +643,8 @@ input:focus{
 
   <div class="card score-panel" id="hostScorePanel">
 
-    <div class="score-note">
-      🏆 السكور ظاهر للجميع
+    <div class="score-note" id="hostScoreNote">
+      🏆 السكور المباشر للمضيف
     </div>
 
     <div id="hostScoreList"></div>
@@ -649,8 +652,6 @@ input:focus{
   </div>
 
 </div>
-
-<!-- ================= انضمام اللاعب ================= -->
 
 <div class="view" id="joinView">
 
@@ -680,8 +681,6 @@ input:focus{
 
 </div>
 
-<!-- ================= انتظار اللاعب ================= -->
-
 <div class="view center" id="waitView">
 
   <button
@@ -707,8 +706,6 @@ input:focus{
   </button>
 
 </div>
-
-<!-- ================= لعب اللاعب ================= -->
 
 <div class="view" id="playView">
 
@@ -751,8 +748,6 @@ input:focus{
 
   </div>
 
-  <!-- إجابات اللاعب -->
-
   <div class="card answer-panel" id="playerAnswersPanel">
 
     <div class="answer-note">
@@ -762,8 +757,6 @@ input:focus{
     <div id="playerAnswersList"></div>
 
   </div>
-
-  <!-- سكور اللاعب -->
 
   <div class="card score-panel" id="playerScorePanel">
 
@@ -785,8 +778,6 @@ input:focus{
 
 </div>
 
-<!-- ================= النهاية ================= -->
-
 <div class="view" id="endView">
 
   <div class="page-head">
@@ -805,10 +796,6 @@ input:focus{
 </div>
 
 <script>
-
-/* =========================================================
-   بيانات الصور والاختلافات
-========================================================= */
 
 const GAME_DATA = {
   "winter":{
@@ -944,13 +931,8 @@ const IMG_W = 960;
 const IMG_H = 720;
 const HIT_TOL = 12;
 
-
-/* =========================================================
-   Firebase
-========================================================= */
-
 const firebaseConfig = {
-  apiKey:"AIzaSyDiOGYHADTeRz4CrrMh264K0sOQNrINl4w",
+  apiKey:"AIzaSyDiOGYHADTeRz4CrrMh264K0sONrINl4w",
   authDomain:"nool-1fa3a.firebaseapp.com",
   databaseURL:"https://nool-1fa3a-default-rtdb.firebaseio.com",
   projectId:"nool-1fa3a",
@@ -965,33 +947,32 @@ const db = firebase.database();
 
 const INC = firebase.database.ServerValue.increment;
 
-
-/* =========================================================
-   أدوات عامة
-========================================================= */
-
 function show(id){
+
   document.querySelectorAll('.view').forEach(v=>{
     v.classList.remove('active');
   });
 
-  const el = document.getElementById(id);
+  const el=document.getElementById(id);
 
   if(el){
     el.classList.add('active');
   }
+
 }
 
 function rid(n){
+
   const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
   let s='';
 
   for(let i=0;i<n;i++){
-    s += c[Math.floor(Math.random()*c.length)];
+    s+=c[Math.floor(Math.random()*c.length)];
   }
 
   return s;
+
 }
 
 function shuffledThemes(n){
@@ -1003,9 +984,11 @@ function shuffledThemes(n){
     const j=Math.floor(Math.random()*(i+1));
 
     [k[i],k[j]]=[k[j],k[i]];
+
   }
 
   return k.slice(0,n);
+
 }
 
 function fmt(s){
@@ -1015,6 +998,7 @@ function fmt(s){
   return String(Math.floor(s/60)).padStart(2,'0')
     +':'+
     String(s%60).padStart(2,'0');
+
 }
 
 function escapeHtml(s){
@@ -1026,14 +1010,17 @@ function escapeHtml(s){
     '"':'&quot;',
     "'":'&#39;'
   }[c]));
+
 }
 
 function goBackHome(){
 
   if(mySessRef){
+
     try{
       mySessRef.off();
     }catch(e){}
+
   }
 
   if(pTimerInt){
@@ -1044,29 +1031,25 @@ function goBackHome(){
     clearInterval(hostTimerInt);
   }
 
-  location.href = location.pathname;
+  location.href=location.pathname;
+
 }
 
+const params=new URLSearchParams(location.search);
 
-/* =========================================================
-   المتغيرات
-========================================================= */
+const roomCode=params.get('room');
 
-const params = new URLSearchParams(location.search);
+let myPid=null;
+let mySessRef=null;
 
-const roomCode = params.get('room');
+let roleIsHost=!roomCode;
 
-let myPid = null;
-let mySessRef = null;
+let hostTimerInt=null;
+let pTimerInt=null;
 
-let roleIsHost = !roomCode;
+let lastRoundIndex=-1;
 
-let hostTimerInt = null;
-let pTimerInt = null;
-
-let lastRoundIndex = -1;
-
-let hostCurrentState = null;
+let hostCurrentState=null;
 
 
 /* =========================================================
@@ -1078,11 +1061,9 @@ if(roleIsHost){
   show('hostSetupView');
 
 
-  /* إنشاء الجلسة */
+  window.createSession=function(){
 
-  window.createSession = function(){
-
-    const rounds = Math.min(
+    const rounds=Math.min(
       9,
       Math.max(
         1,
@@ -1090,21 +1071,21 @@ if(roleIsHost){
       )
     );
 
-    const roundTime = Math.max(
+    const roundTime=Math.max(
       20,
       parseInt(document.getElementById('setTime').value)||90
     );
 
-    const maxMistakes = Math.max(
+    const maxMistakes=Math.max(
       1,
       parseInt(document.getElementById('setMistakes').value)||5
     );
 
-    const code = rid(5);
+    const code=rid(5);
 
-    const themeList = shuffledThemes(rounds);
+    const themeList=shuffledThemes(rounds);
 
-    mySessRef = db.ref('sd_sessions/'+code);
+    mySessRef=db.ref('sd_sessions/'+code);
 
     mySessRef.set({
 
@@ -1139,7 +1120,7 @@ if(roleIsHost){
 
     }).then(()=>{
 
-      const link =
+      const link=
         location.origin+
         location.pathname+
         '?room='+
@@ -1168,11 +1149,9 @@ if(roleIsHost){
   };
 
 
-  /* نسخ الرابط */
+  window.copyLink=function(){
 
-  window.copyLink = function(){
-
-    const link =
+    const link=
       document.getElementById('shareLink').dataset.link;
 
     navigator.clipboard.writeText(link)
@@ -1186,9 +1165,7 @@ if(roleIsHost){
   };
 
 
-  /* الرجوع من اللوبي */
-
-  window.hostLeaveLobby = function(){
+  window.hostLeaveLobby=function(){
 
     if(confirm('هل تريد الخروج من جلسة المضيف؟')){
 
@@ -1208,8 +1185,6 @@ if(roleIsHost){
 
   };
 
-
-  /* متابعة اللاعبين */
 
   function listenHostLobby(){
 
@@ -1261,9 +1236,7 @@ if(roleIsHost){
   }
 
 
-  /* بدء اللعبة */
-
-  window.hostStartGame = function(){
+  window.hostStartGame=function(){
 
     mySessRef.child('players').once('value')
       .then(snap=>{
@@ -1274,17 +1247,11 @@ if(roleIsHost){
 
         Object.keys(players).forEach(pid=>{
 
-          upd[
-            'players/'+pid+'/score'
-          ]=0;
+          upd['players/'+pid+'/score']=0;
 
-          upd[
-            'players/'+pid+'/mistakes'
-          ]=0;
+          upd['players/'+pid+'/mistakes']=0;
 
-          upd[
-            'players/'+pid+'/locked'
-          ]=false;
+          upd['players/'+pid+'/locked']=false;
 
         });
 
@@ -1299,8 +1266,6 @@ if(roleIsHost){
 
   };
 
-
-  /* بدء صورة جديدة */
 
   function startRound(idx){
 
@@ -1321,6 +1286,7 @@ if(roleIsHost){
           });
 
           return;
+
         }
 
         const theme=
@@ -1375,10 +1341,6 @@ if(roleIsHost){
   }
 
 
-  /* =========================================================
-     الصورة التالية
-  ========================================================= */
-
   window.hostNextRound=function(){
 
     if(!mySessRef) return;
@@ -1414,7 +1376,8 @@ if(roleIsHost){
 
 
   /* =========================================================
-     إظهار السكور للجميع
+     إظهار السكور للاعبين
+     المضيف يراه دائمًا بدون هذا الزر
   ========================================================= */
 
   window.hostToggleScore=function(){
@@ -1426,11 +1389,6 @@ if(roleIsHost){
 
   };
 
-
-  /* =========================================================
-     إظهار الإجابات
-     يتم تفعيلها فقط بعد انتهاء الوقت
-  ========================================================= */
 
   window.hostToggleAnswers=function(){
 
@@ -1461,10 +1419,6 @@ if(roleIsHost){
   };
 
 
-  /* =========================================================
-     خروج المضيف
-  ========================================================= */
-
   window.hostExitGame=function(){
 
     if(
@@ -1492,10 +1446,6 @@ if(roleIsHost){
   };
 
 
-  /* =========================================================
-     متابعة اللعبة للمضيف
-  ========================================================= */
-
   function listenHostPlay(){
 
     mySessRef.on(
@@ -1517,9 +1467,7 @@ if(roleIsHost){
           renderHostPlay(s);
 
           if(hostTimerInt){
-
             clearInterval(hostTimerInt);
-
           }
 
           updateHostTimer(s);
@@ -1537,9 +1485,7 @@ if(roleIsHost){
         ){
 
           if(hostTimerInt){
-
             clearInterval(hostTimerInt);
-
           }
 
           renderFinal(s.players||{});
@@ -1554,11 +1500,6 @@ if(roleIsHost){
 
   }
 
-
-  /* =========================================================
-     عداد المضيف
-     لا ينتقل للصورة التالية
-  ========================================================= */
 
   function updateHostTimer(s){
 
@@ -1584,15 +1525,8 @@ if(roleIsHost){
     if(left<=0){
 
       if(hostTimerInt){
-
         clearInterval(hostTimerInt);
-
       }
-
-      /*
-        فقط ننهي الجولة.
-        لا ننتقل للصورة التالية.
-      */
 
       mySessRef.update({
         roundEnded:true
@@ -1604,8 +1538,89 @@ if(roleIsHost){
 
 
   /* =========================================================
-     عرض لوحة المضيف
+     تحميل صور المضيف + تحديد جميع الفروقات
   ========================================================= */
+
+  function loadHostRound(s){
+
+    const game=
+      GAME_DATA[s.currentTheme];
+
+    if(!game) return;
+
+    document.getElementById('hostImg0').src=
+      'pics/'+
+      s.currentTheme+
+      '0.'+
+      game.ext0;
+
+    document.getElementById('hostImg1').src=
+      'pics/'+
+      s.currentTheme+
+      '1.'+
+      game.ext1;
+
+    document.querySelectorAll(
+      '#hostPicBox0 .marker, #hostPicBox1 .marker'
+    ).forEach(
+      m=>m.remove()
+    );
+
+    game.diffs.forEach(d=>{
+
+      placeHostMarker(
+        0,
+        d.x0,
+        d.y0
+      );
+
+      placeHostMarker(
+        1,
+        d.x1,
+        d.y1
+      );
+
+    });
+
+  }
+
+
+  /* =========================================================
+     علامات الفروقات للمضيف
+     جميعها تظهر دائمًا
+  ========================================================= */
+
+  function placeHostMarker(
+    picIndex,
+    x,
+    y
+  ){
+
+    const box=
+      document.getElementById(
+        picIndex===0
+        ?
+        'hostPicBox0'
+        :
+        'hostPicBox1'
+      );
+
+    const m=
+      document.createElement('div');
+
+    m.className=
+      'marker host-answer';
+
+    m.style.left=
+      (x/IMG_W*100)+'%';
+
+    m.style.top=
+      (y/IMG_H*100)+'%';
+
+    box.appendChild(m);
+
+  }
+
 
   function renderHostPlay(s){
 
@@ -1626,7 +1641,7 @@ if(roleIsHost){
 
     document.getElementById('hRoundNum')
       .textContent=
-      (s.roundIndex+1);
+      s.roundIndex+1;
 
     document.getElementById('hRoundTotal')
       .textContent=
@@ -1641,7 +1656,26 @@ if(roleIsHost){
       found+'/'+total;
 
 
-    /* حالة الجولة */
+    /* تحميل صور المضيف عند تغير الصورة */
+
+    const hostTheme=
+      document.getElementById('hostImg0')
+        .dataset.theme;
+
+    if(hostTheme!==s.currentTheme){
+
+      document.getElementById('hostImg0')
+        .dataset.theme=
+        s.currentTheme;
+
+      document.getElementById('hostImg1')
+        .dataset.theme=
+        s.currentTheme;
+
+      loadHostRound(s);
+
+    }
+
 
     document.getElementById('hostRoundState')
       .textContent=
@@ -1652,8 +1686,6 @@ if(roleIsHost){
       '▶️ الجولة جارية';
 
 
-    /* أزرار المضيف */
-
     const scoreBtn=
       document.getElementById('showScoreBtn');
 
@@ -1663,17 +1695,18 @@ if(roleIsHost){
     const nextBtn=
       document.getElementById('nextRoundBtn');
 
+
     if(s.showScore){
 
       scoreBtn.textContent=
-        '🏆 السكور ظاهر للجميع';
+        '🏆 السكور ظاهر للاعبين';
 
       scoreBtn.disabled=true;
 
     }else{
 
       scoreBtn.textContent=
-        '🏆 إظهار السكور';
+        '🏆 إظهار السكور للاعبين';
 
       scoreBtn.disabled=false;
 
@@ -1704,8 +1737,6 @@ if(roleIsHost){
 
     nextBtn.disabled=false;
 
-
-    /* اللاعبون */
 
     const players=s.players||{};
 
@@ -1745,8 +1776,6 @@ if(roleIsHost){
       });
 
 
-    /* آخر الإجابات */
-
     const feed=
       document.getElementById('hFeed');
 
@@ -1776,12 +1805,13 @@ if(roleIsHost){
     });
 
 
-    /* الإجابات للمضيف */
-
     renderAnswersForHost(s);
 
-
-    /* السكور للمضيف */
+    /*
+      مهم:
+      المضيف يرى السكور دائمًا
+      حتى لو showScore = false
+    */
 
     renderScoreForHost(s);
 
@@ -1853,15 +1883,23 @@ if(roleIsHost){
         'hostScorePanel'
       );
 
-    if(!s.showScore){
-
-      panel.classList.remove('visible');
-
-      return;
-
-    }
+    /*
+      المضيف يرى السكور دائمًا
+    */
 
     panel.classList.add('visible');
+
+    const note=
+      document.getElementById(
+        'hostScoreNote'
+      );
+
+    note.textContent=
+      s.showScore
+      ?
+      '🏆 السكور ظاهر للمضيف واللاعبين'
+      :
+      '🏆 السكور المباشر للمضيف — مخفي عن اللاعبين';
 
     const list=
       document.getElementById(
@@ -1935,10 +1973,6 @@ function showConnError(err){
 }
 
 
-/* =========================================================
-   دخول اللاعب
-========================================================= */
-
 if(!roleIsHost){
 
   mySessRef=
@@ -2004,10 +2038,6 @@ if(!roleIsHost){
     })
     .catch(showConnError);
 
-
-  /* =========================================================
-     انضمام اللاعب
-  ========================================================= */
 
   window.playerJoin=function(){
 
@@ -2076,10 +2106,6 @@ if(!roleIsHost){
   };
 
 
-  /* =========================================================
-     خروج اللاعب
-  ========================================================= */
-
   window.playerExit=function(){
 
     if(
@@ -2089,15 +2115,11 @@ if(!roleIsHost){
     ) return;
 
     if(pTimerInt){
-
       clearInterval(pTimerInt);
-
     }
 
     if(mySessRef){
-
       mySessRef.off();
-
     }
 
     sessionStorage.removeItem(
@@ -2109,10 +2131,6 @@ if(!roleIsHost){
 
   };
 
-
-  /* =========================================================
-     مستمع اللاعب
-  ========================================================= */
 
   function startPlayerListeners(){
 
@@ -2154,9 +2172,7 @@ if(!roleIsHost){
           renderPlayerState(s);
 
           if(pTimerInt){
-
             clearInterval(pTimerInt);
-
           }
 
           updatePlayerTimer(s);
@@ -2177,9 +2193,7 @@ if(!roleIsHost){
         ){
 
           if(pTimerInt){
-
             clearInterval(pTimerInt);
-
           }
 
           renderFinal(
@@ -2194,10 +2208,6 @@ if(!roleIsHost){
 
   }
 
-
-  /* =========================================================
-     تحميل الصورة
-  ========================================================= */
 
   function loadRound(s){
 
@@ -2227,10 +2237,6 @@ if(!roleIsHost){
   }
 
 
-  /* =========================================================
-     عداد اللاعب
-  ========================================================= */
-
   function updatePlayerTimer(s){
 
     const timer=
@@ -2254,10 +2260,6 @@ if(!roleIsHost){
 
   }
 
-
-  /* =========================================================
-     حالة اللاعب
-  ========================================================= */
 
   function renderPlayerState(s){
 
@@ -2316,7 +2318,9 @@ if(!roleIsHost){
     );
 
 
-    /* العلامات المشتركة */
+    /*
+      اللاعب يرى فقط الاختلافات المكتشفة
+    */
 
     document.querySelectorAll(
       '.marker.found'
@@ -2355,24 +2359,12 @@ if(!roleIsHost){
     });
 
 
-    /* الإجابات */
-
     renderPlayerAnswers(s);
-
-
-    /* السكور */
 
     renderPlayerScore(s);
 
   }
 
-
-  /* =========================================================
-     إجابات اللاعب
-     لا تظهر إلا:
-     1- انتهى الوقت
-     2- المضيف فعّل إظهار الإجابات
-  ========================================================= */
 
   function renderPlayerAnswers(s){
 
@@ -2438,11 +2430,6 @@ if(!roleIsHost){
   }
 
 
-  /* =========================================================
-     سكور اللاعب
-     يظهر للجميع عند ضغط المضيف
-  ========================================================= */
-
   function renderPlayerScore(s){
 
     const panel=
@@ -2486,8 +2473,7 @@ if(!roleIsHost){
       const row=
         document.createElement('div');
 
-      row.className=
-        'rank';
+      row.className='rank';
 
       row.innerHTML=
         `<span class="pos">
@@ -2512,10 +2498,6 @@ if(!roleIsHost){
   }
 
 
-  /* =========================================================
-     وضع العلامة
-  ========================================================= */
-
   function placeMarker(
     picIndex,
     x,
@@ -2533,9 +2515,7 @@ if(!roleIsHost){
       );
 
     const m=
-      document.createElement(
-        'div'
-      );
+      document.createElement('div');
 
     m.className=
       'marker '+
@@ -2563,10 +2543,6 @@ if(!roleIsHost){
   }
 
 
-  /* =========================================================
-     الضغط على الصورة
-  ========================================================= */
-
   function handleClick(
     evt,
     picIndex
@@ -2583,24 +2559,15 @@ if(!roleIsHost){
           s.status!=='playing'
         ) return;
 
-        /*
-          ممنوع اكتشاف الاختلافات
-          بعد انتهاء الوقت
-        */
-
         if(s.roundEnded){
-
           return;
-
         }
 
         const me=
           (s.players||{})[myPid];
 
         if(!me || me.locked){
-
           return;
-
         }
 
         const rect=
@@ -2677,10 +2644,6 @@ if(!roleIsHost){
         }
 
 
-        /* =================================================
-           إجابة صحيحة
-        ================================================= */
-
         if(matched){
 
           const claimRef=
@@ -2724,10 +2687,6 @@ if(!roleIsHost){
         }
 
 
-        /* =================================================
-           إجابة خاطئة
-        ================================================= */
-
         else{
 
           placeMarker(
@@ -2746,9 +2705,7 @@ if(!roleIsHost){
               cur=>{
 
                 if(!cur){
-
                   return cur;
-
                 }
 
                 cur.mistakes=
@@ -2827,9 +2784,7 @@ function renderFinal(players){
     (p,i)=>{
 
       const r=
-        document.createElement(
-          'div'
-        );
+        document.createElement('div');
 
       r.className='rank';
 

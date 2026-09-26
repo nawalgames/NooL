@@ -586,11 +586,19 @@ if (!roleIsHost){
     document.getElementById('lockMsg').innerHTML = me.locked
       ? '🚫 تم قفلك بسبب كثرة الأخطاء<br>انتظر الصورة القادمة'
       : (s.roundFrozen ? '⏰ انتهى وقت هذه الصورة<br>بانتظار المضيف للمتابعة' : '');
+    
+    // إزالة العلامات القديمة
     document.querySelectorAll('.marker.found').forEach(m=>m.remove());
-    Object.keys(s.foundIds||{}).forEach(id=>{
-      const d = GAME_DATA[s.currentTheme].diffs.find(x=>x.id===id);
-      if (d){ placeMarkerIn('picBox0', d.x0, d.y0, 'found'); placeMarkerIn('picBox1', d.x1, d.y1, 'found'); }
-    });
+    
+    // تم التعديل هنا: لن يتم إظهار الاختلافات المكتشفة على شاشة اللاعب أثناء اللعب،
+    // بل ستظهر فقط بعد انتهاء الوقت وتفعيل المضيف للأجوبة (revealAnswers).
+    if (s.roundFrozen && s.revealAnswers){
+      Object.keys(s.foundIds||{}).forEach(id=>{
+        const d = GAME_DATA[s.currentTheme].diffs.find(x=>x.id===id);
+        if (d){ placeMarkerIn('picBox0', d.x0, d.y0, 'found'); placeMarkerIn('picBox1', d.x1, d.y1, 'found'); }
+      });
+    }
+    
     document.querySelectorAll('.marker.answer').forEach(m=>m.remove());
     if (s.roundFrozen && s.revealAnswers){
       GAME_DATA[s.currentTheme].diffs.forEach(d=>{

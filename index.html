@@ -312,21 +312,21 @@
     <p class="tagline">اختر لعبة وابدأ اللعب مع أصحابك</p>
     <div class="grid" id="gamesGrid">
       
-      <!-- كرت لعبة طبول الحرب (تفتح مباشرة للجميع بدون كود) -->
+      <!-- كرت لعبة طبول الحرب -->
       <div class="game-card" onclick="openFreeGame('games/harb/index.html')">
         <img src="assets/war-drums.pngg.PNG" alt="طبول الحرب" class="game-card-img">
         <div class="game-card-title">طبول الحرب</div>
       </div>
 
-      <!-- كرت لعبة المجازفة (تتطلب كود اشتراك خاص بها) -->
+      <!-- كرت لعبة المجازفة -->
       <div class="game-card" onclick="openLockedGame('games/mazafa/index.html','mazafa')">
         <img src="assets/mazafa.png" alt="لعبة المجازفة" class="game-card-img">
         <div class="game-card-title">المجازفة</div>
       </div>
 
-      <!-- كرت لعبة اختلاف الصور (تتطلب كود اشتراك خاص بها) -->
+      <!-- كرت لعبة اختلاف الصور (تمت إضافة الصورة بالامتداد الصحيح هنا) -->
       <div class="game-card" onclick="openLockedGame('games/spot-diff/index.html','spot-diff')">
-        <img src="assets/spot-diff.png" alt="اختلاف الصور" class="game-card-img">
+        <img src="assets/spot.png.jpg" alt="اختلاف الصور" class="game-card-img">
         <div class="game-card-title">اختلاف الصور</div>
       </div>
 
@@ -399,14 +399,11 @@ backBtn.addEventListener('click', () => {
 let targetGameUrl = '';
 let targetGameId = '';
 
-// 1. دالة للألعاب المجانية (تفتح مباشرة للجميع بدون كود مثل طبول الحرب)
 function openFreeGame(url) {
   window.location.href = url;
 }
 
-// 2. دالة للألعاب المقفلة (تتحقق من كود خاص بنفس اللعبة، أو تنقل المباشر للمشاهدة إذا وُجد رابط room)
 async function openLockedGame(url, gameId) {
-  // فحص ما إذا كان الرابط الأساسي يحتوي على باراميتر غرفة (مشاهدة مباشرة)
   const urlParams = new URLSearchParams(window.location.search);
   const roomParam = urlParams.get('room');
 
@@ -428,7 +425,6 @@ async function openLockedGame(url, gameId) {
     }
   }
 
-  // إذا لم يكن هناك كود أو انتهى، إظهار نافذة إدخال الكود
   document.getElementById('codeInput').value = '';
   document.getElementById('codeMsg').textContent = '';
   document.getElementById('codeOverlay').classList.add('active');
@@ -492,8 +488,6 @@ document.getElementById('codeConfirm').addEventListener('click', async () => {
   }
 });
 
-
-// قائمة وسائل التواصل والدعم
 const defaultSocials = [
   { label:'X (تويتر)', handle:'@noole_n', url:'https://x.com/noole_n?s=11', icon:'x' },
   { label:'انستغرام',   handle:'@NoL', url:'https://instagram.com/', icon:'instagram' },

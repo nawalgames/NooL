@@ -387,10 +387,10 @@ function initHostSetup(){
       const upd = {
         status:'playing', roundIndex: idx, currentTheme: theme,
         roundStartAt: now, roundEndAt: now + s.settings.roundTime*1000,
-        roundFrozen: false, revealAnswers: false, revealScore: false, foundIds: null
+        roundFrozen: false, revealAnswers: false, revealScore: false
       };
       const players = s.players || {};
-      Object.keys(players).forEach(pid=>{ upd['players/'+pid+'/mistakes']=0; upd['players/'+pid+'/locked']=false; });
+      Object.keys(players).forEach(pid=>{ upd['players/'+pid+'/mistakes']=0; upd['players/'+pid+'/locked']=false; upd['players/'+pid+'/foundIds']=null; });
       mySessRef.update(upd);
     });
   }
@@ -457,9 +457,10 @@ function initHostSetup(){
     if (!s || !s.currentTheme) return;
     document.querySelectorAll('#hPicBox0 .marker, #hPicBox1 .marker').forEach(m=>m.remove());
     const diffs = GAME_DATA[s.currentTheme].diffs;
-    const found = s.foundIds || {};
+    const players = s.players || {};
+    const anyFound = id => Object.values(players).some(p=> p.foundIds && p.foundIds[id]);
     diffs.forEach(d=>{
-      if (found[d.id]){
+      if (anyFound(d.id)){
         placeMarkerIn('hPicBox0', d.x0, d.y0, 'found');
         placeMarkerIn('hPicBox1', d.x1, d.y1, 'found');
       } else if (s.revealAnswers){
@@ -474,22 +475,29 @@ function initHostSetup(){
     document.getElementById('hRoundTotal').textContent = s.settings.rounds;
     document.getElementById('hThemeName').textContent = GAME_DATA[s.currentTheme].label + (s.roundFrozen ? ' — ⏰ انتهى الوقت' : '');
     const total = GAME_DATA[s.currentTheme].diffs.length;
-    const found = s.foundIds ? Object.keys(s.foundIds).length : 0;
-    document.getElementById('hFound').textContent = found+'/'+total;
-    drawHostMarkers(s);
     const players = s.players || {};
+    const uniqueFound = new Set();
+    Object.values(players).forEach(p=>{ Object.keys(p.foundIds||{}).forEach(id=>uniqueFound.add(id)); });
+    document.getElementById('hFound').textContent = uniqueFound.size+'/'+total;
+    drawHostMarkers(s);
     const list = document.getElementById('hostPlayersLive');
     list.innerHTML = '';
     Object.values(players).sort((a,b)=>b.score-a.score).forEach(p=>{
+      const myTotal = Object.keys(p.foundIds||{}).length;
       const row = document.createElement('div');
       row.className = 'prow' + (p.locked?' locked':'');
-      row.innerHTML = `<span class="nm">${escapeHtml(p.name)}</span><span class="st">نقاط: ${p.score||0} — أخطاء: ${p.mistakes||0}${p.locked?' 🚫':''}</span>`;
+      row.innerHTML = `<span class="nm">${escapeHtml(p.name)}</span><span class="st">${myTotal}/${total} — نقاط: ${p.score||0} — أخطاء: ${p.mistakes||0}${p.locked?' 🚫':''}</span>`;
       list.appendChild(row);
     });
     const feed = document.getElementById('hFeed');
     feed.innerHTML = '';
-    const entries = Object.entries(s.foundIds||{}).sort((a,b)=>b[1].at-a[1].at).slice(0,10);
-    entries.forEach(([id,f])=>{ const d=document.createElement('div'); d.textContent = `✅ ${f.name} اكتشف اختلافًا (+${s.settings.pointsPerFind||10})`; feed.appendChild(d); });
+    const entries = [];
+    Object.values(players).forEach(p=>{
+      Object.entries(p.foundIds||{}).forEach(([id,at])=>{ entries.push({name:p.name, at: typeof at==='number'?at:0}); });
+    });
+    entries.sort((a,b)=>b.at-a.at).slice(0,10).forEach(e=>{
+      const d=document.createElement('div'); d.textContent = `✅ ${e.name} اكتشف اختلافًا (+${s.settings.pointsPerFind||10})`; feed.appendChild(d);
+    });
 
     document.getElementById('scoreBtn').disabled = !s.roundFrozen;
     document.getElementById('answersBtn').disabled = !s.roundFrozen;
@@ -577,32 +585,25 @@ if (!roleIsHost){
 
   function renderPlayerState(s){
     const total = GAME_DATA[s.currentTheme].diffs.length;
-    const found = s.foundIds ? Object.keys(s.foundIds).length : 0;
-    document.getElementById('pFound').textContent = found+'/'+total;
     const me = (s.players||{})[myPid] || {};
+    const myFound = me.foundIds || {};
+    const found = Object.keys(myFound).length;
+    document.getElementById('pFound').textContent = found+'/'+total;
     const frame = document.getElementById('gameFrame');
     const isLocked = !!me.locked || !!s.roundFrozen;
     frame.classList.toggle('locked', isLocked);
     document.getElementById('lockMsg').innerHTML = me.locked
       ? '🚫 تم قفلك بسبب كثرة الأخطاء<br>انتظر الصورة القادمة'
       : (s.roundFrozen ? '⏰ انتهى وقت هذه الصورة<br>بانتظار المضيف للمتابعة' : '');
-    
-    // إزالة العلامات القديمة
     document.querySelectorAll('.marker.found').forEach(m=>m.remove());
-    
-    // تم التعديل هنا: لن يتم إظهار الاختلافات المكتشفة على شاشة اللاعب أثناء اللعب،
-    // بل ستظهر فقط بعد انتهاء الوقت وتفعيل المضيف للأجوبة (revealAnswers).
-    if (s.roundFrozen && s.revealAnswers){
-      Object.keys(s.foundIds||{}).forEach(id=>{
-        const d = GAME_DATA[s.currentTheme].diffs.find(x=>x.id===id);
-        if (d){ placeMarkerIn('picBox0', d.x0, d.y0, 'found'); placeMarkerIn('picBox1', d.x1, d.y1, 'found'); }
-      });
-    }
-    
+    Object.keys(myFound).forEach(id=>{
+      const d = GAME_DATA[s.currentTheme].diffs.find(x=>x.id===id);
+      if (d){ placeMarkerIn('picBox0', d.x0, d.y0, 'found'); placeMarkerIn('picBox1', d.x1, d.y1, 'found'); }
+    });
     document.querySelectorAll('.marker.answer').forEach(m=>m.remove());
     if (s.roundFrozen && s.revealAnswers){
       GAME_DATA[s.currentTheme].diffs.forEach(d=>{
-        if (!(s.foundIds||{})[d.id]){ placeMarkerIn('picBox0', d.x0, d.y0, 'answer'); placeMarkerIn('picBox1', d.x1, d.y1, 'answer'); }
+        if (!myFound[d.id]){ placeMarkerIn('picBox0', d.x0, d.y0, 'answer'); placeMarkerIn('picBox1', d.x1, d.y1, 'answer'); }
       });
     }
     renderScoreModal(s.roundFrozen && s.revealScore, s.players);
@@ -618,17 +619,22 @@ if (!roleIsHost){
       const px = ((evt.clientX-rect.left)/rect.width)*IMG_W;
       const py = ((evt.clientY-rect.top)/rect.height)*IMG_H;
       const diffs = GAME_DATA[s.currentTheme].diffs;
-      const found = s.foundIds || {};
+      const myFound = me.foundIds || {};
       let matched = null;
       for (const d of diffs){
-        if (found[d.id]) continue;
+        if (myFound[d.id]) continue;
         const dx = picIndex===0?d.x0:d.x1, dy = picIndex===0?d.y0:d.y1, dr=(picIndex===0?d.r0:d.r1)+HIT_TOL;
         if (Math.hypot(px-dx,py-dy) <= dr){ matched = d; break; }
       }
+      const pointsPerFind = s.settings.pointsPerFind || 10;
       if (matched){
-        const claimRef = mySessRef.child('foundIds/'+matched.id);
-        claimRef.transaction(cur=> cur===null ? {pid:myPid, name:me.name, at:Date.now()} : cur, (err,committed)=>{
-          if (committed) mySessRef.child('players/'+myPid+'/score').set(INC(s.settings.pointsPerFind||10));
+        mySessRef.child('players/'+myPid).transaction(cur=>{
+          if (!cur) return cur;
+          cur.foundIds = cur.foundIds || {};
+          if (cur.foundIds[matched.id]) return cur;
+          cur.foundIds[matched.id] = Date.now();
+          cur.score = (cur.score||0) + pointsPerFind;
+          return cur;
         });
       } else {
         placeMarkerIn(picIndex===0?'picBox0':'picBox1', px, py, 'miss');

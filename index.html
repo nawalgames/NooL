@@ -318,14 +318,14 @@
         <div class="game-card-title">طبول الحرب</div>
       </div>
 
-      <!-- كرت لعبة المجازفة (تتطلب كود اشتراك) -->
-      <div class="game-card" onclick="openLockedGame('games/mazafa/index.html')">
+      <!-- كرت لعبة المجازفة (تتطلب كود اشتراك خاص بها) -->
+      <div class="game-card" onclick="openLockedGame('games/mazafa/index.html','mazafa')">
         <img src="assets/mazafa.png" alt="لعبة المجازفة" class="game-card-img">
         <div class="game-card-title">المجازفة</div>
       </div>
 
-      <!-- كرت لعبة اختلاف الصور (تتطلب كود اشتراك) -->
-      <div class="game-card" onclick="openLockedGame('games/spot-diff/index.html')">
+      <!-- كرت لعبة اختلاف الصور (تتطلب كود اشتراك خاص بها) -->
+      <div class="game-card" onclick="openLockedGame('games/spot-diff/index.html','spot-diff')">
         <img src="assets/spot-diff.png" alt="اختلاف الصور" class="game-card-img">
         <div class="game-card-title">اختلاف الصور</div>
       </div>
@@ -397,14 +397,15 @@ backBtn.addEventListener('click', () => {
 });
 
 let targetGameUrl = '';
+let targetGameId = '';
 
 // 1. دالة للألعاب المجانية (تفتح مباشرة للجميع بدون كود مثل طبول الحرب)
 function openFreeGame(url) {
   window.location.href = url;
 }
 
-// 2. دالة للألعاب المقفلة (تتحقق من الكود أو تنقل المباشر للمشاهدة إذا وُجد رابط room)
-async function openLockedGame(url) {
+// 2. دالة للألعاب المقفلة (تتحقق من كود خاص بنفس اللعبة، أو تنقل المباشر للمشاهدة إذا وُجد رابط room)
+async function openLockedGame(url, gameId) {
   // فحص ما إذا كان الرابط الأساسي يحتوي على باراميتر غرفة (مشاهدة مباشرة)
   const urlParams = new URLSearchParams(window.location.search);
   const roomParam = urlParams.get('room');
@@ -415,10 +416,12 @@ async function openLockedGame(url) {
   }
 
   targetGameUrl = url;
-  const savedKey = localStorage.getItem('nol_license_key');
+  targetGameId = gameId;
+  const storageKey = 'nol_license_key_' + gameId;
+  const savedKey = localStorage.getItem(storageKey);
 
   if (savedKey && db) {
-    const isValid = await checkKeyInFirebase(savedKey);
+    const isValid = await checkKeyInFirebase(savedKey, gameId);
     if (isValid) {
       window.location.href = targetGameUrl;
       return;
@@ -431,13 +434,14 @@ async function openLockedGame(url) {
   document.getElementById('codeOverlay').classList.add('active');
 }
 
-async function checkKeyInFirebase(key) {
+async function checkKeyInFirebase(key, gameId) {
   try {
     const snapshot = await db.ref(`codes/${key}`).once('value');
     if (!snapshot.exists()) return false;
     const data = snapshot.val();
     const now = Date.now();
 
+    if (data.gameId !== gameId) return false;
     if (data.status === 'revoked') return false;
     if (data.status === 'active' && data.expiresAt && data.expiresAt < now) return false;
     if (data.status === 'new' || !data.status) {
@@ -474,9 +478,9 @@ document.getElementById('codeConfirm').addEventListener('click', async () => {
   msgEl.className = 'modal-msg';
   msgEl.textContent = 'جاري التحقق...';
 
-  const isValid = await checkKeyInFirebase(inputKey);
+  const isValid = await checkKeyInFirebase(inputKey, targetGameId);
   if (isValid) {
-    localStorage.setItem('nol_license_key', inputKey);
+    localStorage.setItem('nol_license_key_' + targetGameId, inputKey);
     msgEl.className = 'modal-msg ok';
     msgEl.textContent = 'تم التفعيل بنجاح! جاري الدخول...';
     setTimeout(() => {
@@ -484,9 +488,10 @@ document.getElementById('codeConfirm').addEventListener('click', async () => {
     }, 1000);
   } else {
     msgEl.className = 'modal-msg error';
-    msgEl.textContent = 'الكود غير صحيح أو منتهي الصلاحية.';
+    msgEl.textContent = 'الكود غير صحيح أو منتهي الصلاحية أو غير مخصص لهذه اللعبة.';
   }
 });
+
 
 // قائمة وسائل التواصل والدعم
 const defaultSocials = [

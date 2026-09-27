@@ -3,366 +3,174 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NoL — المنصة الرئيسية</title>
+<title>NoL — لوحة التحكم</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 
-<!-- ========================================================================
-   Firebase Realtime Database (Compat)
-========================================================================= -->
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 
 <style>
   :root{
-    --bg:#0d0f1a;
-    --bg-soft:#141827;
-    --panel:#191d2e;
-    --line: rgba(255,255,255,0.08);
-    --text:#f1f0ec;
-    --text-dim:#9a9db3;
-    --accent:#ffb545;
-    --accent-2:#6ee7c8;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    box-sizing: border-box;
+    --bg:#0d0f1a; --bg-soft:#141827; --panel:#191d2e; --line:rgba(255,255,255,0.08);
+    --text:#f1f0ec; --text-dim:#9a9db3; --accent:#ffb545; --accent-2:#6ee7c8; --danger:#ff8080;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); box-sizing:border-box;
   }
   *{box-sizing:border-box;}
   html,body{height:100%;}
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
-    font-family:'Tajawal', sans-serif;
-    min-height:100%;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Tajawal',sans-serif;min-height:100%;}
+  .wrap{max-width:760px;margin:0 auto;padding:26px 18px 60px;}
+  h1{font-size:22px;font-weight:900;margin:0 0 4px;}
+  .sub{color:var(--text-dim);font-size:13px;margin:0 0 26px;}
+
+  /* login */
+  .login-box{max-width:360px;margin:80px auto 0;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px;}
+  .login-box h1{text-align:center;}
+  .field{margin-top:14px;}
+  .field label{display:block;font-size:13px;color:var(--text-dim);margin-bottom:6px;}
+  input, select{
+    width:100%;background:var(--bg-soft);border:1.5px solid var(--line);border-radius:10px;
+    padding:11px 13px;color:var(--text);font-family:inherit;font-size:14px;
+  }
+  input:focus, select:focus{outline:none;border-color:var(--accent-2);}
+  button{font-family:inherit;cursor:pointer;}
+  .btn{
+    border:1.5px solid var(--line);background:transparent;color:var(--text);
+    border-radius:10px;padding:10px 16px;font-size:14px;font-weight:700;
+  }
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#1a1200;}
+  .btn.danger{border-color:var(--danger);color:var(--danger);}
+  .btn.small{padding:6px 12px;font-size:12.5px;font-weight:500;}
+  .btn:disabled{opacity:.5;cursor:default;}
+  .msg{font-size:13px;margin-top:10px;min-height:16px;}
+  .msg.error{color:var(--danger);}
+  .msg.ok{color:var(--accent-2);}
+
+  /* topbar */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:28px;}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 10px;text-align:center;}
+  .stat .n{font-size:22px;font-weight:900;}
+  .stat .l{font-size:11.5px;color:var(--text-dim);margin-top:2px;}
+
+  /* panels */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:20px;}
+  .panel h2{font-size:16px;margin:0 0 14px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .row > *{flex:1;min-width:120px;}
+  .check-row{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13.5px;color:var(--text-dim);}
+  .check-row input{width:auto;}
+
+  .duration-btns{display:flex;gap:8px;margin-top:14px;}
+  .duration-btns button{flex:1;padding:9px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg-soft);color:var(--text-dim);font-size:13px;}
+  .duration-btns button.active{border-color:var(--accent);color:var(--text);}
+
+  .generated-code{
+    margin-top:16px;background:var(--bg-soft);border:1.5px dashed var(--accent-2);border-radius:12px;
+    padding:14px;text-align:center;direction:ltr;font-size:20px;font-weight:900;letter-spacing:3px;display:none;
   }
 
-  /* ---------- top bar ---------- */
-  header{
-    width:100%;
-    max-width:520px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:28px 20px 10px;
-  }
-  .logo{
-    font-size:28px;
-    font-weight:900;
-    letter-spacing:1px;
-    color:var(--text);
-  }
-  .logo span{color:var(--accent);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{text-align:right;padding:9px 6px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  th{color:var(--text-dim);font-weight:500;font-size:12px;}
+  .badge{padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700;}
+  .badge.new{background:rgba(154,157,179,.15);color:var(--text-dim);}
+  .badge.active{background:rgba(110,231,200,.15);color:var(--accent-2);}
+  .badge.expired{background:rgba(255,128,128,.15);color:var(--danger);}
+  .badge.revoked{background:rgba(255,181,69,.15);color:var(--accent);}
+  .table-wrap{overflow-x:auto;}
+  .empty{color:var(--text-dim);font-size:13px;text-align:center;padding:20px 0;}
 
-  .support-btn{
-    background:transparent;
-    border:1.5px solid var(--line);
-    color:var(--text-dim);
-    font-family:inherit;
-    font-size:14px;
-    font-weight:500;
-    padding:9px 16px;
-    border-radius:100px;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    gap:6px;
-    transition:border-color .15s ease, color .15s ease;
-  }
-  .support-btn:hover, .support-btn:focus-visible{
-    border-color:var(--accent);
-    color:var(--text);
-  }
-  .support-btn svg{width:16px;height:16px;flex:none;}
+  .hidden{display:none !important;}
 
-  main{
-    width:100%;
-    max-width:520px;
-    flex:1;
-    padding:24px 20px 40px;
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f6f5f1;--bg-soft:#ffffff;--panel:#ffffff;--line:rgba(0,0,0,0.1);--text:#16161a;--text-dim:#68697a;
+    }
   }
-
-  /* ---------- home view: game grid ---------- */
-  .tagline{
-    color:var(--text-dim);
-    font-size:15px;
-    margin:0 0 26px;
-  }
-  .grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:14px;
-  }
-  
-  /* تنسيق كرت اللعبة */
-  .game-card {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    border-radius: 18px;
-    overflow: hidden;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    text-decoration: none;
-    border: 1.5px solid var(--line);
-    background: var(--panel);
-    cursor: pointer;
-    transition: transform .12s ease, border-color .12s ease;
-  }
-  .game-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--accent);
-  }
-  .game-card-img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .game-card-title {
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    padding: 12px 8px;
-    background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
-    color: #fff;
-    font-weight: 700;
-    font-size: 15px;
-    text-align: center;
-  }
-
-  .slot{
-    aspect-ratio:1/1;
-    border:1.5px dashed var(--line);
-    border-radius:18px;
-    background:var(--panel);
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    color:var(--text-dim);
-    text-align:center;
-    padding:12px;
-  }
-  .slot .plus{
-    font-size:26px;
-    line-height:1;
-    color:var(--line);
-  }
-
-  /* ---------- code modal ---------- */
-  .modal-overlay{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.65);
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-    z-index:100;
-  }
-  .modal-overlay.active{display:flex;}
-  .modal{
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:18px;
-    padding:22px;
-    width:100%;
-    max-width:360px;
-  }
-  .modal h2{
-    font-size:18px;
-    margin:0 0 4px;
-    color: var(--accent);
-  }
-  .modal p{
-    font-size:13px;
-    color:var(--text-dim);
-    margin:0 0 16px;
-  }
-  .modal input{
-    width:100%;
-    background:var(--bg-soft);
-    border:1.5px solid var(--line);
-    border-radius:10px;
-    padding:12px 14px;
-    color:var(--text);
-    font-family:inherit;
-    font-size:15px;
-    direction:ltr;
-    text-align:center;
-    letter-spacing:2px;
-  }
-  .modal input:focus{outline:none;border-color:var(--accent-2);}
-  .modal-msg{
-    font-size:13px;
-    min-height:18px;
-    margin:10px 0 0;
-    text-align: center;
-    font-weight: 700;
-  }
-  .modal-msg.error{color:#ff8080;}
-  .modal-msg.ok{color:var(--accent-2);}
-  .modal-actions{
-    display:flex;
-    gap:10px;
-    margin-top:16px;
-  }
-  .modal-actions button{
-    flex:1;
-    font-family:inherit;
-    font-size:14px;
-    font-weight:700;
-    border-radius:10px;
-    padding:11px;
-    cursor:pointer;
-    border:1.5px solid var(--line);
-    background:transparent;
-    color:var(--text-dim);
-  }
-  .modal-actions .confirm{
-    background:var(--accent);
-    border-color:var(--accent);
-    color:#1a1200;
-  }
-
-  /* ---------- support view ---------- */
-  .back-btn{
-    background:none;
-    border:none;
-    color:var(--text-dim);
-    font-family:inherit;
-    font-size:14px;
-    cursor:pointer;
-    padding:0 0 22px;
-    display:flex;
-    align-items:center;
-    gap:6px;
-  }
-  .back-btn:hover{color:var(--text);}
-  .support-title{
-    font-size:22px;
-    font-weight:900;
-    margin:0 0 6px;
-  }
-  .support-sub{
-    color:var(--text-dim);
-    font-size:14px;
-    margin:0 0 24px;
-  }
-  .socials{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-  }
-  .social-link{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    padding:14px 16px;
-    border-radius:14px;
-    background:var(--panel);
-    border:1px solid var(--line);
-    color:var(--text);
-    text-decoration:none;
-    font-weight:500;
-    transition:border-color .15s ease;
-  }
-  .social-link:hover, .social-link:focus-visible{border-color:var(--accent-2);}
-  .social-link .icon{
-    width:36px;height:36px;border-radius:10px;
-    display:flex;align-items:center;justify-content:center;
-    background:var(--bg-soft);
-    flex:none;
-  }
-  .social-link .icon svg{width:18px;height:18px;}
-  .social-link .label{font-size:15px;}
-  .social-link .handle{
-    margin-inline-start:auto;
-    color:var(--text-dim);
-    font-size:13px;
-    direction:ltr;
-  }
-
-  .view{display:none;}
-  .view.active{display:block;}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">No<span>L</span></div>
-  <button class="support-btn" id="supportBtn" type="button">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16v-4M12 8h.01"/><circle cx="12" cy="12" r="9"/></svg>
-    الدعم
-  </button>
-</header>
+<!-- ===== شاشة الدخول ===== -->
+<div class="login-box" id="loginBox">
+  <h1>لوحة تحكم No<span style="color:var(--accent)">L</span></h1>
+  <p class="sub" style="text-align:center;">للإدارة فقط</p>
+  <div class="field"><label>البريد الإلكتروني</label><input type="email" id="email" autocomplete="username"></div>
+  <div class="field"><label>كلمة المرور</label><input type="password" id="password" autocomplete="current-password"></div>
+  <button class="btn primary" id="loginBtn" style="width:100%;margin-top:16px;">دخول</button>
+  <p class="msg error" id="loginMsg"></p>
+</div>
 
-<main>
-
-  <!-- ===== الواجهة الأولى: الألعاب ===== -->
-  <section class="view active" id="homeView">
-    <p class="tagline">اختر لعبة وابدأ اللعب مع أصحابك</p>
-    <div class="grid" id="gamesGrid">
-      
-      <!-- كرت لعبة طبول الحرب (تفتح مباشرة للجميع بدون كود) -->
-      <div class="game-card" onclick="openFreeGame('games/harb/index.html')">
-        <img src="assets/war-drums.pngg.PNG" alt="طبول الحرب" class="game-card-img">
-        <div class="game-card-title">طبول الحرب</div>
-      </div>
-
-      <!-- كرت لعبة المجازفة (تتطلب كود اشتراك خاص بها) -->
-      <div class="game-card" onclick="openLockedGame('games/mazafa/index.html','mazafa')">
-        <img src="assets/mazafa.png" alt="لعبة المجازفة" class="game-card-img">
-        <div class="game-card-title">المجازفة</div>
-      </div>
-
-      <!-- كرت لعبة اختلاف الصور (تتطلب كود اشتراك خاص بها) -->
-      <div class="game-card" onclick="openLockedGame('games/spot-diff/index.html','spot-diff')">
-        <img src="assets/spot-diff.png" alt="اختلاف الصور" class="game-card-img">
-        <div class="game-card-title">اختلاف الصور</div>
-      </div>
-
-      <div class="slot"><span class="plus">+</span></div>
+<!-- ===== لوحة التحكم ===== -->
+<div class="wrap hidden" id="dashboard">
+  <div class="topbar">
+    <div>
+      <h1>لوحة التحكم</h1>
+      <p class="sub" id="whoami"></p>
     </div>
-  </section>
+    <button class="btn" id="logoutBtn">خروج</button>
+  </div>
 
-  <!-- ===== الواجهة الثانية: الدعم ===== -->
-  <section class="view" id="supportView">
-    <button class="back-btn" id="backBtn" type="button">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
-      رجوع
-    </button>
-    <h1 class="support-title">تواصل معنا</h1>
-    <p class="support-sub">تابعونا وشاركوا آراءكم عبر هذه الحسابات</p>
-    <div class="socials" id="socialsList"></div>
-  </section>
+  <div class="stats" id="statsGrid"></div>
 
-</main>
-
-<!-- ===== نافذة إدخال كود الاشتراك ===== -->
-<div class="modal-overlay" id="codeOverlay">
-  <div class="modal">
-    <h2>تفعيل كود الاشتراك</h2>
-    <p>هذه اللعبة تتطلب كود تفعيل ساري. أدخل الكود للبدء:</p>
-    <input type="text" id="codeInput" placeholder="أدخل كود الاشتراك..." maxlength="30" autocomplete="off">
-    <p class="modal-msg" id="codeMsg"></p>
-    <div class="modal-actions">
-      <button type="button" id="codeCancel">إلغاء</button>
-      <button type="button" class="confirm" id="codeConfirm">تحقق ودخل</button>
+  <div class="panel">
+    <h2>إضافة لعبة</h2>
+    <div class="row">
+      <div><label style="font-size:12px;color:var(--text-dim);">المعرّف (بالإنجليزي)</label><input id="gId" placeholder="spy"></div>
+      <div><label style="font-size:12px;color:var(--text-dim);">الاسم</label><input id="gName" placeholder="الجاسوس"></div>
     </div>
+    <div class="row" style="margin-top:10px;">
+      <div><label style="font-size:12px;color:var(--text-dim);">وصف قصير</label><input id="gHint" placeholder="لعبة جماعية"></div>
+      <div><label style="font-size:12px;color:var(--text-dim);">الرابط</label><input id="gUrl" placeholder="https://..." style="direction:ltr;"></div>
+    </div>
+    <div class="check-row"><input type="checkbox" id="gRequiresCode"><label for="gRequiresCode">تتطلب كود اشتراك</label></div>
+    <button class="btn primary" id="addGameBtn" style="margin-top:14px;">إضافة اللعبة</button>
+    <p class="msg" id="gameMsg"></p>
+
+    <div class="table-wrap" style="margin-top:18px;">
+      <table id="gamesTable"><thead><tr><th>اللعبة</th><th>كود؟</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>توليد كود اشتراك</h2>
+    <div class="row">
+      <div style="flex:2;"><label style="font-size:12px;color:var(--text-dim);">اللعبة</label><select id="codeGameSelect"></select></div>
+    </div>
+    <div class="duration-btns">
+      <button type="button" data-days="7">أسبوع</button>
+      <button type="button" data-days="30" class="active">شهر</button>
+      <button type="button" data-days="365">سنة</button>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <div><label style="font-size:12px;color:var(--text-dim);">أو مدة مخصصة (أيام)</label><input type="number" id="customDays" placeholder="مثال: 14"></div>
+    </div>
+    <button class="btn primary" id="genCodeBtn" style="margin-top:14px;width:100%;">توليد كود</button>
+    <div class="generated-code" id="generatedCode"></div>
+    <p class="msg" id="codeGenMsg"></p>
+  </div>
+
+  <div class="panel">
+    <h2>تتبع الأكواد</h2>
+    <div class="table-wrap">
+      <table id="codesTable">
+        <thead><tr><th>الكود</th><th>اللعبة</th><th>الحالة</th><th>المدة</th><th>ينتهي</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="empty hidden" id="codesEmpty">لا توجد أكواد بعد</p>
   </div>
 </div>
 
 <script>
-// تهيئة Firebase
+/* ============================================================
+   إعداد Firebase — نفس بيانات مشروعك في index.html
+============================================================ */
 const firebaseConfig = {
   apiKey: "AIzaSyDiOGYHADTeRz4CrrMh264K0sOQNrINl4w",
   authDomain: "nool-1fa3a.firebaseapp.com",
@@ -373,158 +181,205 @@ const firebaseConfig = {
   appId: "1:552551048252:web:c99ba47af88cb131078f39",
   measurementId: "G-ZCMH5FFTL6"
 };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
 
-let db = null;
-try {
-  firebase.initializeApp(firebaseConfig);
-  db = firebase.database();
-} catch (e) {
-  console.warn("Firebase غير مهيأ.", e);
-}
+/* ============================================================
+   تسجيل الدخول — أنشئ مستخدماً واحداً من Firebase Console:
+   Authentication → Sign-in method → فعّل Email/Password
+   Authentication → Users → Add user (بريدك وكلمة مرورك)
+============================================================ */
+const loginBox = document.getElementById('loginBox');
+const dashboard = document.getElementById('dashboard');
+const loginBtn = document.getElementById('loginBtn');
+const loginMsg = document.getElementById('loginMsg');
 
-const homeView = document.getElementById('homeView');
-const supportView = document.getElementById('supportView');
-const supportBtn = document.getElementById('supportBtn');
-const backBtn = document.getElementById('backBtn');
-
-supportBtn.addEventListener('click', () => {
-  homeView.classList.remove('active');
-  supportView.classList.add('active');
-});
-backBtn.addEventListener('click', () => {
-  supportView.classList.remove('active');
-  homeView.classList.add('active');
-});
-
-let targetGameUrl = '';
-let targetGameId = '';
-
-// 1. دالة للألعاب المجانية (تفتح مباشرة للجميع بدون كود مثل طبول الحرب)
-function openFreeGame(url) {
-  window.location.href = url;
-}
-
-// 2. دالة للألعاب المقفلة (تتحقق من كود خاص بنفس اللعبة، أو تنقل المباشر للمشاهدة إذا وُجد رابط room)
-async function openLockedGame(url, gameId) {
-  // فحص ما إذا كان الرابط الأساسي يحتوي على باراميتر غرفة (مشاهدة مباشرة)
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomParam = urlParams.get('room');
-
-  if (roomParam) {
-    window.location.href = `${url}?room=${roomParam}`;
-    return;
-  }
-
-  targetGameUrl = url;
-  targetGameId = gameId;
-  const storageKey = 'nol_license_key_' + gameId;
-  const savedKey = localStorage.getItem(storageKey);
-
-  if (savedKey && db) {
-    const isValid = await checkKeyInFirebase(savedKey, gameId);
-    if (isValid) {
-      window.location.href = targetGameUrl;
-      return;
-    }
-  }
-
-  // إذا لم يكن هناك كود أو انتهى، إظهار نافذة إدخال الكود
-  document.getElementById('codeInput').value = '';
-  document.getElementById('codeMsg').textContent = '';
-  document.getElementById('codeOverlay').classList.add('active');
-}
-
-async function checkKeyInFirebase(key, gameId) {
-  try {
-    const snapshot = await db.ref(`codes/${key}`).once('value');
-    if (!snapshot.exists()) return false;
-    const data = snapshot.val();
-    const now = Date.now();
-
-    if (data.gameId !== gameId) return false;
-    if (data.status === 'revoked') return false;
-    if (data.status === 'active' && data.expiresAt && data.expiresAt < now) return false;
-    if (data.status === 'new' || !data.status) {
-      const durationDays = Number(data.days) || 30;
-      const expiresAt = now + (durationDays * 24 * 60 * 60 * 1000);
-      await db.ref(`codes/${key}`).update({
-        status: 'active',
-        activatedAt: now,
-        expiresAt: expiresAt
-      });
-      return true;
-    }
-    return data.status === 'active';
-  } catch (e) {
-    console.error(e);
-    return false;
-  }
-}
-
-document.getElementById('codeCancel').addEventListener('click', () => {
-  document.getElementById('codeOverlay').classList.remove('active');
+loginBtn.addEventListener('click', () => {
+  const email = document.getElementById('email').value.trim();
+  const pass = document.getElementById('password').value;
+  loginMsg.textContent = '';
+  auth.signInWithEmailAndPassword(email, pass).catch(err => {
+    loginMsg.textContent = 'بيانات الدخول غير صحيحة';
+  });
 });
 
-document.getElementById('codeConfirm').addEventListener('click', async () => {
-  const inputKey = document.getElementById('codeInput').value.trim();
-  const msgEl = document.getElementById('codeMsg');
+document.getElementById('logoutBtn').addEventListener('click', () => auth.signOut());
 
-  if (!inputKey) {
-    msgEl.className = 'modal-msg error';
-    msgEl.textContent = 'الرجاء إدخال الكود.';
-    return;
-  }
-
-  msgEl.className = 'modal-msg';
-  msgEl.textContent = 'جاري التحقق...';
-
-  const isValid = await checkKeyInFirebase(inputKey, targetGameId);
-  if (isValid) {
-    localStorage.setItem('nol_license_key_' + targetGameId, inputKey);
-    msgEl.className = 'modal-msg ok';
-    msgEl.textContent = 'تم التفعيل بنجاح! جاري الدخول...';
-    setTimeout(() => {
-      window.location.href = targetGameUrl;
-    }, 1000);
+auth.onAuthStateChanged(user => {
+  if (user){
+    loginBox.classList.add('hidden');
+    dashboard.classList.remove('hidden');
+    document.getElementById('whoami').textContent = user.email;
+    startDashboard();
   } else {
-    msgEl.className = 'modal-msg error';
-    msgEl.textContent = 'الكود غير صحيح أو منتهي الصلاحية أو غير مخصص لهذه اللعبة.';
+    loginBox.classList.remove('hidden');
+    dashboard.classList.add('hidden');
   }
 });
 
+/* ============================================================
+   الألعاب
+============================================================ */
+let gamesCache = {};
 
-// قائمة وسائل التواصل والدعم
-const defaultSocials = [
-  { label:'X (تويتر)', handle:'@noole_n', url:'https://x.com/noole_n?s=11', icon:'x' },
-  { label:'انستغرام',   handle:'@NoL', url:'https://instagram.com/', icon:'instagram' },
-  { label:'ديسكورد',    handle:'discord.gg/noole_', url:'https://discord.gg/7cmN5kDtM', icon:'discord' },
-  { label:'تيك توك',    handle:'@uu.s22', url:'https://www.tiktok.com/@uu.s22?_r=1&_t=ZS-99yJCW5a2ki/', icon:'tiktok' },
-];
-
-const icons = {
-  x: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.3 3H21l-6.6 7.5L22 21h-6.3l-4.9-6.4L4.9 21H2.2l7-8L2 3h6.4l4.4 5.9L18.3 3Zm-1.1 16.2h1.6L7 4.7H5.3l11.9 14.5Z"/></svg>',
-  instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1"/></svg>',
-  discord: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 5.5a17 17 0 0 0-4.2-1.3l-.3.6a15 15 0 0 1 3.6 1.4A16.5 16.5 0 0 0 4.9 6.2a15 15 0 0 1 3.7-1.4l-.3-.6A17 17 0 0 0 4 5.5C1.7 9 1 12.4 1.3 15.7a17 17 0 0 0 5 2.6l.7-1.1a11 11 0 0 1-1.7-.8l.4-.3a12.7 12.7 0 0 0 10.6 0l.4.3c-.5.3-1.1.6-1.7.8l.7 1.1a17 17 0 0 0 5-2.6C23 12.4 22.3 9 20 5.5ZM9 14c-.8 0-1.5-.8-1.5-1.7S8.1 10.5 9 10.5s1.5.8 1.5 1.8S9.9 14 9 14Zm6 0c-.8 0-1.5-.8-1.5-1.7s.7-1.8 1.5-1.8 1.5.8 1.5 1.8-.7 1.7-1.5 1.7Z"/></svg>',
-  tiktok: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 3c.4 2 1.8 3.6 4 4v3a7 7 0 0 1-4-1.3V15a6 6 0 1 1-6-6c.3 0 .7 0 1 .1v3.1a3 3 0 1 0 2 2.8V3h3Z"/></svg>',
-};
-
-function renderSocials(list){
-  const wrap = document.getElementById('socialsList');
-  wrap.innerHTML = '';
-  list.forEach(s => {
-    const a = document.createElement('a');
-    a.className = 'social-link';
-    a.href = s.url;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.innerHTML = `<span class="icon">${icons[s.icon] || ''}</span>
-                   <span class="label">${s.label}</span>
-                   <span class="handle">${s.handle}</span>`;
-    wrap.appendChild(a);
+function startDashboard(){
+  db.ref('games').on('value', snap => {
+    gamesCache = snap.val() || {};
+    renderGamesTable();
+    renderGameSelect();
+  });
+  db.ref('codes').on('value', snap => {
+    renderCodesTable(snap.val() || {});
   });
 }
 
-renderSocials(defaultSocials);
+function renderGamesTable(){
+  const tbody = document.querySelector('#gamesTable tbody');
+  tbody.innerHTML = '';
+  Object.entries(gamesCache).forEach(([id, g]) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${g.name} <span style="color:var(--text-dim);font-size:11px;">(${id})</span></td>
+                     <td>${g.requiresCode ? 'نعم' : 'لا'}</td>
+                     <td><button class="btn small danger" data-del="${id}">حذف</button></td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('[data-del]').forEach(b => {
+    b.addEventListener('click', () => {
+      if (confirm('حذف هذه اللعبة؟')) db.ref('games/' + b.dataset.del).remove();
+    });
+  });
+}
+
+document.getElementById('addGameBtn').addEventListener('click', () => {
+  const id = document.getElementById('gId').value.trim();
+  const name = document.getElementById('gName').value.trim();
+  const hint = document.getElementById('gHint').value.trim();
+  const url = document.getElementById('gUrl').value.trim();
+  const requiresCode = document.getElementById('gRequiresCode').checked;
+  const msg = document.getElementById('gameMsg');
+
+  if (!id || !name || !url){ msg.className = 'msg error'; msg.textContent = 'المعرّف والاسم والرابط مطلوبة'; return; }
+
+  db.ref('games/' + id).set({ name, hint, url, requiresCode }).then(() => {
+    msg.className = 'msg ok'; msg.textContent = 'تمت الإضافة';
+    ['gId','gName','gHint','gUrl'].forEach(f => document.getElementById(f).value = '');
+    document.getElementById('gRequiresCode').checked = false;
+  }).catch(e => { msg.className = 'msg error'; msg.textContent = 'خطأ: ' + e.message; });
+});
+
+/* ============================================================
+   توليد الأكواد
+============================================================ */
+function renderGameSelect(){
+  const sel = document.getElementById('codeGameSelect');
+  sel.innerHTML = '';
+  Object.entries(gamesCache).filter(([id,g]) => g.requiresCode).forEach(([id,g]) => {
+    const opt = document.createElement('option');
+    opt.value = id; opt.textContent = g.name;
+    sel.appendChild(opt);
+  });
+  if (!sel.options.length){
+    const opt = document.createElement('option');
+    opt.textContent = 'أضف لعبة تتطلب كوداً أولاً'; opt.disabled = true;
+    sel.appendChild(opt);
+  }
+}
+
+let selectedDays = 30;
+document.querySelectorAll('.duration-btns button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.duration-btns button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedDays = Number(btn.dataset.days);
+    document.getElementById('customDays').value = '';
+  });
+});
+document.getElementById('customDays').addEventListener('input', e => {
+  if (e.target.value){
+    document.querySelectorAll('.duration-btns button').forEach(b => b.classList.remove('active'));
+    selectedDays = Number(e.target.value);
+  }
+});
+
+function makeCode(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out = '';
+  for (let i = 0; i < 8; i++){
+    if (i === 4) out += '-';
+    out += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return out;
+}
+
+document.getElementById('genCodeBtn').addEventListener('click', () => {
+  const gameId = document.getElementById('codeGameSelect').value;
+  const msg = document.getElementById('codeGenMsg');
+  const box = document.getElementById('generatedCode');
+  if (!gameId){ msg.className='msg error'; msg.textContent='اختر لعبة أولاً'; return; }
+  const days = selectedDays > 0 ? selectedDays : 30;
+
+  const code = makeCode();
+  db.ref('codes/' + code).set({ gameId, days, status: 'new' }).then(() => {
+    box.style.display = 'block';
+    box.textContent = code;
+    msg.className = 'msg ok'; msg.textContent = 'أعط هذا الكود للعميل';
+  }).catch(e => { msg.className = 'msg error'; msg.textContent = 'خطأ: ' + e.message; });
+});
+
+/* ============================================================
+   تتبع الأكواد + الإحصائيات
+============================================================ */
+function renderCodesTable(codes){
+  const entries = Object.entries(codes);
+  const tbody = document.querySelector('#codesTable tbody');
+  const empty = document.getElementById('codesEmpty');
+  tbody.innerHTML = '';
+
+  let counts = { total: entries.length, active: 0, expired: 0, unused: 0, revoked: 0 };
+
+  entries
+    .sort((a,b) => (b[1].activatedAt||0) - (a[1].activatedAt||0))
+    .forEach(([code, c]) => {
+      const isExpired = c.status === 'active' && c.expiresAt && c.expiresAt < Date.now();
+      let statusLabel = 'جديد', statusClass = 'new';
+      if (c.status === 'revoked'){ statusLabel='ملغى'; statusClass='revoked'; counts.revoked++; }
+      else if (isExpired){ statusLabel='منتهي'; statusClass='expired'; counts.expired++; }
+      else if (c.status === 'active'){ statusLabel='نشط'; statusClass='active'; counts.active++; }
+      else { counts.unused++; }
+
+      const gameName = gamesCache[c.gameId] ? gamesCache[c.gameId].name : (c.gameId || '—');
+      const expiresText = c.expiresAt ? new Date(c.expiresAt).toLocaleDateString('ar') : '—';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="direction:ltr;text-align:left;">${code}</td>
+        <td>${gameName}</td>
+        <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+        <td>${c.days} يوم</td>
+        <td>${expiresText}</td>
+        <td>${c.status === 'revoked' ? '' : `<button class="btn small danger" data-revoke="${code}">إلغاء</button>`}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  tbody.querySelectorAll('[data-revoke]').forEach(b => {
+    b.addEventListener('click', () => {
+      if (confirm('إلغاء هذا الكود؟ لن يعمل بعد الآن.')) {
+        db.ref('codes/' + b.dataset.revoke + '/status').set('revoked');
+      }
+    });
+  });
+
+  empty.classList.toggle('hidden', entries.length > 0);
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat"><div class="n">${counts.total}</div><div class="l">الإجمالي</div></div>
+    <div class="stat"><div class="n">${counts.active}</div><div class="l">نشطة</div></div>
+    <div class="stat"><div class="n">${counts.unused}</div><div class="l">غير مُفعّلة</div></div>
+    <div class="stat"><div class="n">${counts.expired}</div><div class="l">منتهية</div></div>
+  `;
+}
 </script>
 </body>
 </html>

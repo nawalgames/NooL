@@ -254,12 +254,14 @@ const params = new URLSearchParams(location.search);
 const roomCode = params.get('room');
 let myPid = null, mySessRef = null, roleIsHost = !roomCode;
 
-/* ================= حماية شاشة الاستضافة (لازم كود اشتراك ساري) ================= */
+/* ================= حماية شاشة الاستضافة (لازم كود اشتراك خاص بهذه اللعبة) ================= */
+const THIS_GAME_ID = 'spot-diff';
 function checkLicenseKey(key){
   return db.ref('codes/'+key).once('value').then(snap=>{
     if (!snap.exists()) return false;
     const data = snap.val();
     const now = Date.now();
+    if (data.gameId !== THIS_GAME_ID) return false;
     if (data.status === 'revoked') return false;
     if (data.status === 'active' && data.expiresAt && data.expiresAt < now) return false;
     return true;
@@ -268,18 +270,19 @@ function checkLicenseKey(key){
 function blockHostAccess(){
   show('loadingView');
   document.getElementById('loadingView').innerHTML =
-    '<p class="msg">🔒 هذه الصفحة تتطلب الدخول عبر كود اشتراك ساري من الصفحة الرئيسية.</p>'+
+    '<p class="msg">🔒 هذه الصفحة تتطلب الدخول عبر كود اشتراك ساري خاص بهذه اللعبة من الصفحة الرئيسية.</p>'+
     '<button class="btn" style="margin-top:14px;" onclick="location.href=\'../../index.html\'">الذهاب للصفحة الرئيسية</button>';
 }
 
 /* ================= مسار المضيف ================= */
 if (roleIsHost){
-  const savedKey = localStorage.getItem('nol_license_key');
+  const licenseStorageKey = 'nol_license_key_' + THIS_GAME_ID;
+  const savedKey = localStorage.getItem(licenseStorageKey);
   if (!savedKey){
     blockHostAccess();
   } else {
     checkLicenseKey(savedKey).then(valid=>{
-      if (!valid){ localStorage.removeItem('nol_license_key'); blockHostAccess(); }
+      if (!valid){ localStorage.removeItem(licenseStorageKey); blockHostAccess(); }
       else initHostSetup();
     });
   }

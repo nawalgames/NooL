@@ -8,6 +8,11 @@
       "README.md",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "rewrites": [
+      { "source": "/fd/diff", "destination": "/games/spot-diff/index.html" },
+      { "source": "/fd/mazafa", "destination": "/games/mazafa/index.html" },
+      { "source": "/fd/harb", "destination": "/games/harb/index.html" }
     ]
   },
   "database": {
